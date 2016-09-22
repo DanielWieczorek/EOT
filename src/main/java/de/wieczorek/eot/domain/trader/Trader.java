@@ -1,93 +1,103 @@
 package de.wieczorek.eot.domain.trader;
 
-import de.wieczorek.eot.domain.ExchangableType;
-import de.wieczorek.eot.domain.TimedExchangeRate;
 import de.wieczorek.eot.domain.exchange.IExchange;
+import de.wieczorek.eot.domain.exchange.impl.ExchangablePair;
 import de.wieczorek.eot.domain.exchange.impl.SimulatedExchangeImpl;
 
-public class Trader implements IIndiviual{
+public class Trader implements IIndiviual {
 
 	private Wallet wallet;
 	private IExchange exchange;
-	private TradingRule tradingRule;
-	
-	
-	public Trader(Wallet wallet, IExchange exchange, TradingRule tradingRule) {
+	private TradingRule buyRule;
+	private TradingRule sellRule;
+	private ExchangablePair exchangablesToTrade;
+	private double lastSeenRate = 0.0;
+
+	public Trader(Wallet wallet, IExchange exchange, TradingRule buyRule, TradingRule sellRule,
+			ExchangablePair exchangablesToTrade) {
 		super();
-		this.wallet = wallet;
+		this.setWallet(wallet);
 		this.exchange = exchange;
-		this.tradingRule = tradingRule;
+		this.buyRule = buyRule;
+		this.sellRule = sellRule;
+		this.exchangablesToTrade = exchangablesToTrade;
 	}
+
 	@Override
 	public double calculateFitness() {
-		
+
 		return 0;
 	}
+
 	@Override
 	public void performAction() {
 		trade();
-		
+
 	}
+
 	private void trade() {
-		if(tradingRule.evaluate(exchange.getExchangeRateHistory(tradingRule.getFromExchangable(), tradingRule.getToExchangable(), 24))){
-			ExchangableSet from = wallet.countAllExchangablesOfType(tradingRule.getFromExchangable());
-			ExchangableSet to = wallet.countAllExchangablesOfType(tradingRule.getToExchangable());
-			if(from.getAmount() > 0){
-				Order order = new Order();
-				order.setFrom(from);
-				order.setTo(to);
-				order.setType(tradingRule.getType());
-				
-				exchange.performOrder(order);
-				
-				if(order.getType().equals(OrderType.BUY)){
-					wallet.withdraw(order.getFrom());
-					wallet.deposit(new ExchangableAmount(order.getTo(), order.getFrom().getAmount()/order.getTo().getAmount()));
-				}
-				else if(order.getType().equals(OrderType.SELL)){
-					wallet.withdraw(order.getTo());
-					wallet.deposit(new ExchangableAmount(order.getFrom(), order.getTo().getAmount()/order.getFrom().getAmount()));
-				}
-			
-			System.out.println("ETH -> BTC: "+((SimulatedExchangeImpl) exchange).getHistory().getCompleteHistoryData().get(((SimulatedExchangeImpl) exchange).getIndexUsedLast()).getToPrice());
-			 from = wallet.countAllExchangablesOfType(tradingRule.getFromExchangable());
-			to = wallet.countAllExchangablesOfType(tradingRule.getToExchangable());
-			System.out.println("ETH: "+from.getAmount());
-			System.out.println("BTC: "+to.getAmount());
-			}	
-		}
-		else {
-			ExchangableSet from = wallet.countAllExchangablesOfType(tradingRule.getFromExchangable());
-			ExchangableSet to = wallet.countAllExchangablesOfType(tradingRule.getToExchangable());
-			if(to.getAmount() > 0){
-				Order order = new Order();
-				order.setFrom(from);
-				order.setTo(to);
-				if(tradingRule.getType().equals(OrderType.BUY))
-					order.setType(OrderType.SELL);
-				else 
-					order.setType(OrderType.BUY);
-				
-				exchange.performOrder(order);
-				
-				if(order.getType().equals(OrderType.BUY)){
-					wallet.withdraw(order.getFrom());
-					wallet.deposit(new ExchangableAmount(order.getTo(), order.getFrom().getAmount()/order.getTo().getAmount()));
-				}
-				else if(order.getType().equals(OrderType.SELL)){
-					wallet.withdraw(order.getTo());
-					wallet.deposit(new ExchangableAmount(order.getFrom(), order.getTo().getAmount()/order.getFrom().getAmount()));
-				}
-		
-				System.out.println("ETH -> BTC: "+((SimulatedExchangeImpl) exchange).getHistory().getCompleteHistoryData().get(((SimulatedExchangeImpl) exchange).getIndexUsedLast()).getToPrice());
-				 from = wallet.countAllExchangablesOfType(tradingRule.getFromExchangable());
-				to = wallet.countAllExchangablesOfType(tradingRule.getToExchangable());
-				System.out.println("ETH: "+from.getAmount());
-				System.out.println("BTC: "+to.getAmount());
+		if (exchange.getCurrentExchangeRate(exchangablesToTrade).getToPrice() != lastSeenRate) {
+			ExchangableSet from = getWallet().countAllExchangablesOfType(exchangablesToTrade.getFrom());
+			ExchangableSet to = getWallet().countAllExchangablesOfType(exchangablesToTrade.getTo());
+			if (buyRule.evaluate(exchange.getExchangeRateHistory(exchangablesToTrade, 24)) && from.getAmount() > 0) {
+				buy();
+			} else if (sellRule.evaluate(exchange.getExchangeRateHistory(exchangablesToTrade, 24))
+					&& to.getAmount() > 0) {
+				sell();
 			}
+		}
+		lastSeenRate = exchange.getCurrentExchangeRate(exchangablesToTrade).getToPrice();
+
+	}
+
+	private void buy() {
+		ExchangableSet from = getWallet().countAllExchangablesOfType(exchangablesToTrade.getFrom());
+		if (from.getAmount() > 0) {
+			Order order = new Order(exchangablesToTrade, from.getAmount(), OrderType.BUY);
+			ExchangableSet returnOfInvestment = exchange.performOrder(order);
+
+			getWallet().withdraw(new ExchangableSet(order.getPair().getFrom(), order.getAmount()));
+			getWallet().deposit(
+					new ExchangableAmount(returnOfInvestment, order.getAmount() / returnOfInvestment.getAmount()));
+
+			printWalletInfo();
+
+		}
+	}
+
+	private void sell() {
+		ExchangableSet to = getWallet().countAllExchangablesOfType(exchangablesToTrade.getTo());
+		if (to.getAmount() > 0) {
+			Order order = new Order(exchangablesToTrade, to.getAmount(), OrderType.SELL);
+			ExchangableSet returnOfInvestment = exchange.performOrder(order);
+
+			getWallet().withdraw(new ExchangableSet(order.getPair().getTo(), order.getAmount()));
+			getWallet().deposit(
+					new ExchangableAmount(returnOfInvestment, order.getAmount() / returnOfInvestment.getAmount()));
+
+			printWalletInfo();
+
 		}
 
 	}
-	
-	
+
+	private void printWalletInfo() {
+		ExchangableSet from = getWallet().countAllExchangablesOfType(exchangablesToTrade.getFrom());
+		ExchangableSet to = getWallet().countAllExchangablesOfType(exchangablesToTrade.getTo());
+		System.out.println("ETH -> BTC: "
+				+ ((SimulatedExchangeImpl) exchange).getCurrentExchangeRate(exchangablesToTrade).getToPrice());
+		from = getWallet().countAllExchangablesOfType(exchangablesToTrade.getFrom());
+		to = getWallet().countAllExchangablesOfType(exchangablesToTrade.getTo());
+		System.out.println("ETH: " + from.getAmount());
+		System.out.println("BTC: " + to.getAmount());
+	}
+
+	public Wallet getWallet() {
+		return wallet;
+	}
+
+	public void setWallet(Wallet wallet) {
+		this.wallet = wallet;
+	}
+
 }

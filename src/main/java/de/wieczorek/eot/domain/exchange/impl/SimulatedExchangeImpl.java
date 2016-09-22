@@ -1,42 +1,50 @@
 package de.wieczorek.eot.domain.exchange.impl;
 
+import java.util.Iterator;
+
 import de.wieczorek.eot.business.history.IChartHistoryUc;
 import de.wieczorek.eot.business.price.IExchangeRateUc;
-import de.wieczorek.eot.domain.ExchangableType;
 import de.wieczorek.eot.domain.ExchangeRateHistory;
 import de.wieczorek.eot.domain.TimedExchangeRate;
+import de.wieczorek.eot.domain.trader.ExchangableSet;
 import de.wieczorek.eot.domain.trader.Order;
 import de.wieczorek.eot.domain.trader.OrderType;
 
 public class SimulatedExchangeImpl extends AbstractExchangeImpl {
-	
+
 	private ExchangeRateHistory history = null;
-	private int indexUsedLast = 15;
+	private Iterator<TimedExchangeRate> iter;
+	private TimedExchangeRate currentExchangeRate;
 
 	public SimulatedExchangeImpl(IChartHistoryUc historyUc, IExchangeRateUc exchangeRateUc) {
 		super(historyUc, exchangeRateUc);
-		
+
 	}
 
 	@Override
-	public void performOrder(Order o) {
-		TimedExchangeRate rate = new TimedExchangeRate(history.getCompleteHistoryData().get(getIndexUsedLast()).getFrom(), history.getCompleteHistoryData().get(getIndexUsedLast()).getTo(), history.getCompleteHistoryData().get(getIndexUsedLast()).getToPrice(), history.getCompleteHistoryData().get(getIndexUsedLast()).getTime());
-		if (o.getType().equals(OrderType.BUY)){
-			o.getTo().setAmount(o.getFrom().getAmount()*rate.getToPrice());
-		}
-		else {
+	public TimedExchangeRate getCurrentExchangeRate(ExchangablePair pair) {
+		return currentExchangeRate;
+
+	}
+
+	@Override
+	public ExchangableSet performOrder(Order o) {
+		TimedExchangeRate rate = new TimedExchangeRate(currentExchangeRate.getFrom(), currentExchangeRate.getTo(),
+				currentExchangeRate.getToPrice(), currentExchangeRate.getTime());
+		if (o.getType().equals(OrderType.BUY)) {
+			return new ExchangableSet(o.getPair().getTo(), o.getAmount() * rate.getToPrice());
+		} else {
 			rate = rate.swap();
-			o.getFrom().setAmount(o.getTo().getAmount()*rate.getToPrice()*0.998);
+			return new ExchangableSet(o.getPair().getFrom(), o.getAmount() * rate.getToPrice());
 		}
-
 	}
 
 	@Override
-	public ExchangeRateHistory getExchangeRateHistory(ExchangableType from, ExchangableType to, int hours) {
-		if(history == null)
-			history = super.getExchangeRateHistory(from, to, hours);
-	
-		return history.getHistoryEntriesBefore(history.getCompleteHistoryData().get(getIndexUsedLast()).getTime(), 1000);
+	public ExchangeRateHistory getExchangeRateHistory(ExchangablePair pair, int hours) {
+		if (history == null)
+			setHistory(super.getExchangeRateHistory(pair, hours));
+
+		return history.getHistoryEntriesBefore(currentExchangeRate.getTime(), hours * 60);
 	}
 
 	public ExchangeRateHistory getHistory() {
@@ -45,14 +53,15 @@ public class SimulatedExchangeImpl extends AbstractExchangeImpl {
 
 	public void setHistory(ExchangeRateHistory history) {
 		this.history = history;
+		if (history != null) {
+			iter = history.getCompleteHistoryData().listIterator(15 * 30);
+			currentExchangeRate = iter.next();
+		}
 	}
 
-	public int getIndexUsedLast() {
-		return indexUsedLast;
-	}
-
-	public void setIndexUsedLast(int indexUsedLast) {
-		this.indexUsedLast = indexUsedLast;
+	public void icrementTime() {
+		currentExchangeRate = iter.next();
+		// System.out.println("CurrentTime: " + currentExchangeRate.getTime());
 	}
 
 }

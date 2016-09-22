@@ -60,5 +60,5 @@ phantomjsdriver.log
 *.iml
 .idea
 
-*/MyUI.java
+MyUI.java
 */.checkstyle

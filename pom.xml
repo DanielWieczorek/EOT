@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>de.wieczorek</groupId>
@@ -44,6 +45,11 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			<dependency>
+				<groupId>com.vaadin</groupId>
+				<artifactId>vaadin-push</artifactId>
+				<version>${vaadin.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -67,39 +73,53 @@
 			<artifactId>vaadin-client</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		<!--
-		  Needed when using the widgetset optimizer (custom ConnectorBundleLoaderFactory).
-		  
-		  For widgetset compilation, vaadin-client-compiler is automatically added on the
-		  compilation classpath by vaadin-maven-plugin so normally there is no need for an
-		  explicit dependency.
-		-->
-		<!--
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>vaadin-client-compiler</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		-->
+		<!-- Needed when using the widgetset optimizer (custom ConnectorBundleLoaderFactory). 
+			For widgetset compilation, vaadin-client-compiler is automatically added 
+			on the compilation classpath by vaadin-maven-plugin so normally there is 
+			no need for an explicit dependency. -->
+		<!-- <dependency> <groupId>com.vaadin</groupId> <artifactId>vaadin-client-compiler</artifactId> 
+			<scope>provided</scope> </dependency> -->
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-themes</artifactId>
 		</dependency>
-<dependency>
-   <groupId>com.vaadin.addon</groupId>
-   <artifactId>vaadin-charts</artifactId>
-   <version>3.0.0</version>
-	
-</dependency>
-<dependency>
-	<groupId>com.sun.jersey</groupId>
-	<artifactId>jersey-client</artifactId>
-	<version>1.8</version>
-</dependency>
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-client</artifactId>
+			<version>1.8</version>
+		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>org.json</artifactId>
 			<version>chargebee-1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.javassist</groupId>
+			<artifactId>javassist</artifactId>
+			<version>3.18.2-GA</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm</artifactId>
+			<version>5.0.3</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.impetus.kundera.client</groupId>
+			<artifactId>kundera-cassandra</artifactId>
+			<version>3.5</version>
+
+			<exclusions>
+				<exclusion>
+					<groupId>javassist</groupId>
+					<artifactId>javassist</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.impetus.kundera.client</groupId>
+			<artifactId>kundera-cassandra-ds-driver</artifactId>
+			<version>3.5</version>
 		</dependency>
 	</dependencies>
 
@@ -173,14 +193,14 @@
 				</configuration>
 			</plugin>
 
-			<!-- The Jetty plugin allows us to easily test the development build by
+			<!-- The Jetty plugin allows us to easily test the development build by 
 				running jetty:run on the command line. -->
 			<plugin>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
 				<version>${jetty.plugin.version}</version>
 				<configuration>
-				    <scanIntervalSeconds>2</scanIntervalSeconds>
+					<scanIntervalSeconds>2</scanIntervalSeconds>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -193,7 +213,7 @@
 			<activation>
 				<activeByDefault>false</activeByDefault>
 			</activation>
-			
+
 			<repositories>
 				<repository>
 					<id>vaadin-prereleases</id>

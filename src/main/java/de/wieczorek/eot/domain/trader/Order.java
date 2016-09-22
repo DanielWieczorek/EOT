@@ -1,27 +1,39 @@
 package de.wieczorek.eot.domain.trader;
 
+import de.wieczorek.eot.domain.exchange.impl.ExchangablePair;
+
 public class Order {
 
-	private ExchangableSet from;
-	private ExchangableSet to;
+	private ExchangablePair pair;
+	private double amount;
 	private OrderType type;
-	public ExchangableSet getFrom() {
-		return from;
-	}
-	public void setFrom(ExchangableSet from) {
-		this.from = from;
-	}
-	public ExchangableSet getTo() {
-		return to;
-	}
-	public void setTo(ExchangableSet to) {
-		this.to = to;
-	}
+	
 	public OrderType getType() {
 		return type;
 	}
 	public void setType(OrderType type) {
 		this.type = type;
+	}
+	public Order(ExchangablePair pair, double amount, OrderType type) {
+		super();
+		this.setPair(pair);
+		this.setAmount(amount);
+		this.type = type;
+	}
+	public Order() {
+		
+	}
+	public ExchangablePair getPair() {
+		return pair;
+	}
+	public void setPair(ExchangablePair pair) {
+		this.pair = pair;
+	}
+	public double getAmount() {
+		return amount;
+	}
+	public void setAmount(double amount) {
+		this.amount = amount;
 	}
 
 }

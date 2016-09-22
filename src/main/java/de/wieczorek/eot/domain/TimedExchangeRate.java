@@ -2,13 +2,13 @@ package de.wieczorek.eot.domain;
 
 import java.time.LocalDateTime;
 
-public class TimedExchangeRate {
+public class TimedExchangeRate implements Comparable {
 
 	private ExchangableType from;
 	private ExchangableType to;
 	private double toPrice;
 	private LocalDateTime time;
-	
+
 	public TimedExchangeRate(ExchangableType from, ExchangableType to, double toPrice, LocalDateTime time) {
 		super();
 		this.from = from;
@@ -48,13 +48,25 @@ public class TimedExchangeRate {
 	public void setTime(LocalDateTime time) {
 		this.time = time;
 	}
-	
-	public boolean isBefore(TimedExchangeRate exchangeRate){
+
+	public boolean isBefore(TimedExchangeRate exchangeRate) {
 		return this.time.isBefore(exchangeRate.time);
 	}
-	
-	public TimedExchangeRate swap(){
-		return new TimedExchangeRate(to, from,1/toPrice, time);
+
+	public TimedExchangeRate swap() {
+		return new TimedExchangeRate(to, from, 1 / toPrice, time);
 	}
-		
+
+	@Override
+	public int compareTo(Object arg0) {
+		if (arg0 instanceof TimedExchangeRate)
+			if (((TimedExchangeRate) arg0).getTime().isBefore(this.time))
+				return 1;
+			else if (((TimedExchangeRate) arg0).getTime().isAfter(this.time))
+				return -1;
+			else
+				return 0;
+		return -1;
+	}
+
 }

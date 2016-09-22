@@ -1,19 +1,19 @@
 package de.wieczorek.eot.domain.trader;
 
-import de.wieczorek.eot.domain.ExchangableType;
 import de.wieczorek.eot.domain.ExchangeRateHistory;
 
 public class TradingRule {
 
 	private OrderType type;
 	private double threshold;
-	private ExchangableType fromExchangable;
-	private ExchangableType toExchangable;
-	
+
 	private AbstractGraphMetric metric;
-	
-	public boolean evaluate(ExchangeRateHistory history){
-		return metric.getRating(history) > threshold;
+
+	public boolean evaluate(ExchangeRateHistory history) {
+		if (type.equals(OrderType.BUY))
+			return metric.getRating(history) > threshold;
+		else
+			return metric.getRating(history) < threshold;
 	}
 
 	public OrderType getType() {
@@ -22,22 +22,6 @@ public class TradingRule {
 
 	public void setType(OrderType type) {
 		this.type = type;
-	}
-
-	public ExchangableType getFromExchangable() {
-		return fromExchangable;
-	}
-
-	public void setFromExchangable(ExchangableType fromExchangable) {
-		this.fromExchangable = fromExchangable;
-	}
-
-	public ExchangableType getToExchangable() {
-		return toExchangable;
-	}
-
-	public void setToExchangable(ExchangableType toExchangable) {
-		this.toExchangable = toExchangable;
 	}
 
 	public double getThreshold() {
