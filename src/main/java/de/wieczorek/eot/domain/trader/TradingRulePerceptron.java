@@ -31,6 +31,10 @@ public class TradingRulePerceptron {
 		return sumOfInputs >= threshold;
 	}
 
+	public void add(TradingRule rule, double weight) {
+		inputs.add(new Input(rule, weight));
+	}
+
 	private class Input {
 		private TradingRule rule;
 		private double weight;

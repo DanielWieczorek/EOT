@@ -4,24 +4,23 @@ import de.wieczorek.eot.domain.ExchangeRateHistory;
 
 public class TradingRule {
 
-	private OrderType type;
 	private double threshold;
+	private ComparatorType comparator;
 
 	private AbstractGraphMetric metric;
 
 	public boolean evaluate(ExchangeRateHistory history) {
-		if (type.equals(OrderType.BUY))
+
+		switch (getComparator()) {
+		case EQUAL:
+			return metric.getRating(history) == threshold;
+		case GREATER:
 			return metric.getRating(history) > threshold;
-		else
+		case LESS:
 			return metric.getRating(history) < threshold;
-	}
-
-	public OrderType getType() {
-		return type;
-	}
-
-	public void setType(OrderType type) {
-		this.type = type;
+		default:
+			return false;
+		}
 	}
 
 	public double getThreshold() {
@@ -38,5 +37,13 @@ public class TradingRule {
 
 	public void setMetric(AbstractGraphMetric metric) {
 		this.metric = metric;
+	}
+
+	public ComparatorType getComparator() {
+		return comparator;
+	}
+
+	public void setComparator(ComparatorType comparator) {
+		this.comparator = comparator;
 	}
 }

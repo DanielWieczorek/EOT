@@ -16,6 +16,8 @@ import de.wieczorek.eot.ui.MyUI;
 
 public class VirtualMachine extends AbstractMachine {
 
+	private ExecutorService taskExecutor = Executors.newFixedThreadPool(4);
+
 	public VirtualMachine(IExchange exchange, MyUI callback) {
 		super(exchange, callback);
 
@@ -43,7 +45,6 @@ public class VirtualMachine extends AbstractMachine {
 					exchange.icrementTime();
 
 				CountDownLatch latch = new CountDownLatch(this.traders.size());
-				ExecutorService taskExecutor = Executors.newFixedThreadPool(4);
 				for (Trader trader : this.traders) {
 					Runnable foo = () -> {
 						trader.performAction();
