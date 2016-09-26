@@ -1,26 +1,32 @@
 package de.wieczorek.eot.domain.trader;
 
+import java.util.Observable;
+
 import de.wieczorek.eot.domain.exchange.IExchange;
 import de.wieczorek.eot.domain.exchange.impl.ExchangablePair;
 import de.wieczorek.eot.domain.exchange.impl.SimulatedExchangeImpl;
 
-public class Trader implements IIndiviual {
+public class Trader extends Observable implements IIndiviual {
 
 	private Wallet wallet;
+	private String name;
 	private IExchange exchange;
 	private TradingRule buyRule;
 	private TradingRule sellRule;
 	private ExchangablePair exchangablesToTrade;
 	private double lastSeenRate = 0.0;
+	private TradingPerformance performance;
 
-	public Trader(Wallet wallet, IExchange exchange, TradingRule buyRule, TradingRule sellRule,
-			ExchangablePair exchangablesToTrade) {
+	public Trader(String name, Wallet wallet, IExchange exchange, TradingRule buyRule, TradingRule sellRule,
+			ExchangablePair exchangablesToTrade, TradingPerformance performance) {
 		super();
+		this.setName(name);
 		this.setWallet(wallet);
-		this.exchange = exchange;
+		this.setExchange(exchange);
 		this.buyRule = buyRule;
 		this.sellRule = sellRule;
-		this.exchangablesToTrade = exchangablesToTrade;
+		this.setExchangablesToTrade(exchangablesToTrade);
+		this.setPerformance(performance);
 	}
 
 	@Override
@@ -36,58 +42,59 @@ public class Trader implements IIndiviual {
 	}
 
 	private void trade() {
-		if (exchange.getCurrentExchangeRate(exchangablesToTrade).getToPrice() != lastSeenRate) {
-			ExchangableSet from = getWallet().countAllExchangablesOfType(exchangablesToTrade.getFrom());
-			ExchangableSet to = getWallet().countAllExchangablesOfType(exchangablesToTrade.getTo());
-			if (buyRule.evaluate(exchange.getExchangeRateHistory(exchangablesToTrade, 24)) && from.getAmount() > 0) {
+		if (getExchange().getCurrentExchangeRate(getExchangablesToTrade()).getToPrice() != lastSeenRate) {
+			ExchangableSet from = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getFrom());
+			ExchangableSet to = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getTo());
+			if (buyRule.evaluate(getExchange().getExchangeRateHistory(getExchangablesToTrade(), 24))
+					&& from.getAmount() > 0) {
 				buy();
-			} else if (sellRule.evaluate(exchange.getExchangeRateHistory(exchangablesToTrade, 24))
+			} else if (sellRule.evaluate(getExchange().getExchangeRateHistory(getExchangablesToTrade(), 24))
 					&& to.getAmount() > 0) {
 				sell();
 			}
 		}
-		lastSeenRate = exchange.getCurrentExchangeRate(exchangablesToTrade).getToPrice();
+		lastSeenRate = getExchange().getCurrentExchangeRate(getExchangablesToTrade()).getToPrice();
 
 	}
 
 	private void buy() {
-		ExchangableSet from = getWallet().countAllExchangablesOfType(exchangablesToTrade.getFrom());
+		ExchangableSet from = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getFrom());
 		if (from.getAmount() > 0) {
-			Order order = new Order(exchangablesToTrade, from.getAmount(), OrderType.BUY);
-			ExchangableSet returnOfInvestment = exchange.performOrder(order);
+			Order order = new Order(getExchangablesToTrade(), from.getAmount(), OrderType.BUY);
+			ExchangableSet returnOfInvestment = getExchange().performOrder(order);
 
 			getWallet().withdraw(new ExchangableSet(order.getPair().getFrom(), order.getAmount()));
 			getWallet().deposit(
 					new ExchangableAmount(returnOfInvestment, order.getAmount() / returnOfInvestment.getAmount()));
 
 			printWalletInfo();
-
+			getPerformance().update(this, order);
 		}
 	}
 
 	private void sell() {
-		ExchangableSet to = getWallet().countAllExchangablesOfType(exchangablesToTrade.getTo());
+		ExchangableSet to = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getTo());
 		if (to.getAmount() > 0) {
-			Order order = new Order(exchangablesToTrade, to.getAmount(), OrderType.SELL);
-			ExchangableSet returnOfInvestment = exchange.performOrder(order);
+			Order order = new Order(getExchangablesToTrade(), to.getAmount(), OrderType.SELL);
+			ExchangableSet returnOfInvestment = getExchange().performOrder(order);
 
 			getWallet().withdraw(new ExchangableSet(order.getPair().getTo(), order.getAmount()));
 			getWallet().deposit(
 					new ExchangableAmount(returnOfInvestment, order.getAmount() / returnOfInvestment.getAmount()));
 
 			printWalletInfo();
-
+			getPerformance().update(this, order);
 		}
 
 	}
 
 	private void printWalletInfo() {
-		ExchangableSet from = getWallet().countAllExchangablesOfType(exchangablesToTrade.getFrom());
-		ExchangableSet to = getWallet().countAllExchangablesOfType(exchangablesToTrade.getTo());
-		System.out.println("ETH -> BTC: "
-				+ ((SimulatedExchangeImpl) exchange).getCurrentExchangeRate(exchangablesToTrade).getToPrice());
-		from = getWallet().countAllExchangablesOfType(exchangablesToTrade.getFrom());
-		to = getWallet().countAllExchangablesOfType(exchangablesToTrade.getTo());
+		ExchangableSet from = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getFrom());
+		ExchangableSet to = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getTo());
+		System.out.println("ETH -> BTC: " + ((SimulatedExchangeImpl) getExchange())
+				.getCurrentExchangeRate(getExchangablesToTrade()).getToPrice());
+		from = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getFrom());
+		to = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getTo());
 		System.out.println("ETH: " + from.getAmount());
 		System.out.println("BTC: " + to.getAmount());
 	}
@@ -98,6 +105,38 @@ public class Trader implements IIndiviual {
 
 	public void setWallet(Wallet wallet) {
 		this.wallet = wallet;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public ExchangablePair getExchangablesToTrade() {
+		return exchangablesToTrade;
+	}
+
+	public void setExchangablesToTrade(ExchangablePair exchangablesToTrade) {
+		this.exchangablesToTrade = exchangablesToTrade;
+	}
+
+	public IExchange getExchange() {
+		return exchange;
+	}
+
+	public void setExchange(IExchange exchange) {
+		this.exchange = exchange;
+	}
+
+	public TradingPerformance getPerformance() {
+		return performance;
+	}
+
+	public void setPerformance(TradingPerformance performance) {
+		this.performance = performance;
 	}
 
 }

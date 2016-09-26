@@ -1,5 +1,7 @@
 package de.wieczorek.eot.domain.machine;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -9,6 +11,7 @@ import de.wieczorek.eot.domain.ExchangableType;
 import de.wieczorek.eot.domain.exchange.IExchange;
 import de.wieczorek.eot.domain.exchange.impl.ExchangablePair;
 import de.wieczorek.eot.domain.exchange.impl.SimulatedExchangeImpl;
+import de.wieczorek.eot.domain.trader.Trader;
 import de.wieczorek.eot.ui.MyUI;
 
 public class VirtualMachine extends AbstractMachine {
@@ -22,9 +25,7 @@ public class VirtualMachine extends AbstractMachine {
 	public void start() {
 
 		Runnable task2 = () -> {
-			callback.updateLabel(
-					"" + this.traders.get(0).getWallet().countAllExchangablesOfType(ExchangableType.BTC).getAmount(),
-					"" + this.traders.get(0).getWallet().countAllExchangablesOfType(ExchangableType.ETH).getAmount());
+			callback.updateLabel(this.traders);
 		};
 
 		final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -40,13 +41,26 @@ public class VirtualMachine extends AbstractMachine {
 			for (int i = 30 * 15; i < cycles; i += 15) {
 				for (int n = 0; n < 15; n++)
 					exchange.icrementTime();
-				this.traders.get(0).performAction();
+
+				CountDownLatch latch = new CountDownLatch(this.traders.size());
+				ExecutorService taskExecutor = Executors.newFixedThreadPool(4);
+				for (Trader trader : this.traders) {
+					Runnable foo = () -> {
+						trader.performAction();
+						latch.countDown();
+					};
+					taskExecutor.submit(foo);
+				}
+				try {
+					latch.await();
+				} catch (InterruptedException E) {
+					// handle
+				}
 
 			}
+
 			scheduler.shutdown();
-			callback.updateLabel(
-					"" + this.traders.get(0).getWallet().countAllExchangablesOfType(ExchangableType.BTC).getAmount(),
-					"" + this.traders.get(0).getWallet().countAllExchangablesOfType(ExchangableType.ETH).getAmount());
+			callback.updateLabel(this.traders);
 		};
 
 		Thread thread = new Thread(task);
