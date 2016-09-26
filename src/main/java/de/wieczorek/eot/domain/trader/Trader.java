@@ -11,14 +11,14 @@ public class Trader extends Observable implements IIndiviual {
 	private Wallet wallet;
 	private String name;
 	private IExchange exchange;
-	private TradingRule buyRule;
-	private TradingRule sellRule;
+	private TradingRulePerceptron buyRule;
+	private TradingRulePerceptron sellRule;
 	private ExchangablePair exchangablesToTrade;
 	private double lastSeenRate = 0.0;
 	private TradingPerformance performance;
 
-	public Trader(String name, Wallet wallet, IExchange exchange, TradingRule buyRule, TradingRule sellRule,
-			ExchangablePair exchangablesToTrade, TradingPerformance performance) {
+	public Trader(String name, Wallet wallet, IExchange exchange, TradingRulePerceptron buyRule,
+			TradingRulePerceptron sellRule, ExchangablePair exchangablesToTrade, TradingPerformance performance) {
 		super();
 		this.setName(name);
 		this.setWallet(wallet);
@@ -45,10 +45,10 @@ public class Trader extends Observable implements IIndiviual {
 		if (getExchange().getCurrentExchangeRate(getExchangablesToTrade()).getToPrice() != lastSeenRate) {
 			ExchangableSet from = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getFrom());
 			ExchangableSet to = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getTo());
-			if (buyRule.evaluate(getExchange().getExchangeRateHistory(getExchangablesToTrade(), 24))
+			if (buyRule.isActivated(getExchange().getExchangeRateHistory(getExchangablesToTrade(), 24))
 					&& from.getAmount() > 0) {
 				buy();
-			} else if (sellRule.evaluate(getExchange().getExchangeRateHistory(getExchangablesToTrade(), 24))
+			} else if (sellRule.isActivated(getExchange().getExchangeRateHistory(getExchangablesToTrade(), 24))
 					&& to.getAmount() > 0) {
 				sell();
 			}
