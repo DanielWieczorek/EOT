@@ -16,18 +16,18 @@ import de.wieczorek.eot.ui.MyUI;
 
 public class VirtualMachine extends AbstractMachine {
 
-	private ExecutorService taskExecutor = Executors.newFixedThreadPool(4);
+	private ExecutorService taskExecutor = Executors.newFixedThreadPool(100);
 
-	public VirtualMachine(IExchange exchange, MyUI callback) {
-		super(exchange, callback);
+	public VirtualMachine(IExchange exchange, MyUI callback, Population traders) {
+		super(exchange, callback, traders);
 
 	}
 
 	@Override
 	public void start() {
-
+		traders.getNextPopulation(100);
 		Runnable task2 = () -> {
-			callback.updateLabel(this.traders);
+			callback.updateLabel(this.traders.getAll());
 		};
 
 		final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -44,24 +44,24 @@ public class VirtualMachine extends AbstractMachine {
 				for (int n = 0; n < 15; n++)
 					exchange.icrementTime();
 
-				CountDownLatch latch = new CountDownLatch(this.traders.size());
-				for (Trader trader : this.traders) {
+				CountDownLatch latch = new CountDownLatch(this.traders.getAll().size());
+				for (Trader trader : this.traders.getAll()) {
 					Runnable foo = () -> {
 						trader.performAction();
 						latch.countDown();
 					};
-					taskExecutor.submit(foo);
+					new Thread(foo).start();
 				}
 				try {
 					latch.await();
 				} catch (InterruptedException E) {
-					// handle
+					// TODO handle
 				}
 
 			}
 
 			scheduler.shutdown();
-			callback.updateLabel(this.traders);
+			callback.updateLabel(this.traders.getAll());
 		};
 
 		Thread thread = new Thread(task);

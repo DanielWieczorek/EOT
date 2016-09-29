@@ -1,8 +1,5 @@
 package de.wieczorek.eot.domain.machine;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import de.wieczorek.eot.domain.exchange.IExchange;
 import de.wieczorek.eot.domain.trader.Trader;
 import de.wieczorek.eot.ui.MyUI;
@@ -10,16 +7,16 @@ import de.wieczorek.eot.ui.MyUI;
 public abstract class AbstractMachine {
 
 	protected IExchange exchange;
-	protected List<Trader> traders;
+	protected Population traders;
 	protected MyUI callback;
 
-	public AbstractMachine(IExchange exchange, MyUI callback) {
+	public AbstractMachine(IExchange exchange, MyUI callback, Population traders) {
 		this.exchange = exchange;
-		this.traders = new LinkedList<>();
 		this.callback = callback;
+		this.traders = traders;
 	}
 
-	public AbstractMachine(IExchange exchange, List<Trader> traders) {
+	public AbstractMachine(IExchange exchange, Population traders) {
 		this.exchange = exchange;
 		this.traders = traders;
 	}
