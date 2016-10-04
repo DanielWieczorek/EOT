@@ -29,113 +29,200 @@ import de.wieczorek.eot.business.bo.ExchangeRateBoKey;
 import de.wieczorek.eot.domain.ExchangableType;
 import de.wieczorek.eot.domain.TimedExchangeRate;
 
+/**
+ * Class which reads the exchange rates from the API and converts it to objects.
+ * It can also retrieve the information from the DB.
+ *
+ * @author Daniel Wieczorek
+ *
+ */
 public class ExchangeRateDao {
 
-	private CexAPI api;
-	private EntityManager entityManager = null;
+    /**
+     * instance of helper class to access the API of cex.io.
+     */
+    private final CexAPI api;
 
-	public List<TimedExchangeRate> getHistoryEntries(ExchangableType from, ExchangableType to, int hours, int maxValue)
-			throws JSONException {
-		String json = api.chart(from, to, hours, maxValue);
-		List<TimedExchangeRate> result = new ArrayList<>();
-		if (json != null) {
-			JSONArray array = new JSONArray(json);
-			JSONObject dataset = null;
+    /**
+     * Entity manager for the ORM framework to access the DB.
+     */
+    private EntityManager entityManager = null;
 
-			for (int i = 0; !array.isNull(i); i++) {
-				dataset = array.getJSONObject(i);
-				result.add(new TimedExchangeRate(from, to, dataset.getDouble("price"),
-						LocalDateTime.ofInstant(Instant.ofEpochSecond(dataset.getLong("tmsp")), ZoneId.of("GMT"))));
+    /**
+     * Calls the web service for the history and then converts the returned JSON
+     * to a list of exchange rates. The history returned has approximately 1
+     * entry per 15 minutes.
+     *
+     * @param from
+     *            source currency
+     * @param to
+     *            target currency
+     * @param hours
+     *            number of hours for which to return the exchange rate history
+     * @param maxValue
+     *            maximum value of returned entries
+     * @return a list of exchange rates
+     * @throws JSONException
+     *             if the JSON string cannot be parsed
+     */
+    public final List<TimedExchangeRate> getHistoryEntries(final ExchangableType from, final ExchangableType to,
+	    final int hours, final int maxValue) throws JSONException {
+	final String json = api.chart(from, to, hours, maxValue);
+	final List<TimedExchangeRate> result = new ArrayList<>();
+	if (json != null) {
+	    final JSONArray array = new JSONArray(json);
+	    JSONObject dataset = null;
 
-			}
+	    for (int i = 0; !array.isNull(i); i++) {
+		dataset = array.getJSONObject(i);
+		result.add(new TimedExchangeRate(from, to, dataset.getDouble("price"),
+			LocalDateTime.ofInstant(Instant.ofEpochSecond(dataset.getLong("tmsp")), ZoneId.of("GMT"))));
+
+	    }
+	}
+	return result;
+    }
+
+    /**
+     * Calls the web service for the history and then converts the returned JSON
+     * to a list of exchange rates. The history has 1 entry for each minute
+     * within the specified range.
+     *
+     * @param from
+     *            source currency
+     * @param to
+     *            target currency
+     * @param hours
+     *            number of hours for which to return the exchange rate history
+     * @return a list of exchange rates
+     * @throws JSONException
+     *             if the JSON string cannot be parsed
+     */
+    public final List<ExchangeRateBo> getDetailedHistoryEntries(final ExchangableType from, final ExchangableType to,
+	    final int hours) throws JSONException {
+	final List<ExchangeRateBo> entries = new ArrayList<>();
+	final int days = Math.max(1, hours / 24);
+	final int openingPrice = 1;
+	final int maxPrice = 2;
+	final int minPrice = 3;
+	final int closePriceIndex = 4;
+	final int volumeIndex = 5;
+	final int secondsPerMinute = 60;
+	for (int x = 0; x < days; x++) {
+	    final String result = api.ohclv(from, to,
+		    LocalDateTime.now().minusDays(x + 1).format(DateTimeFormatter.BASIC_ISO_DATE));
+	    System.out.println(result);
+
+	    final JSONObject obj = new JSONObject(result);
+	    final String array = (String) obj.get("data1m");
+	    final JSONArray arr = new JSONArray(array);
+	    for (int i = 0; i < arr.length(); i++) {
+		final JSONArray item = (JSONArray) arr.get(i);
+
+		System.out.println("Timestamp:" + Date.from(Instant.ofEpochSecond(item.getLong(0))) + "\t open: "
+			+ item.getDouble(openingPrice) + "\t high: " + item.getDouble(maxPrice) + "\t low: "
+			+ item.getDouble(minPrice) + "\t close: " + item.getDouble(closePriceIndex) + "\t volume: "
+			+ item.getDouble(volumeIndex));
+
+		final ExchangeRateBo rate = new ExchangeRateBo();
+		rate.setExchangeRate(item.getDouble(closePriceIndex));
+		rate.setKey(new ExchangeRateBoKey(item.getLong(0), ExchangableType.ETH, ExchangableType.BTC));
+
+		if (!entries.isEmpty()) {
+		    final ExchangeRateBo lastExchangeRate = entries.get(entries.size() - 1);
+
+		    final int entriesToInsert = (int) ((item.getLong(0) - lastExchangeRate.getKey().getTimestamp())
+			    / 60);
+		    for (int j = 1; j < entriesToInsert; j++) {
+			final ExchangeRateBo insertRate = new ExchangeRateBo();
+			insertRate.setExchangeRate(lastExchangeRate.getExchangeRate());
+			insertRate.setKey(
+				new ExchangeRateBoKey(lastExchangeRate.getKey().getTimestamp() + secondsPerMinute * j,
+					ExchangableType.ETH, ExchangableType.BTC));
+			entries.add(insertRate);
+		    }
 		}
-		return result;
+
+		entries.add(rate);
+	    }
 	}
+	return entries;
+    }
 
-	/**
-	 * TODO use hours.
-	 * 
-	 * @param from
-	 * @param to
-	 * @param hours
-	 * @return
-	 * @throws JSONException
-	 */
-	public List<ExchangeRateBo> getDetailedHistoryEntries(ExchangableType from, ExchangableType to, int hours)
-			throws JSONException {
-		List<ExchangeRateBo> entries = new ArrayList<ExchangeRateBo>();
-		int days = Math.max(1, hours / 24);
-		for (int x = 0; x < days; x++) {
-			String result = api.ohclv(from, to,
-					LocalDateTime.now().minusDays(x + 1).format(DateTimeFormatter.BASIC_ISO_DATE));
-			System.out.println(result);
+    /**
+     * Calls the DB for the history and then converts the returned JSON to a
+     * list of exchange rates. The history has 1 entry for each minute within
+     * the specified range.
+     *
+     * @param from
+     *            source currency
+     * @param to
+     *            target currency
+     * @param hours
+     *            number of hours for which to return the exchange rate history
+     * @return a list of exchange rates
+     * @throws JSONException
+     *             if the JSON string cannot be parsed
+     */
+    @SuppressWarnings("unchecked")
+    public final List<ExchangeRateBo> getDetailedHistoryEntriesFromDb(final ExchangableType from,
+	    final ExchangableType to, final int hours) {
+	final Query q = entityManager.createQuery("Select p from ExchangeRateBo p where p.key.timestamp <="
+		+ LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) + " and p.key.timestamp >= "
+		+ LocalDateTime.now().minusHours(hours).toEpochSecond(ZoneOffset.UTC));
+	q.setMaxResults(Integer.MAX_VALUE);
+	final List<ExchangeRateBo> result = q.getResultList();
+	return result;
+    }
 
-			JSONObject obj = new JSONObject(result);
-			String array = (String) obj.get("data1m");
-			JSONArray arr = new JSONArray(array);
-			for (int i = 0; i < arr.length(); i++) {
-				JSONArray item = (JSONArray) arr.get(i);
+    /**
+     * Saves the given exchange rate history entries in the database.
+     *
+     * @param entries
+     *            entries to save.
+     */
+    public final void saveHistoryEntries(final List<ExchangeRateBo> entries) {
+	entityManager.setFlushMode(FlushModeType.COMMIT);
+	final EntityTransaction transaction = entityManager.getTransaction();
 
-				System.out.println("Timestamp:" + Date.from(Instant.ofEpochSecond(item.getLong(0))) + "\t open: "
-						+ item.getDouble(1) + "\t high: " + item.getDouble(2) + "\t low: " + item.getDouble(3)
-						+ "\t close: " + item.getDouble(4) + "\t volume: " + item.getDouble(5));
-
-				ExchangeRateBo rate = new ExchangeRateBo();
-				rate.setExchangeRate(item.getDouble(4));
-				rate.setKey(new ExchangeRateBoKey(item.getLong(0), ExchangableType.ETH, ExchangableType.BTC));
-
-				if (!entries.isEmpty()) {
-					ExchangeRateBo lastExchangeRate = entries.get(entries.size() - 1);
-
-					int entriesToInsert = (int) ((item.getLong(0) - lastExchangeRate.getKey().getTimestamp()) / 60);
-					for (int j = 1; j < entriesToInsert; j++) {
-						ExchangeRateBo insertRate = new ExchangeRateBo();
-						insertRate.setExchangeRate(lastExchangeRate.getExchangeRate());
-						insertRate.setKey(new ExchangeRateBoKey(lastExchangeRate.getKey().getTimestamp() + 60 * j,
-								ExchangableType.ETH, ExchangableType.BTC));
-						entries.add(insertRate);
-					}
-				}
-
-				entries.add(rate);
-			}
-		}
-		return entries;
+	transaction.begin();
+	for (final ExchangeRateBo entry : entries) {
+	    entityManager.persist(entry);
 	}
+	transaction.commit();
+    }
 
-	@SuppressWarnings("unchecked")
-	public List<ExchangeRateBo> getDetailedHistoryEntriesFromDb(ExchangableType from, ExchangableType to, int hours) {
-		Query q = entityManager.createQuery("Select p from ExchangeRateBo p where p.key.timestamp <="
-				+ LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) + " and p.key.timestamp >= "
-				+ LocalDateTime.now().minusHours(hours).toEpochSecond(ZoneOffset.UTC));
-		q.setMaxResults(Integer.MAX_VALUE);
-		List<ExchangeRateBo> result = q.getResultList();
-		return result;
-	}
+    /**
+     * Constructor.
+     *
+     * @param apiInput
+     *            Connector for the rest API calls
+     */
+    public ExchangeRateDao(final CexAPI apiInput) {
+	this.api = apiInput;
+	final Map<String, String> props = new HashMap<>();
+	props.put(CassandraConstants.CQL_VERSION, CassandraConstants.CQL_VERSION_3_0);
+	final EntityManagerFactory emf = Persistence.createEntityManagerFactory("cassandra_pu", props);
+	this.entityManager = emf.createEntityManager();
 
-	public void saveHistoryEntries(List<ExchangeRateBo> entries) throws JSONException {
-		entityManager.setFlushMode(FlushModeType.COMMIT);
-		EntityTransaction transaction = entityManager.getTransaction();
+    }
 
-		transaction.begin();
-		for (ExchangeRateBo entry : entries)
-			entityManager.persist(entry);
-		transaction.commit();
-	}
-
-	public ExchangeRateDao(CexAPI api) {
-		this.api = api;
-		Map<String, String> props = new HashMap<String, String>();
-		props.put(CassandraConstants.CQL_VERSION, CassandraConstants.CQL_VERSION_3_0);
-		EntityManagerFactory emf = Persistence.createEntityManagerFactory("cassandra_pu", props);
-		this.entityManager = emf.createEntityManager();
-
-	}
-
-	public TimedExchangeRate getCurrentExchangeRate(ExchangableType from, ExchangableType to) throws JSONException {
-		String json = api.lastPrice(from, to);
-		JSONObject dataset = new JSONObject(json);
-		double value = Double.parseDouble((String) dataset.get("lprice"));
-		return new TimedExchangeRate(from, to, value, LocalDateTime.now());
-	}
+    /**
+     * Retrieves the current exchange rate via the web service API.
+     *
+     * @param from
+     *            source currency
+     * @param to
+     *            target currency
+     * @return the exchange rate for the current date and time.
+     * @throws JSONException
+     *             if the respsonse from the server could not be parsed
+     */
+    public final TimedExchangeRate getCurrentExchangeRate(final ExchangableType from, final ExchangableType to)
+	    throws JSONException {
+	final String json = api.lastPrice(from, to);
+	final JSONObject dataset = new JSONObject(json);
+	final double value = Double.parseDouble((String) dataset.get("lprice"));
+	return new TimedExchangeRate(from, to, value, LocalDateTime.now());
+    }
 }

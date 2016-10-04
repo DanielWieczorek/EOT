@@ -7,24 +7,38 @@ import de.wieczorek.eot.dataaccess.ExchangeRateDao;
 import de.wieczorek.eot.domain.ExchangableType;
 import de.wieczorek.eot.domain.TimedExchangeRate;
 
+/**
+ * Implementation of {@link IExchangeRateUc}.
+ *
+ * @author Daniel Wieczorek
+ *
+ */
 public class ExchangeRateUcImpl implements IExchangeRateUc {
 
-	private ExchangeRateDao dao;
-	
-	public ExchangeRateUcImpl(ExchangeRateDao dao){
-		this.dao = dao;
+    /**
+     * the dao for access to the API.
+     */
+    private final ExchangeRateDao dao;
+
+    /**
+     * Constructor.
+     *
+     * @param daoInput
+     *            dao needed for the access to the API.
+     */
+    public ExchangeRateUcImpl(final ExchangeRateDao daoInput) {
+	this.dao = daoInput;
+    }
+
+    @Override
+    public final TimedExchangeRate getCurrentExchangeRate(final ExchangableType from, final ExchangableType to) {
+
+	try {
+	    return dao.getCurrentExchangeRate(from, to);
+	} catch (final JSONException e) {
+	    e.printStackTrace();
 	}
-	
-	@Override
-	public TimedExchangeRate getCurrentExchangeRate(ExchangableType from, ExchangableType to) {
-		
-		try {
-			return dao.getCurrentExchangeRate(from, to);
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return new TimedExchangeRate(from, to, 0.0, null);
-	}
+	return new TimedExchangeRate(from, to, 0.0, null);
+    }
 
 }

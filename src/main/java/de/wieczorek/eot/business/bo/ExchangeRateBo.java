@@ -5,32 +5,48 @@ import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+/**
+ * Class for the ORM mapping of exchange rates.
+ * 
+ * @author Daniel Wieczorek
+ *
+ */
 @Entity
 @Table(name = "exchange_rate", schema = "eos@cassandra_pu")
 public class ExchangeRateBo {
-	@EmbeddedId
-	private ExchangeRateBoKey key;
 
-	@Column(name = "rate")
-	private double exchangeRate;
+    /**
+     * The key containing a timestamp and the two currencies.
+     */
+    @EmbeddedId
+    private ExchangeRateBoKey key;
 
-	public ExchangeRateBo() {
-	}
+    /**
+     * The exchange rate.
+     */
+    @Column(name = "rate")
+    private double exchangeRate;
 
-	public ExchangeRateBoKey getKey() {
-		return key;
-	}
+    /**
+     * Default constructor.
+     */
+    public ExchangeRateBo() {
+    }
 
-	public void setKey(ExchangeRateBoKey key) {
-		this.key = key;
-	}
+    public final ExchangeRateBoKey getKey() {
+	return key;
+    }
 
-	public double getExchangeRate() {
-		return exchangeRate;
-	}
+    public final void setKey(final ExchangeRateBoKey keyToSet) {
+	this.key = keyToSet;
+    }
 
-	public void setExchangeRate(double exchangeRate) {
-		this.exchangeRate = exchangeRate;
-	}
+    public final double getExchangeRate() {
+	return exchangeRate;
+    }
+
+    public final void setExchangeRate(final double exchangeRateToSet) {
+	this.exchangeRate = exchangeRateToSet;
+    }
 
 }

@@ -15,44 +15,60 @@ import de.wieczorek.eot.domain.ExchangableType;
 import de.wieczorek.eot.domain.ExchangeRateHistory;
 import de.wieczorek.eot.domain.TimedExchangeRate;
 
+/**
+ * @see IChartHistoryUc
+ * @author Daniel Wieczorek
+ *
+ */
 public class ChartHistoryUcImpl implements IChartHistoryUc {
 
-	private ExchangeRateDao dao;
+    /**
+     * dao to retrieve the information from the API and the database.
+     */
+    private final ExchangeRateDao dao;
 
-	@Override
-	public ExchangeRateHistory getHistory(ExchangableType from, ExchangableType to, int hours) {
-
-		try {
-			return ExchangeRateHistory.from(dao.getHistoryEntries(from, to, hours, 1000));
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		;
-		return new ExchangeRateHistory();
+    @Override
+    public final ExchangeRateHistory getHistory(final ExchangableType from, final ExchangableType to, final int hours) {
+	final int maxNumberOfResults = 1000;
+	try {
+	    return ExchangeRateHistory.from(dao.getHistoryEntries(from, to, hours, maxNumberOfResults));
+	} catch (final JSONException e) {
+	    e.printStackTrace();
 	}
 
-	public ChartHistoryUcImpl(ExchangeRateDao dao) {
-		this.dao = dao;
-	}
+	return new ExchangeRateHistory();
+    }
 
-	@Override
-	public ExchangeRateHistory getDetailedHistory(ExchangableType from, ExchangableType to, int hours) {
-		ExchangeRateHistory result = null;
-		List<ExchangeRateBo> bos;
-		// try {
-		// bos = dao.getDetailedHistoryEntries(from, to, hours);
-		//
-		// dao.saveHistoryEntries(bos);
-		List<TimedExchangeRate> ter = new ArrayList<>();
-		for (ExchangeRateBo item : dao.getDetailedHistoryEntriesFromDb(from, to, hours))
-			ter.add(new TimedExchangeRate(item.getKey().getFromCurrency(), item.getKey().getToCurrency(),
-					item.getExchangeRate(),
-					LocalDateTime.ofInstant(Instant.ofEpochSecond(item.getKey().getTimestamp()), ZoneId.of("GMT"))));
-		result = ExchangeRateHistory.from(ter);
-		// } catch (JSONException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		return result;
+    /**
+     * Constructor.
+     *
+     * @param daoToSet
+     *            the dao needed for data access
+     */
+    public ChartHistoryUcImpl(final ExchangeRateDao daoToSet) {
+	this.dao = daoToSet;
+    }
+
+    @Override
+    public final ExchangeRateHistory getDetailedHistoryFromDb(final ExchangableType from, final ExchangableType to,
+	    final int hours) {
+	ExchangeRateHistory result = null;
+	// final List<ExchangeRateBo> bos;
+	// try {
+	// bos = dao.getDetailedHistoryEntries(from, to, hours);
+	//
+	// dao.saveHistoryEntries(bos
+	final List<TimedExchangeRate> ter = new ArrayList<>();
+	for (final ExchangeRateBo item : dao.getDetailedHistoryEntriesFromDb(from, to, hours)) {
+	    ter.add(new TimedExchangeRate(item.getKey().getFromCurrency(), item.getKey().getToCurrency(),
+		    item.getExchangeRate(),
+		    LocalDateTime.ofInstant(Instant.ofEpochSecond(item.getKey().getTimestamp()), ZoneId.of("GMT"))));
 	}
+	result = ExchangeRateHistory.from(ter);
+	// } catch (JSONException e) {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// }
+	return result;
+    }
 }
