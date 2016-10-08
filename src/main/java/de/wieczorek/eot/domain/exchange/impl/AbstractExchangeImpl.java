@@ -8,28 +8,49 @@ import de.wieczorek.eot.domain.exchange.IExchange;
 import de.wieczorek.eot.domain.trader.ExchangableSet;
 import de.wieczorek.eot.domain.trader.Order;
 
+/**
+ * Abstract superclass for all exchanges.
+ *
+ * @author Daniel Wieczorek
+ *
+ */
 public abstract class AbstractExchangeImpl implements IExchange {
 
-	protected IChartHistoryUc historyUc;
-	protected IExchangeRateUc exchangeRateUc;
+    /**
+     * The uc that provides the exchange rate history data.
+     */
+    private final IChartHistoryUc historyUc;
 
-	public AbstractExchangeImpl(IChartHistoryUc historyUc, IExchangeRateUc exchangeRateUc) {
-		this.historyUc = historyUc;
-		this.exchangeRateUc = exchangeRateUc;
-	}
+    /**
+     * the uc providing the current exchange rate.
+     */
+    private final IExchangeRateUc exchangeRateUc;
 
-	@Override
-	public ExchangeRateHistory getExchangeRateHistory(ExchangablePair pair, int hours) {
+    /**
+     * Constructor.
+     *
+     * @param historyUciInput
+     *            the exchange rate history uc.
+     * @param exchangeRateUcInput
+     *            the exchange rate uc.
+     */
+    public AbstractExchangeImpl(final IChartHistoryUc historyUciInput, final IExchangeRateUc exchangeRateUcInput) {
+	this.historyUc = historyUciInput;
+	this.exchangeRateUc = exchangeRateUcInput;
+    }
 
-		return historyUc.getDetailedHistoryFromDb(pair.getFrom(), pair.getTo(), hours);
-	}
+    @Override
+    public ExchangeRateHistory getExchangeRateHistory(final ExchangablePair pair, final int hours) {
 
-	@Override
-	public TimedExchangeRate getCurrentExchangeRate(ExchangablePair pair) {
+	return historyUc.getDetailedHistoryFromDb(pair.getFrom(), pair.getTo(), hours);
+    }
 
-		return exchangeRateUc.getCurrentExchangeRate(pair.getFrom(), pair.getTo());
-	}
+    @Override
+    public TimedExchangeRate getCurrentExchangeRate(final ExchangablePair pair) {
 
-	@Override
-	public abstract ExchangableSet performOrder(Order o);
+	return exchangeRateUc.getCurrentExchangeRate(pair.getFrom(), pair.getTo());
+    }
+
+    @Override
+    public abstract ExchangableSet performOrder(Order o);
 }
