@@ -4,8 +4,8 @@ import org.json.JSONException;
 
 import de.wieczorek.eot.business.price.IExchangeRateUc;
 import de.wieczorek.eot.dataaccess.ExchangeRateDao;
-import de.wieczorek.eot.domain.ExchangableType;
-import de.wieczorek.eot.domain.TimedExchangeRate;
+import de.wieczorek.eot.domain.exchangable.ExchangableType;
+import de.wieczorek.eot.domain.exchangable.rate.TimedExchangeRate;
 
 /**
  * Implementation of {@link IExchangeRateUc}.

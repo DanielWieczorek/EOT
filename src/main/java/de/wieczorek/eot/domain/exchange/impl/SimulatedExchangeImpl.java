@@ -2,11 +2,12 @@ package de.wieczorek.eot.domain.exchange.impl;
 
 import java.util.Iterator;
 
-import de.wieczorek.eot.domain.ExchangeRateHistory;
-import de.wieczorek.eot.domain.TimedExchangeRate;
-import de.wieczorek.eot.domain.trader.ExchangableSet;
-import de.wieczorek.eot.domain.trader.Order;
-import de.wieczorek.eot.domain.trader.OrderType;
+import de.wieczorek.eot.domain.exchangable.ExchangablePair;
+import de.wieczorek.eot.domain.exchangable.ExchangableSet;
+import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
+import de.wieczorek.eot.domain.exchangable.rate.TimedExchangeRate;
+import de.wieczorek.eot.domain.exchange.Order;
+import de.wieczorek.eot.domain.exchange.OrderType;
 
 /**
  * Class representing an exchange used for simulation purposes. It does not

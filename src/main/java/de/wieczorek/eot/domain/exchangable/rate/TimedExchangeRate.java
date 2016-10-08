@@ -1,6 +1,8 @@
-package de.wieczorek.eot.domain;
+package de.wieczorek.eot.domain.exchangable.rate;
 
 import java.time.LocalDateTime;
+
+import de.wieczorek.eot.domain.exchangable.ExchangableType;
 
 /**
  * Class representing an exchange rate between two currencies at a given point

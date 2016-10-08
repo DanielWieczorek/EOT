@@ -1,6 +1,6 @@
-package de.wieczorek.eot.domain.trader;
+package de.wieczorek.eot.domain.trading.rule;
 
-import de.wieczorek.eot.domain.ExchangeRateHistory;
+import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
 
 public class TradingRule {
 

@@ -1,7 +1,7 @@
 package de.wieczorek.eot.business.price;
 
-import de.wieczorek.eot.domain.ExchangableType;
-import de.wieczorek.eot.domain.TimedExchangeRate;
+import de.wieczorek.eot.domain.exchangable.ExchangableType;
+import de.wieczorek.eot.domain.exchangable.rate.TimedExchangeRate;
 
 /**
  * Class for determining the current exchange rate for a pair of currencies.

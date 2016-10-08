@@ -1,6 +1,6 @@
-package de.wieczorek.eot.domain.trader;
+package de.wieczorek.eot.domain.exchange;
 
-import de.wieczorek.eot.domain.exchange.impl.ExchangablePair;
+import de.wieczorek.eot.domain.exchangable.ExchangablePair;
 
 public class Order {
 

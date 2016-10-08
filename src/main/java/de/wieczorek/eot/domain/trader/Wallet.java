@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import de.wieczorek.eot.domain.ExchangableType;
+import de.wieczorek.eot.domain.exchangable.ExchangableAmount;
+import de.wieczorek.eot.domain.exchangable.ExchangableSet;
+import de.wieczorek.eot.domain.exchangable.ExchangableType;
 
 public class Wallet {
 

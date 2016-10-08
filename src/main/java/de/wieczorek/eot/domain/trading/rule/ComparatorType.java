@@ -1,4 +1,4 @@
-package de.wieczorek.eot.domain.trader;
+package de.wieczorek.eot.domain.trading.rule;
 
 public enum ComparatorType {
 	EQUAL, GREATER, LESS

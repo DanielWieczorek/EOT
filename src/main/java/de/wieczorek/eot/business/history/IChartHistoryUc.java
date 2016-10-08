@@ -1,7 +1,7 @@
 package de.wieczorek.eot.business.history;
 
-import de.wieczorek.eot.domain.ExchangableType;
-import de.wieczorek.eot.domain.ExchangeRateHistory;
+import de.wieczorek.eot.domain.exchangable.ExchangableType;
+import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
 
 /**
  * Use case class to retrieve the exchange rate history from the exchange API.

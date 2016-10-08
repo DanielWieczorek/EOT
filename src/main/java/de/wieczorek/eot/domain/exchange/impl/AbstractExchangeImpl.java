@@ -2,11 +2,12 @@ package de.wieczorek.eot.domain.exchange.impl;
 
 import de.wieczorek.eot.business.history.IChartHistoryUc;
 import de.wieczorek.eot.business.price.IExchangeRateUc;
-import de.wieczorek.eot.domain.ExchangeRateHistory;
-import de.wieczorek.eot.domain.TimedExchangeRate;
+import de.wieczorek.eot.domain.exchangable.ExchangablePair;
+import de.wieczorek.eot.domain.exchangable.ExchangableSet;
+import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
+import de.wieczorek.eot.domain.exchangable.rate.TimedExchangeRate;
 import de.wieczorek.eot.domain.exchange.IExchange;
-import de.wieczorek.eot.domain.trader.ExchangableSet;
-import de.wieczorek.eot.domain.trader.Order;
+import de.wieczorek.eot.domain.exchange.Order;
 
 /**
  * Abstract superclass for all exchanges.

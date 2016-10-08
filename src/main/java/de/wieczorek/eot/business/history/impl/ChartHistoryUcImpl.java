@@ -11,9 +11,9 @@ import org.json.JSONException;
 import de.wieczorek.eot.business.bo.ExchangeRateBo;
 import de.wieczorek.eot.business.history.IChartHistoryUc;
 import de.wieczorek.eot.dataaccess.ExchangeRateDao;
-import de.wieczorek.eot.domain.ExchangableType;
-import de.wieczorek.eot.domain.ExchangeRateHistory;
-import de.wieczorek.eot.domain.TimedExchangeRate;
+import de.wieczorek.eot.domain.exchangable.ExchangableType;
+import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
+import de.wieczorek.eot.domain.exchangable.rate.TimedExchangeRate;
 
 /**
  * @see IChartHistoryUc

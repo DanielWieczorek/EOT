@@ -7,9 +7,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import de.wieczorek.eot.domain.ExchangableType;
+import de.wieczorek.eot.domain.evolution.Population;
+import de.wieczorek.eot.domain.exchangable.ExchangablePair;
+import de.wieczorek.eot.domain.exchangable.ExchangableType;
 import de.wieczorek.eot.domain.exchange.IExchange;
-import de.wieczorek.eot.domain.exchange.impl.ExchangablePair;
 import de.wieczorek.eot.domain.exchange.impl.SimulatedExchangeImpl;
 import de.wieczorek.eot.domain.trader.Trader;
 import de.wieczorek.eot.ui.MyUI;

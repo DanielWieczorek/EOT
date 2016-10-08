@@ -26,8 +26,8 @@ import com.impetus.client.cassandra.common.CassandraConstants;
 
 import de.wieczorek.eot.business.bo.ExchangeRateBo;
 import de.wieczorek.eot.business.bo.ExchangeRateBoKey;
-import de.wieczorek.eot.domain.ExchangableType;
-import de.wieczorek.eot.domain.TimedExchangeRate;
+import de.wieczorek.eot.domain.exchangable.ExchangableType;
+import de.wieczorek.eot.domain.exchangable.rate.TimedExchangeRate;
 
 /**
  * Class which reads the exchange rates from the API and converts it to objects.

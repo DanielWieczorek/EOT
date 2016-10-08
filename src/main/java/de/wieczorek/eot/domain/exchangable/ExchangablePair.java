@@ -1,6 +1,4 @@
-package de.wieczorek.eot.domain.exchange.impl;
-
-import de.wieczorek.eot.domain.ExchangableType;
+package de.wieczorek.eot.domain.exchangable;
 
 /**
  * Class representing a pair of exchangeable goods e.g. currencies.

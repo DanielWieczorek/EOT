@@ -1,7 +1,8 @@
-package de.wieczorek.eot.domain.trader;
+package de.wieczorek.eot.domain.trading.rule.metric;
 
-import de.wieczorek.eot.domain.ExchangeRateHistory;
-import de.wieczorek.eot.domain.TimedExchangeRate;
+import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
+import de.wieczorek.eot.domain.exchangable.rate.TimedExchangeRate;
+import de.wieczorek.eot.domain.trading.rule.AbstractGraphMetric;
 
 public class RsiGraphMetric extends AbstractGraphMetric {
 

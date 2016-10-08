@@ -2,9 +2,15 @@ package de.wieczorek.eot.domain.trader;
 
 import java.util.Observable;
 
+import de.wieczorek.eot.domain.evolution.IIndiviual;
+import de.wieczorek.eot.domain.exchangable.ExchangableAmount;
+import de.wieczorek.eot.domain.exchangable.ExchangablePair;
+import de.wieczorek.eot.domain.exchangable.ExchangableSet;
 import de.wieczorek.eot.domain.exchange.IExchange;
-import de.wieczorek.eot.domain.exchange.impl.ExchangablePair;
+import de.wieczorek.eot.domain.exchange.Order;
+import de.wieczorek.eot.domain.exchange.OrderType;
 import de.wieczorek.eot.domain.exchange.impl.SimulatedExchangeImpl;
+import de.wieczorek.eot.domain.trading.rule.TradingRulePerceptron;
 
 public class Trader extends Observable implements IIndiviual {
 

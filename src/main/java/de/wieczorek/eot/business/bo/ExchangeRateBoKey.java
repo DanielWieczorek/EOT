@@ -5,7 +5,7 @@ import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
-import de.wieczorek.eot.domain.ExchangableType;
+import de.wieczorek.eot.domain.exchangable.ExchangableType;
 
 /**
  * Key for the ExchangeRateBo.

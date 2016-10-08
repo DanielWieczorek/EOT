@@ -3,6 +3,9 @@ package de.wieczorek.eot.domain.trader;
 import java.util.Observable;
 import java.util.Observer;
 
+import de.wieczorek.eot.domain.exchangable.ExchangableSet;
+import de.wieczorek.eot.domain.exchange.Order;
+
 public class TradingPerformance implements Observer {
 
 	private int numberOfTrades = 0;

@@ -1,4 +1,4 @@
-package de.wieczorek.eot.domain.trader;
+package de.wieczorek.eot.domain.evolution;
 
 public interface IIndiviual {
 

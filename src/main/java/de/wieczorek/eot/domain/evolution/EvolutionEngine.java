@@ -1,20 +1,20 @@
-package de.wieczorek.eot.domain.machine;
+package de.wieczorek.eot.domain.evolution;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import de.wieczorek.eot.domain.ExchangableType;
+import de.wieczorek.eot.domain.exchangable.ExchangableAmount;
+import de.wieczorek.eot.domain.exchangable.ExchangablePair;
+import de.wieczorek.eot.domain.exchangable.ExchangableSet;
+import de.wieczorek.eot.domain.exchangable.ExchangableType;
 import de.wieczorek.eot.domain.exchange.IExchange;
-import de.wieczorek.eot.domain.exchange.impl.ExchangablePair;
-import de.wieczorek.eot.domain.trader.ComparatorType;
-import de.wieczorek.eot.domain.trader.ExchangableAmount;
-import de.wieczorek.eot.domain.trader.ExchangableSet;
-import de.wieczorek.eot.domain.trader.RsiGraphMetric;
 import de.wieczorek.eot.domain.trader.Trader;
 import de.wieczorek.eot.domain.trader.TradingPerformance;
-import de.wieczorek.eot.domain.trader.TradingRule;
-import de.wieczorek.eot.domain.trader.TradingRulePerceptron;
 import de.wieczorek.eot.domain.trader.Wallet;
+import de.wieczorek.eot.domain.trading.rule.ComparatorType;
+import de.wieczorek.eot.domain.trading.rule.TradingRule;
+import de.wieczorek.eot.domain.trading.rule.TradingRulePerceptron;
+import de.wieczorek.eot.domain.trading.rule.metric.RsiGraphMetric;
 
 public class EvolutionEngine {
 

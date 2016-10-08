@@ -1,10 +1,9 @@
 package de.wieczorek.eot.domain.exchange;
 
-import de.wieczorek.eot.domain.ExchangeRateHistory;
-import de.wieczorek.eot.domain.TimedExchangeRate;
-import de.wieczorek.eot.domain.exchange.impl.ExchangablePair;
-import de.wieczorek.eot.domain.trader.ExchangableSet;
-import de.wieczorek.eot.domain.trader.Order;
+import de.wieczorek.eot.domain.exchangable.ExchangablePair;
+import de.wieczorek.eot.domain.exchangable.ExchangableSet;
+import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
+import de.wieczorek.eot.domain.exchangable.rate.TimedExchangeRate;
 
 /**
  * Interface for Exchanges. Exchanges perform orders of traders or provide

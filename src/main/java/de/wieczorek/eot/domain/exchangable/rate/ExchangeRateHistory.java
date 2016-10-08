@@ -1,4 +1,4 @@
-package de.wieczorek.eot.domain;
+package de.wieczorek.eot.domain.exchangable.rate;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;

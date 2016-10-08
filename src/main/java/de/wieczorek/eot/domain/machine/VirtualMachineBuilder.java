@@ -1,5 +1,7 @@
 package de.wieczorek.eot.domain.machine;
 
+import de.wieczorek.eot.domain.evolution.EvolutionEngine;
+import de.wieczorek.eot.domain.evolution.Population;
 import de.wieczorek.eot.domain.exchange.AbstractExchangeBuilder;
 import de.wieczorek.eot.domain.exchange.IExchange;
 import de.wieczorek.eot.ui.MyUI;

@@ -38,7 +38,7 @@ import java.security.NoSuchAlgorithmException;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-import de.wieczorek.eot.domain.ExchangableType;
+import de.wieczorek.eot.domain.exchangable.ExchangableType;
 
 /**
  * Class for accessing the web services of cex.io.

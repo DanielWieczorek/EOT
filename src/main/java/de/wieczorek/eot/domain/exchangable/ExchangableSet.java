@@ -1,6 +1,4 @@
-package de.wieczorek.eot.domain.trader;
-
-import de.wieczorek.eot.domain.ExchangableType;
+package de.wieczorek.eot.domain.exchangable;
 
 public class ExchangableSet {
 

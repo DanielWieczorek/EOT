@@ -1,4 +1,4 @@
-package de.wieczorek.eot.domain;
+package de.wieczorek.eot.domain.exchangable;
 
 /**
  * Enum containing all currencies which can be traded.
