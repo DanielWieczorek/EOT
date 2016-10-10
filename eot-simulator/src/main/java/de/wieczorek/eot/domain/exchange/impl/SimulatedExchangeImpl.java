@@ -42,7 +42,6 @@ public class SimulatedExchangeImpl extends AbstractExchangeImpl {
      */
     public SimulatedExchangeImpl(final IChartHistoryUc historyUc) {
 	super(historyUc, null);
-
     }
 
     @Override

@@ -1,6 +1,8 @@
 package de.wieczorek.eot.domain.trader;
 
 import java.util.Observable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import de.wieczorek.eot.domain.evolution.IIndiviual;
 import de.wieczorek.eot.domain.exchangable.ExchangableAmount;
@@ -13,6 +15,8 @@ import de.wieczorek.eot.domain.exchange.impl.AbstractExchangeImpl;
 import de.wieczorek.eot.domain.trading.rule.TradingRulePerceptron;
 
 public class Trader extends Observable implements IIndiviual {
+
+    private static final Logger logger = Logger.getLogger(Trader.class.getName());
 
     private Wallet wallet;
     private String name;
@@ -97,12 +101,12 @@ public class Trader extends Observable implements IIndiviual {
     private void printWalletInfo() {
 	ExchangableSet from = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getFrom());
 	ExchangableSet to = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getTo());
-	System.out.println("ETH -> BTC: "
+	logger.log(Level.INFO, "ETH -> BTC: "
 		+ ((AbstractExchangeImpl) getExchange()).getCurrentExchangeRate(getExchangablesToTrade()).getToPrice());
 	from = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getFrom());
 	to = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getTo());
-	System.out.println("ETH: " + from.getAmount());
-	System.out.println("BTC: " + to.getAmount());
+	logger.log(Level.INFO, "ETH: " + from.getAmount());
+	logger.log(Level.INFO, "BTC: " + to.getAmount());
     }
 
     public Wallet getWallet() {

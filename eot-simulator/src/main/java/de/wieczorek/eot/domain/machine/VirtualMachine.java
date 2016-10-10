@@ -6,6 +6,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import de.wieczorek.eot.domain.evolution.Population;
 import de.wieczorek.eot.domain.exchangable.ExchangablePair;
@@ -16,6 +18,8 @@ import de.wieczorek.eot.domain.trader.Trader;
 import de.wieczorek.eot.ui.MyUI;
 
 public class VirtualMachine extends AbstractMachine {
+
+    private static final Logger logger = Logger.getLogger(VirtualMachine.class.getName());
 
     private final ExecutorService taskExecutor = Executors.newFixedThreadPool(100);
     protected MyUI callback;
@@ -71,7 +75,7 @@ public class VirtualMachine extends AbstractMachine {
 	final Thread thread = new Thread(task);
 	thread.start();
 
-	System.out.println("Done!");
+	logger.log(Level.INFO, "Done!");
     }
 
 }

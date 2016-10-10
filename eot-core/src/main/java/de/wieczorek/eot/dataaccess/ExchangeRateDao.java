@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -37,6 +39,8 @@ import de.wieczorek.eot.domain.exchangable.rate.TimedExchangeRate;
  *
  */
 public class ExchangeRateDao {
+
+    private static final Logger logger = Logger.getLogger(ExchangeRateDao.class.getName());
 
     /**
      * instance of helper class to access the API of cex.io.
@@ -111,18 +115,18 @@ public class ExchangeRateDao {
 	for (int x = 0; x < days; x++) {
 	    final String result = api.ohclv(from, to,
 		    LocalDateTime.now().minusDays(x + 1).format(DateTimeFormatter.BASIC_ISO_DATE));
-	    System.out.println(result);
+	    logger.log(Level.INFO, result);
 
 	    final JSONObject obj = new JSONObject(result);
 	    final String array = (String) obj.get("data1m");
 	    final JSONArray arr = new JSONArray(array);
 	    for (int i = 0; i < arr.length(); i++) {
 		final JSONArray item = (JSONArray) arr.get(i);
-
-		System.out.println("Timestamp:" + Date.from(Instant.ofEpochSecond(item.getLong(0))) + "\t open: "
-			+ item.getDouble(openingPrice) + "\t high: " + item.getDouble(maxPrice) + "\t low: "
-			+ item.getDouble(minPrice) + "\t close: " + item.getDouble(closePriceIndex) + "\t volume: "
-			+ item.getDouble(volumeIndex));
+		logger.log(Level.INFO,
+			"Timestamp:" + Date.from(Instant.ofEpochSecond(item.getLong(0))) + "\t open: "
+				+ item.getDouble(openingPrice) + "\t high: " + item.getDouble(maxPrice) + "\t low: "
+				+ item.getDouble(minPrice) + "\t close: " + item.getDouble(closePriceIndex)
+				+ "\t volume: " + item.getDouble(volumeIndex));
 
 		final ExchangeRateBo rate = new ExchangeRateBo();
 		rate.setExchangeRate(item.getDouble(closePriceIndex));
