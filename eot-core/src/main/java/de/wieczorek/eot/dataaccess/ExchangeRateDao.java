@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
@@ -202,6 +203,7 @@ public class ExchangeRateDao {
      * @param apiInput
      *            Connector for the rest API calls
      */
+    @Inject
     public ExchangeRateDao(final CexAPI apiInput) {
 	this.api = apiInput;
 	final Map<String, String> props = new HashMap<>();

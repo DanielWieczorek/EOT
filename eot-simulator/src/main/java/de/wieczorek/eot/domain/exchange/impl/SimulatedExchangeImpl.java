@@ -2,6 +2,9 @@ package de.wieczorek.eot.domain.exchange.impl;
 
 import java.util.Iterator;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import de.wieczorek.eot.business.history.IChartHistoryUc;
 import de.wieczorek.eot.domain.exchangable.ExchangablePair;
 import de.wieczorek.eot.domain.exchangable.ExchangableSet;
@@ -19,6 +22,7 @@ import de.wieczorek.eot.domain.exchange.OrderType;
  * @author Daniel Wieczorek
  *
  */
+@Singleton
 public class SimulatedExchangeImpl extends AbstractExchangeImpl {
 
     /**
@@ -40,6 +44,7 @@ public class SimulatedExchangeImpl extends AbstractExchangeImpl {
      * @param historyUc
      *            the history uc used to get the history data.
      */
+    @Inject
     public SimulatedExchangeImpl(final IChartHistoryUc historyUc) {
 	super(historyUc, null);
     }

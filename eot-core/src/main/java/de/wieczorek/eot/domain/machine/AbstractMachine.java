@@ -7,11 +7,11 @@ import de.wieczorek.eot.domain.trader.Trader;
 public abstract class AbstractMachine {
 
     protected IExchange exchange;
-    protected IPopulation traders;
+    private IPopulation traders;
 
-    public AbstractMachine(IExchange exchange, IPopulation traders) {
-	this.exchange = exchange;
+    public AbstractMachine(final IExchange exchange, IPopulation traders) {
 	this.traders = traders;
+	this.exchange = exchange;
     }
 
     public IExchange getExchange() {
@@ -21,6 +21,11 @@ public abstract class AbstractMachine {
     public abstract void start();
 
     public void addTrader(Trader trader) {
-	traders.add(trader);
+	getTraders().add(trader);
     }
+
+    public IPopulation getTraders() {
+	return traders;
+    }
+
 }

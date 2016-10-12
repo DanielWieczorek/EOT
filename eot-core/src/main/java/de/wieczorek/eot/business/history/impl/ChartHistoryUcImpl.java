@@ -6,6 +6,8 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import org.json.JSONException;
 
 import de.wieczorek.eot.business.bo.ExchangeRateBo;
@@ -45,6 +47,7 @@ public class ChartHistoryUcImpl implements IChartHistoryUc {
      * @param daoToSet
      *            the dao needed for data access
      */
+    @Inject
     public ChartHistoryUcImpl(final ExchangeRateDao daoToSet) {
 	this.dao = daoToSet;
     }

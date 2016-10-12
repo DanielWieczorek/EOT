@@ -4,10 +4,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.inject.Inject;
 
 import de.wieczorek.eot.domain.evolution.Population;
 import de.wieczorek.eot.domain.exchangable.ExchangablePair;
@@ -24,22 +24,17 @@ public class VirtualMachine extends AbstractMachine {
     private final ExecutorService taskExecutor = Executors.newFixedThreadPool(100);
     protected MyUI callback;
 
-    public VirtualMachine(final IExchange exchange, final MyUI callback, final Population traders) {
+    @Inject
+    public VirtualMachine(final IExchange exchange, final Population traders) {
 	super(exchange, traders);
-	this.callback = callback;
 
     }
 
     @Override
     public void start() {
-	traders.getNextPopulation(100);
-	final Runnable task2 = () -> {
-	    callback.updateLabel(this.traders.getAll());
-	};
+	getTraders().getNextPopulation(100);
 
 	final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
-	final ScheduledFuture<?> beeperHandle = scheduler.scheduleAtFixedRate(task2, 0, 1, TimeUnit.SECONDS);
 
 	final Runnable task = () -> {
 
@@ -52,8 +47,8 @@ public class VirtualMachine extends AbstractMachine {
 		    exchange.icrementTime();
 		}
 
-		final CountDownLatch latch = new CountDownLatch(this.traders.getAll().size());
-		for (final Trader trader : this.traders.getAll()) {
+		final CountDownLatch latch = new CountDownLatch(this.getTraders().getAll().size());
+		for (final Trader trader : this.getTraders().getAll()) {
 		    final Runnable foo = () -> {
 			trader.performAction();
 			latch.countDown();
@@ -69,7 +64,7 @@ public class VirtualMachine extends AbstractMachine {
 	    }
 
 	    scheduler.shutdown();
-	    callback.updateLabel(this.traders.getAll());
+	    callback.updateLabel(this.getTraders().getAll());
 	};
 
 	final Thread thread = new Thread(task);

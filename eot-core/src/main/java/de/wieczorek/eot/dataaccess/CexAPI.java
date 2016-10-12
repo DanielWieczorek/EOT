@@ -37,6 +37,7 @@ import java.security.NoSuchAlgorithmException;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import javax.inject.Inject;
 
 import de.wieczorek.eot.domain.exchangable.ExchangableType;
 
@@ -59,6 +60,7 @@ public class CexAPI {
      * @param sessionInput
      *            session needed for autentication
      */
+    @Inject
     public CexAPI(final Session sessionInput) {
 
 	this.session = sessionInput;
