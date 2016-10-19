@@ -1,6 +1,7 @@
 package de.wieczorek.eot.domain.trading.rule;
 
 import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
+import de.wieczorek.eot.domain.trading.rule.metric.AbstractGraphMetric;
 
 public class TradingRule {
 
