@@ -1,10 +1,12 @@
 package de.wieczorek.eot.domain.trader;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import de.wieczorek.eot.domain.evolution.IIndiviual;
+import de.wieczorek.eot.domain.evolution.IIndividual;
 import de.wieczorek.eot.domain.exchangable.ExchangableAmount;
 import de.wieczorek.eot.domain.exchangable.ExchangablePair;
 import de.wieczorek.eot.domain.exchangable.ExchangableSet;
@@ -13,8 +15,9 @@ import de.wieczorek.eot.domain.exchange.Order;
 import de.wieczorek.eot.domain.exchange.OrderType;
 import de.wieczorek.eot.domain.exchange.impl.AbstractExchangeImpl;
 import de.wieczorek.eot.domain.trading.rule.TradingRulePerceptron;
+import de.wieczorek.eot.domain.trading.rule.TradingRulePerceptron.Input;
 
-public class Trader extends Observable implements IIndiviual {
+public class Trader extends Observable implements IIndividual {
 
     private static final Logger logger = Logger.getLogger(Trader.class.getName());
 
@@ -42,7 +45,7 @@ public class Trader extends Observable implements IIndiviual {
     @Override
     public double calculateFitness() {
 
-	return 0;
+	return performance.getNetProfit();
     }
 
     @Override
@@ -101,12 +104,12 @@ public class Trader extends Observable implements IIndiviual {
     private void printWalletInfo() {
 	ExchangableSet from = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getFrom());
 	ExchangableSet to = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getTo());
-	logger.log(Level.INFO, "ETH -> BTC: "
+	logger.log(Level.FINE, "ETH -> BTC: "
 		+ ((AbstractExchangeImpl) getExchange()).getCurrentExchangeRate(getExchangablesToTrade()).getToPrice());
 	from = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getFrom());
 	to = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getTo());
-	logger.log(Level.INFO, "ETH: " + from.getAmount());
-	logger.log(Level.INFO, "BTC: " + to.getAmount());
+	logger.log(Level.FINE, "ETH: " + from.getAmount());
+	logger.log(Level.FINE, "BTC: " + to.getAmount());
     }
 
     public Wallet getWallet() {
@@ -117,6 +120,7 @@ public class Trader extends Observable implements IIndiviual {
 	this.wallet = wallet;
     }
 
+    @Override
     public String getName() {
 	return name;
     }
@@ -147,6 +151,49 @@ public class Trader extends Observable implements IIndiviual {
 
     public void setPerformance(TradingPerformance performance) {
 	this.performance = performance;
+    }
+
+    @Override
+    public List<IIndividual> combineWith(IIndividual individual) {
+	Wallet wallet = new Wallet();
+	Trader result1 = new Trader(name + "|" + individual.getName(), wallet, exchange, buyRule,
+		sellRule.combineWith(((Trader) individual).sellRule), exchangablesToTrade,
+		new TradingPerformance(null));
+	result1.setName(result1.generateDescriptiveName());
+	wallet = new Wallet();
+	Trader result2 = new Trader(name + "|" + individual.getName(), wallet, exchange,
+		buyRule.combineWith(((Trader) individual).buyRule), sellRule, exchangablesToTrade,
+		new TradingPerformance(null));
+	result2.setName(result2.generateDescriptiveName());
+	List<IIndividual> result = new ArrayList<>();
+	result.add(result1);
+	result.add(result2);
+	return result;
+
+    }
+
+    public String generateDescriptiveName() {
+	String result = "b";
+	for (Input i : buyRule.getInputs()) {
+	    result += "::" + i.getRule().getMetric().getType().name() + "_" + i.getRule().getThreshold() + "-"
+		    + i.getWeight();
+	}
+	result += "#" + buyRule.getThreshold();
+	result += "|s";
+	for (Input i : sellRule.getInputs()) {
+	    result += "::" + i.getRule().getMetric().getType().name() + "_" + i.getRule().getThreshold() + "-"
+		    + i.getWeight();
+	}
+	result += "#" + sellRule.getThreshold();
+
+	return result;
+    }
+
+    @Override
+    public void mutate() {
+	buyRule.setRandomThreshold();
+	sellRule.setRandomThreshold();
+
     }
 
 }

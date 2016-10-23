@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
@@ -91,6 +92,18 @@ public class TradingRulePerceptron {
 
 	return new Input(t, inputs.stream().mapToDouble(p -> p.weight).sum());
 
+    }
+
+    public void setRandomThreshold() {
+	double maxValue = getInputs().stream().mapToDouble(p -> p.getWeight()).sum();
+	Random r = new Random(System.currentTimeMillis());
+	boolean useMax = r.nextBoolean();
+	if (useMax)
+	    setThreshold(maxValue);
+	else {
+	    double weightToUseAsMax = getInputs().get(r.nextInt(getInputs().size())).getWeight();
+	    setThreshold(weightToUseAsMax);
+	}
     }
 
     public List<Input> getInputs() {
