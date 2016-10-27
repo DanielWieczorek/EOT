@@ -31,6 +31,7 @@ public class EvolutionEngine {
 
     public List<IIndividual> getNextPopulation(final int size, final List<IIndividual> traders) {
 	final List<IIndividual> result = new ArrayList<>();
+	traders.addAll(traders);
 	for (final IIndividual individual : traders) {
 	    for (int i = 0; i < traders.size(); i++) {
 		result.addAll(individual.combineWith(traders.get(i)));

@@ -38,7 +38,8 @@ public class VirtualMachine extends AbstractMachine {
 		getTraders().getNextPopulation(100);
 		final SimulatedExchangeImpl exchange = (SimulatedExchangeImpl) getExchange();
 		exchange.setHistory(null);
-		exchange.getExchangeRateHistory(new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), 365 * 4);
+		exchange.getExchangeRateHistory(new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC),
+			365 * 12);
 		final int cycles = exchange.getHistory().getCompleteHistoryData().size() - 15 * 60;
 		for (int i = 30 * 15; i < cycles; i += 15) {
 		    for (int n = 0; n < 15; n++) {
