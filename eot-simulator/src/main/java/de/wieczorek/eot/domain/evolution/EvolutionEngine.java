@@ -3,6 +3,12 @@ package de.wieczorek.eot.domain.evolution;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -22,6 +28,7 @@ import de.wieczorek.eot.domain.trading.rule.metric.RsiGraphMetric;
 
 public class EvolutionEngine {
 
+    private static final Logger logger = Logger.getLogger(EvolutionEngine.class.getName());
     private final IExchange exchange;
 
     @Inject
@@ -30,6 +37,11 @@ public class EvolutionEngine {
     }
 
     public List<IIndividual> getNextPopulation(final int size, final List<IIndividual> traders) {
+	logger.info("input for next Trader generation:");
+	for (final IIndividual individual : traders) {
+	    logger.info("" + individual.getName() + ": " + individual.calculateFitness());
+	}
+
 	final List<IIndividual> result = new ArrayList<>();
 	traders.addAll(traders);
 	for (final IIndividual individual : traders) {
@@ -46,7 +58,13 @@ public class EvolutionEngine {
 	    individual.mutate();
 
 	}
-	return result;
+
+	return result.stream().filter(distinctByKey(s -> ((Trader) s).getName())).collect(Collectors.toList());
+    }
+
+    public static <T> Predicate<T> distinctByKey(final Function<? super T, ?> keyExtractor) {
+	final Map<Object, Boolean> seen = new ConcurrentHashMap<>();
+	return t -> seen.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
     }
 
     public List<IIndividual> getInitialPopulation(final int size) {

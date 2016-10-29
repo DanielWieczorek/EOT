@@ -62,6 +62,7 @@ public class VirtualMachine extends AbstractMachine {
 
 		}
 		logger.info("Finished simulation of generation " + j);
+
 	    }
 
 	};
