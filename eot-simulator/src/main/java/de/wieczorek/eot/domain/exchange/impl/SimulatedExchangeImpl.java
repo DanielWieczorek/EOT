@@ -1,6 +1,7 @@
 package de.wieczorek.eot.domain.exchange.impl;
 
 import java.util.Iterator;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -12,6 +13,9 @@ import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
 import de.wieczorek.eot.domain.exchangable.rate.TimedExchangeRate;
 import de.wieczorek.eot.domain.exchange.Order;
 import de.wieczorek.eot.domain.exchange.OrderType;
+import de.wieczorek.eot.domain.exchange.order.IOrderBook;
+import de.wieczorek.eot.domain.exchange.order.impl.SimulatedOrderBookImpl;
+import de.wieczorek.eot.domain.trader.Trader;
 
 /**
  * Class representing an exchange used for simulation purposes. It does not
@@ -39,14 +43,21 @@ public class SimulatedExchangeImpl extends AbstractExchangeImpl {
     private TimedExchangeRate currentExchangeRate;
 
     /**
+     * The tax in percent for each order.
+     */
+    private final double orderTax = 0.2;
+
+    private final int orderExecutionTimeInMinutes = 15;
+
+    /**
      * Constructor.
      *
      * @param historyUc
      *            the history uc used to get the history data.
      */
     @Inject
-    public SimulatedExchangeImpl(final IChartHistoryUc historyUc) {
-	super(historyUc, null);
+    public SimulatedExchangeImpl(final IChartHistoryUc historyUc, final IOrderBook orderBook) {
+	super(historyUc, null, orderBook);
     }
 
     @Override
@@ -56,15 +67,21 @@ public class SimulatedExchangeImpl extends AbstractExchangeImpl {
     }
 
     @Override
-    public final ExchangableSet performOrder(final Order o) {
+    public final ExchangableSet performOrder(final Order o, final Trader trader) {
+	final int percentageMax = 100;
 	TimedExchangeRate rate = new TimedExchangeRate(currentExchangeRate.getFrom(), currentExchangeRate.getTo(),
 		currentExchangeRate.getToPrice(), currentExchangeRate.getTime());
+
+	orderBook.addOrder(o, trader, currentExchangeRate.getTime());
 	if (o.getType().equals(OrderType.BUY)) {
-	    return new ExchangableSet(o.getPair().getTo(), o.getAmount() * rate.getToPrice());
+	    return new ExchangableSet(o.getPair().getTo(),
+		    o.getAmount() * rate.getToPrice() * (1 - orderTax / percentageMax));
 	} else {
 	    rate = rate.swap();
-	    return new ExchangableSet(o.getPair().getFrom(), o.getAmount() * rate.getToPrice());
+	    return new ExchangableSet(o.getPair().getFrom(),
+		    o.getAmount() * rate.getToPrice() * (1 - orderTax / percentageMax));
 	}
+
     }
 
     @Override
@@ -101,7 +118,12 @@ public class SimulatedExchangeImpl extends AbstractExchangeImpl {
      */
     public final void icrementTime() {
 	currentExchangeRate = iter.next();
-	// System.out.println("CurrentTime: " + currentExchangeRate.getTime());
+	((SimulatedOrderBookImpl) orderBook).cleanup(currentExchangeRate.getTime(), orderExecutionTimeInMinutes);
+    }
+
+    @Override
+    public List<Order> getCurrentOrders(final Trader trader) {
+	return orderBook.getOrderByTrader(trader);
     }
 
 }

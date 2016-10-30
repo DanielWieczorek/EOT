@@ -8,6 +8,8 @@ import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
 import de.wieczorek.eot.domain.exchangable.rate.TimedExchangeRate;
 import de.wieczorek.eot.domain.exchange.IExchange;
 import de.wieczorek.eot.domain.exchange.Order;
+import de.wieczorek.eot.domain.exchange.order.IOrderBook;
+import de.wieczorek.eot.domain.trader.Trader;
 
 /**
  * Abstract superclass for all exchanges.
@@ -27,6 +29,8 @@ public abstract class AbstractExchangeImpl implements IExchange {
      */
     private final IExchangeRateUc exchangeRateUc;
 
+    protected final IOrderBook orderBook;
+
     /**
      * Constructor.
      *
@@ -35,9 +39,11 @@ public abstract class AbstractExchangeImpl implements IExchange {
      * @param exchangeRateUcInput
      *            the exchange rate uc.
      */
-    public AbstractExchangeImpl(final IChartHistoryUc historyUciInput, final IExchangeRateUc exchangeRateUcInput) {
+    public AbstractExchangeImpl(final IChartHistoryUc historyUciInput, final IExchangeRateUc exchangeRateUcInput,
+	    IOrderBook orderBookInput) {
 	this.historyUc = historyUciInput;
 	this.exchangeRateUc = exchangeRateUcInput;
+	this.orderBook = orderBookInput;
     }
 
     @Override
@@ -53,5 +59,6 @@ public abstract class AbstractExchangeImpl implements IExchange {
     }
 
     @Override
-    public abstract ExchangableSet performOrder(Order o);
+    public abstract ExchangableSet performOrder(Order o, Trader trader);
+
 }

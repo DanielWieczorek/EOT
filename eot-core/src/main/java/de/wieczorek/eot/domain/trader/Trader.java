@@ -44,8 +44,10 @@ public class Trader extends Observable implements IIndividual {
 
     @Override
     public double calculateFitness() {
-
-	return performance.getNetProfit();
+	double result = performance.getNetProfitPercent();
+	if (performance.getNumberOfTrades() == 0)
+	    result = -101;
+	return result;
     }
 
     @Override
@@ -55,7 +57,9 @@ public class Trader extends Observable implements IIndividual {
     }
 
     private void trade() {
-	if (getExchange().getCurrentExchangeRate(getExchangablesToTrade()).getToPrice() != lastSeenRate) {
+
+	if (getExchange().getCurrentExchangeRate(getExchangablesToTrade()).getToPrice() != lastSeenRate
+		&& !areOrdersPending()) {
 	    ExchangableSet from = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getFrom());
 	    ExchangableSet to = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getTo());
 	    if (buyRule.isActivated(getExchange().getExchangeRateHistory(getExchangablesToTrade(), 24))
@@ -70,11 +74,16 @@ public class Trader extends Observable implements IIndividual {
 
     }
 
+    private boolean areOrdersPending() {
+
+	return exchange.getCurrentOrders(this).size() > 0;
+    }
+
     private void buy() {
 	ExchangableSet from = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getFrom());
 	if (from.getAmount() > 0) {
 	    Order order = new Order(getExchangablesToTrade(), from.getAmount(), OrderType.BUY);
-	    ExchangableSet returnOfInvestment = getExchange().performOrder(order);
+	    ExchangableSet returnOfInvestment = getExchange().performOrder(order, this);
 
 	    getWallet().withdraw(new ExchangableSet(order.getPair().getFrom(), order.getAmount()));
 	    getWallet().deposit(
@@ -89,7 +98,7 @@ public class Trader extends Observable implements IIndividual {
 	ExchangableSet to = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getTo());
 	if (to.getAmount() > 0) {
 	    Order order = new Order(getExchangablesToTrade(), to.getAmount(), OrderType.SELL);
-	    ExchangableSet returnOfInvestment = getExchange().performOrder(order);
+	    ExchangableSet returnOfInvestment = getExchange().performOrder(order, this);
 
 	    getWallet().withdraw(new ExchangableSet(order.getPair().getTo(), order.getAmount()));
 	    getWallet().deposit(
