@@ -9,4 +9,6 @@ public interface IPopulation {
     public List<IIndividual> getAll();
 
     public void getNextPopulation(int size);
+
+    public void clearPopulation();
 }

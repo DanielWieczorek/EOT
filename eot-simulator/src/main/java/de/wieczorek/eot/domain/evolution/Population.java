@@ -46,4 +46,9 @@ public class Population implements IPopulation {
 	return result;
     }
 
+    @Override
+    public void clearPopulation() {
+	currentGeneration.clear();
+    }
+
 }

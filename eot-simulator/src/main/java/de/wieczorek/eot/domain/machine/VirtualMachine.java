@@ -31,46 +31,76 @@ public class VirtualMachine extends AbstractMachine {
 
     @Override
     public void start() {
+	if (getState() == MachineState.STOPPED) {
+	    this.state = MachineState.STARTED;
+	    final Runnable task = () -> {
+		getTraders().clearPopulation();
 
-	final Runnable task = () -> {
+		for (int j = 0; j < 10 && getState() != MachineState.STOPPED; j++) {
+		    getTraders().getNextPopulation(100);
+		    final SimulatedExchangeImpl exchange = (SimulatedExchangeImpl) getExchange();
+		    exchange.setHistory(null);
+		    exchange.getExchangeRateHistory(new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC),
+			    365 * 12);
+		    final int cycles = exchange.getHistory().getCompleteHistoryData().size() - 15 * 60;
+		    for (int i = 30 * 15; i < cycles && getState() != MachineState.STOPPED; i += 15) {
+			while (getState() == MachineState.PAUSED) {
+			    logger.info("simulation paused checking again in 10s");
+			    try {
+				Thread.sleep(10 * 1000);
 
-	    for (int j = 0; j < 10; j++) {
-		getTraders().getNextPopulation(100);
-		final SimulatedExchangeImpl exchange = (SimulatedExchangeImpl) getExchange();
-		exchange.setHistory(null);
-		exchange.getExchangeRateHistory(new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC),
-			365 * 12);
-		final int cycles = exchange.getHistory().getCompleteHistoryData().size() - 15 * 60;
-		for (int i = 30 * 15; i < cycles; i += 15) {
-		    for (int n = 0; n < 15; n++) {
-			exchange.icrementTime();
-		    }
+			    } catch (final InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			    }
+			}
 
-		    final CountDownLatch latch = new CountDownLatch(this.getTraders().getAll().size());
-		    for (final IIndividual trader : this.getTraders().getAll()) {
-			final Runnable foo = () -> {
-			    trader.performAction();
-			    latch.countDown();
-			};
-			new Thread(foo).start();
+			for (int n = 0; n < 15; n++) {
+			    exchange.icrementTime();
+			}
+
+			final CountDownLatch latch = new CountDownLatch(this.getTraders().getAll().size());
+			for (final IIndividual trader : this.getTraders().getAll()) {
+			    final Runnable foo = () -> {
+				trader.performAction();
+				latch.countDown();
+			    };
+			    new Thread(foo).start();
+			}
+			try {
+			    latch.await();
+			} catch (final InterruptedException E) {
+			    E.printStackTrace();
+			}
+
 		    }
-		    try {
-			latch.await();
-		    } catch (final InterruptedException E) {
-			E.printStackTrace();
-		    }
+		    logger.info("Finished simulation of generation " + j);
 
 		}
-		logger.info("Finished simulation of generation " + j);
 
-	    }
+	    };
 
-	};
+	    final Thread thread = new Thread(task);
+	    thread.start();
 
-	final Thread thread = new Thread(task);
-	thread.start();
+	    logger.log(Level.INFO, "Done!");
+	} else if (getState() == MachineState.PAUSED) {
+	    this.state = MachineState.STARTED;
+	} else {
+	    logger.log(Level.INFO, "Simulation already started");
+	}
+    }
 
-	logger.log(Level.INFO, "Done!");
+    @Override
+    public void pause() {
+	this.state = MachineState.PAUSED;
+
+    }
+
+    @Override
+    public void stop() {
+	this.state = MachineState.STOPPED;
+
     }
 
 }
