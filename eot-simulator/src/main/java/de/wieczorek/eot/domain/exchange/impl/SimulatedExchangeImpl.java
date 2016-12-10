@@ -6,8 +6,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import de.wieczorek.eot.business.configuration.IConfigurationUc;
-import de.wieczorek.eot.business.history.IChartHistoryUc;
+import de.wieczorek.eot.business.IBusinessLayerFacade;
 import de.wieczorek.eot.domain.exchangable.ExchangablePair;
 import de.wieczorek.eot.domain.exchangable.ExchangableSet;
 import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
@@ -57,11 +56,10 @@ public class SimulatedExchangeImpl extends AbstractExchangeImpl {
      *            the history uc used to get the history data.
      */
     @Inject
-    public SimulatedExchangeImpl(final IChartHistoryUc historyUc, final IOrderBook orderBook,
-	    final IConfigurationUc configurationUcInput) {
-	super(historyUc, null, orderBook, configurationUcInput);
-	orderExecutionTimeInMinutes = configurationUcInput.getOrderExecutionTime();
-	orderFees = configurationUcInput.getOrderFees();
+    public SimulatedExchangeImpl(final IBusinessLayerFacade businessLayer, final IOrderBook orderBook) {
+	super(businessLayer, orderBook);
+	orderExecutionTimeInMinutes = businessLayer.getOrderExecutionTime();
+	orderFees = businessLayer.getOrderFees();
     }
 
     @Override

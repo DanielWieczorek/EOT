@@ -200,4 +200,11 @@ public class ExchangeRateHistory {
 	}
 
     }
+
+    public TimedExchangeRate getMostRecentExchangeRate() {
+	if (dataPointsAsList == null) {
+	    dataPointsAsList = dataPoints.stream().collect(Collectors.toList());
+	}
+	return dataPointsAsList.get(dataPoints.size() - 1);
+    }
 }

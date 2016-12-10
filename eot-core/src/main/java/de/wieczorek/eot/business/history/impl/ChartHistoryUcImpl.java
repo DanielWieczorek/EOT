@@ -56,22 +56,22 @@ public class ChartHistoryUcImpl implements IChartHistoryUc {
     public final ExchangeRateHistory getDetailedHistoryFromDb(final ExchangableType from, final ExchangableType to,
 	    final int hours) {
 	ExchangeRateHistory result = null;
-	// final List<ExchangeRateBo> bos;
-	// try {
-	// bos = dao.getDetailedHistoryEntries(from, to, hours);
-	//
-	// dao.saveHistoryEntries(bos
-	final List<TimedExchangeRate> ter = new ArrayList<>();
-	for (final ExchangeRateBo item : dao.getDetailedHistoryEntriesFromDb(from, to, hours)) {
-	    ter.add(new TimedExchangeRate(item.getKey().getFromCurrency(), item.getKey().getToCurrency(),
-		    item.getExchangeRate(),
-		    LocalDateTime.ofInstant(Instant.ofEpochSecond(item.getKey().getTimestamp()), ZoneId.of("GMT"))));
+	final List<ExchangeRateBo> bos;
+	try {
+	    bos = dao.getDetailedHistoryEntries(from, to, hours);
+
+	    dao.saveHistoryEntries(bos);
+	    final List<TimedExchangeRate> ter = new ArrayList<>();
+	    for (final ExchangeRateBo item : dao.getDetailedHistoryEntriesFromDb(from, to, hours)) {
+		ter.add(new TimedExchangeRate(item.getKey().getFromCurrency(), item.getKey().getToCurrency(),
+			item.getExchangeRate(), LocalDateTime
+				.ofInstant(Instant.ofEpochSecond(item.getKey().getTimestamp()), ZoneId.of("GMT"))));
+	    }
+	    result = ExchangeRateHistory.from(ter);
+	} catch (JSONException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
 	}
-	result = ExchangeRateHistory.from(ter);
-	// } catch (JSONException e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// }
 	return result;
     }
 }
