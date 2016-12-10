@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
+import de.wieczorek.eot.business.IBusinessLayerFacade;
 import de.wieczorek.eot.domain.evolution.IIndividual;
 import de.wieczorek.eot.domain.evolution.Population;
 import de.wieczorek.eot.domain.exchangable.ExchangablePair;
@@ -22,10 +23,12 @@ public class VirtualMachine extends AbstractMachine {
 
     private final ExecutorService taskExecutor = Executors.newFixedThreadPool(100);
     protected MyUI callback;
+    private final int maxPopulations = 10;
 
     @Inject
-    public VirtualMachine(final IExchange exchange, final Population traders) {
-	super(exchange, traders);
+    public VirtualMachine(final IExchange exchange, final Population traders,
+	    final IBusinessLayerFacade businessLayer) {
+	super(exchange, traders, businessLayer);
 
     }
 
@@ -36,13 +39,14 @@ public class VirtualMachine extends AbstractMachine {
 	    final Runnable task = () -> {
 		getTraders().clearPopulation();
 
-		for (int j = 0; j < 10 && getState() != MachineState.STOPPED; j++) {
+		for (int j = 0; j < maxPopulations && getState() != MachineState.STOPPED; j++) {
 		    getTraders().getNextPopulation(100);
 		    final SimulatedExchangeImpl exchange = (SimulatedExchangeImpl) getExchange();
 		    exchange.setHistory(null);
 		    exchange.getExchangeRateHistory(new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC),
 			    365 * 12);
 		    final int cycles = exchange.getHistory().getCompleteHistoryData().size() - 15 * 60;
+		    final long start = System.currentTimeMillis();
 		    for (int i = 30 * 15; i < cycles && getState() != MachineState.STOPPED; i += 15) {
 			while (getState() == MachineState.PAUSED) {
 			    logger.info("simulation paused checking again in 10s");
@@ -74,7 +78,9 @@ public class VirtualMachine extends AbstractMachine {
 			}
 
 		    }
-		    logger.info("Finished simulation of generation " + j);
+		    final long end = System.currentTimeMillis();
+		    logger.info("Finished simulation of generation " + j + " took " + (double) ((end - start) / 1000)
+			    + " seconds");
 
 		}
 
@@ -101,6 +107,10 @@ public class VirtualMachine extends AbstractMachine {
     public void stop() {
 	this.state = MachineState.STOPPED;
 
+    }
+
+    public int getMaxPopulations() {
+	return maxPopulations;
     }
 
 }

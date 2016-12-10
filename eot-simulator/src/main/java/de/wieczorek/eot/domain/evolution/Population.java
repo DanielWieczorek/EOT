@@ -11,11 +11,13 @@ public class Population implements IPopulation {
 
     private List<IIndividual> currentGeneration;
     private final EvolutionEngine engine;
+    private int populationNumber;
 
     @Inject
     public Population(final EvolutionEngine engine) {
 	currentGeneration = new LinkedList<>();
 	this.engine = engine;
+	this.populationNumber = 0;
     }
 
     @Override
@@ -32,8 +34,10 @@ public class Population implements IPopulation {
     public void getNextPopulation(final int size) {
 	if (currentGeneration.isEmpty()) {
 	    currentGeneration = engine.getInitialPopulation(size);
+	    populationNumber = 1;
 	} else {
 	    currentGeneration = engine.getNextPopulation(size, getBestIndividuals(20));
+	    populationNumber++;
 	}
     }
 
@@ -49,6 +53,12 @@ public class Population implements IPopulation {
     @Override
     public void clearPopulation() {
 	currentGeneration.clear();
+    }
+
+    @Override
+    public int getPopulationNumber() {
+
+	return populationNumber;
     }
 
 }

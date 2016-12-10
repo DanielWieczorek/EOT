@@ -1,5 +1,7 @@
 package de.wieczorek.eot.business.price.impl;
 
+import javax.inject.Inject;
+
 import org.json.JSONException;
 
 import de.wieczorek.eot.business.price.IExchangeRateUc;
@@ -26,6 +28,7 @@ public class ExchangeRateUcImpl implements IExchangeRateUc {
      * @param daoInput
      *            dao needed for the access to the API.
      */
+    @Inject
     public ExchangeRateUcImpl(final ExchangeRateDao daoInput) {
 	this.dao = daoInput;
     }

@@ -11,4 +11,6 @@ public interface IPopulation {
     public void getNextPopulation(int size);
 
     public void clearPopulation();
+
+    public int getPopulationNumber();
 }

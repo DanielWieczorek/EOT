@@ -1,8 +1,6 @@
 package de.wieczorek.eot.domain.exchange.impl;
 
-import de.wieczorek.eot.business.configuration.IConfigurationUc;
-import de.wieczorek.eot.business.history.IChartHistoryUc;
-import de.wieczorek.eot.business.price.IExchangeRateUc;
+import de.wieczorek.eot.business.IBusinessLayerFacade;
 import de.wieczorek.eot.domain.exchangable.ExchangablePair;
 import de.wieczorek.eot.domain.exchangable.ExchangableSet;
 import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
@@ -20,18 +18,8 @@ import de.wieczorek.eot.domain.trader.Trader;
  */
 public abstract class AbstractExchangeImpl implements IExchange {
 
-    /**
-     * The uc that provides the exchange rate history data.
-     */
-    private final IChartHistoryUc historyUc;
-
-    /**
-     * the uc providing the current exchange rate.
-     */
-    private final IExchangeRateUc exchangeRateUc;
-
     protected final IOrderBook orderBook;
-    protected final IConfigurationUc configurationUcInput;
+    protected final IBusinessLayerFacade businessLayer;
 
     /**
      * Constructor.
@@ -41,24 +29,21 @@ public abstract class AbstractExchangeImpl implements IExchange {
      * @param exchangeRateUcInput
      *            the exchange rate uc.
      */
-    public AbstractExchangeImpl(final IChartHistoryUc historyUciInput, final IExchangeRateUc exchangeRateUcInput,
-	    IOrderBook orderBookInput, IConfigurationUc configurationUcInput) {
-	this.historyUc = historyUciInput;
-	this.exchangeRateUc = exchangeRateUcInput;
+    public AbstractExchangeImpl(IBusinessLayerFacade businessLayer, IOrderBook orderBookInput) {
 	this.orderBook = orderBookInput;
-	this.configurationUcInput = configurationUcInput;
+	this.businessLayer = businessLayer;
     }
 
     @Override
     public ExchangeRateHistory getExchangeRateHistory(final ExchangablePair pair, final int hours) {
 
-	return historyUc.getDetailedHistoryFromDb(pair.getFrom(), pair.getTo(), hours);
+	return businessLayer.getDetailedHistoryFromDb(pair.getFrom(), pair.getTo(), hours);
     }
 
     @Override
     public TimedExchangeRate getCurrentExchangeRate(final ExchangablePair pair) {
 
-	return exchangeRateUc.getCurrentExchangeRate(pair.getFrom(), pair.getTo());
+	return businessLayer.getCurrentExchangeRate(pair.getFrom(), pair.getTo());
     }
 
     @Override
