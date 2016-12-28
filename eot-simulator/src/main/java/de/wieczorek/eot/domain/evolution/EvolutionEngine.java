@@ -49,6 +49,7 @@ public class EvolutionEngine {
 		result.addAll(individual.combineWith(traders.get(i)));
 	    }
 	}
+	result.addAll(traders);
 
 	for (final IIndividual individual : result) {
 	    final Trader t = (Trader) individual;
