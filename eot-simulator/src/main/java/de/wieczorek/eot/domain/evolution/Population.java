@@ -32,6 +32,7 @@ public class Population implements IPopulation {
 
     @Override
     public void getNextPopulation(final int size) {
+
 	if (currentGeneration.isEmpty()) {
 	    currentGeneration = engine.getInitialPopulation(size);
 	    populationNumber = 1;

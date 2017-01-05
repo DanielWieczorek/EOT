@@ -14,17 +14,17 @@ public class TradingRule {
     private ComparatorType comparator;
 
     private AbstractGraphMetric metric;
-    private static Map<GraphMetricType, Tuple<TimedExchangeRate, Double>> ratingCache = new HashMap<>();
+
+    private static Map<Tuple<TimedExchangeRate, GraphMetricType>, Double> ratingCache = new HashMap<>();
 
     public boolean evaluate(ExchangeRateHistory history) {
 	double rating = 0.0;
 	TimedExchangeRate reference = history.getMostRecentExchangeRate();
-	if (ratingCache.containsKey(metric.getType())
-		&& ratingCache.get(metric.getType()).equals(new Tuple<>(reference, 0.0))) {
-	    rating = ratingCache.get(metric.getType()).y;
+	if (ratingCache.containsKey(new Tuple<TimedExchangeRate, GraphMetricType>(reference, metric.getType()))) {
+	    rating = ratingCache.get(new Tuple<TimedExchangeRate, GraphMetricType>(reference, metric.getType()));
 	} else {
 	    rating = metric.getRating(history);
-	    ratingCache.put(metric.getType(), new Tuple<>(reference, rating));
+	    ratingCache.put(new Tuple<>(reference, metric.getType()), rating);
 	}
 
 	switch (getComparator()) {

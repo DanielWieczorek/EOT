@@ -57,20 +57,21 @@ public class Trader extends Observable implements IIndividual {
     }
 
     private void trade() {
+	double currentExchangeRate = getExchange().getCurrentExchangeRate(getExchangablesToTrade()).getToPrice();
 
-	if (getExchange().getCurrentExchangeRate(getExchangablesToTrade()).getToPrice() != lastSeenRate
-		&& !areOrdersPending()) {
+	if (currentExchangeRate != lastSeenRate && !areOrdersPending()) {
 	    ExchangableSet from = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getFrom());
 	    ExchangableSet to = getWallet().countAllExchangablesOfType(getExchangablesToTrade().getTo());
-	    if (buyRule.isActivated(getExchange().getExchangeRateHistory(getExchangablesToTrade(), 24))
-		    && from.getAmount() > 0) {
+
+	    if (from.getAmount() > 0
+		    && buyRule.isActivated(getExchange().getExchangeRateHistory(getExchangablesToTrade(), 24))) {
 		buy();
-	    } else if (sellRule.isActivated(getExchange().getExchangeRateHistory(getExchangablesToTrade(), 24))
-		    && to.getAmount() > 0) {
+	    } else if (to.getAmount() > 0
+		    && sellRule.isActivated(getExchange().getExchangeRateHistory(getExchangablesToTrade(), 24))) {
 		sell();
 	    }
 	}
-	lastSeenRate = getExchange().getCurrentExchangeRate(getExchangablesToTrade()).getToPrice();
+	lastSeenRate = currentExchangeRate;
 
     }
 

@@ -41,6 +41,8 @@ import de.wieczorek.eot.domain.exchangable.rate.TimedExchangeRate;
  */
 public class ExchangeRateDao {
 
+    final EntityManagerFactory emf;
+
     private static final Logger logger = Logger.getLogger(ExchangeRateDao.class.getName());
 
     /**
@@ -172,11 +174,13 @@ public class ExchangeRateDao {
     @SuppressWarnings("unchecked")
     public final List<ExchangeRateBo> getDetailedHistoryEntriesFromDb(final ExchangableType from,
 	    final ExchangableType to, final int hours) {
+	entityManager = emf.createEntityManager();
 	final Query q = entityManager.createQuery("Select p from ExchangeRateBo p where p.key.timestamp <="
 		+ LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) + " and p.key.timestamp >= "
 		+ LocalDateTime.now().minusHours(hours).toEpochSecond(ZoneOffset.UTC));
 	q.setMaxResults(Integer.MAX_VALUE);
 	final List<ExchangeRateBo> result = q.getResultList();
+	entityManager.close();
 	return result;
     }
 
@@ -187,6 +191,7 @@ public class ExchangeRateDao {
      *            entries to save.
      */
     public final void saveHistoryEntries(final List<ExchangeRateBo> entries) {
+	entityManager = emf.createEntityManager();
 	entityManager.setFlushMode(FlushModeType.COMMIT);
 	final EntityTransaction transaction = entityManager.getTransaction();
 
@@ -195,6 +200,7 @@ public class ExchangeRateDao {
 	    entityManager.persist(entry);
 	}
 	transaction.commit();
+	entityManager.close();
     }
 
     /**
@@ -208,7 +214,7 @@ public class ExchangeRateDao {
 	this.api = apiInput;
 	final Map<String, String> props = new HashMap<>();
 	props.put(CassandraConstants.CQL_VERSION, CassandraConstants.CQL_VERSION_3_0);
-	final EntityManagerFactory emf = Persistence.createEntityManagerFactory("cassandra_pu", props);
+	emf = Persistence.createEntityManagerFactory("cassandra_pu", props);
 	this.entityManager = emf.createEntityManager();
 
     }

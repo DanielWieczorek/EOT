@@ -1,8 +1,8 @@
 package de.wieczorek.eot.domain.exchangable.rate;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -117,7 +117,7 @@ public class ExchangeRateHistory {
      */
     public ExchangeRateHistory() {
 	dataPoints = new PriorityQueue<>();
-	dataPointsAsList = new LinkedList<>();
+	dataPointsAsList = new ArrayList<>();
 	entriesBeforeBuffer = new HashMap<>();
     }
 
@@ -151,6 +151,7 @@ public class ExchangeRateHistory {
     public final ExchangeRateHistory add(final TimedExchangeRate exchangeRate) {
 	dataPoints.add(exchangeRate);
 	dataPointsAsList = null;
+
 	entriesBeforeBuffer.clear();
 	return this;
     }

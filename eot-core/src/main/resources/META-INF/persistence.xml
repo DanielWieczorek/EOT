@@ -10,7 +10,8 @@
             <property name="kundera.keyspace" value="eos"/>
             <property name="kundera.dialect" value="cassandra"/>
             <property name="kundera.ddl.auto.prepare" value="update" />
-            <property name="kundera.client.lookup.class" value="com.impetus.kundera.client.cassandra.dsdriver.DSClientFactory" />         
+            <property name="kundera.client.lookup.class" value="com.impetus.kundera.client.cassandra.dsdriver.DSClientFactory" />   
+            <property name="kundera.batch.size" value="50000" />       
         </properties>       
     </persistence-unit>
 </persistence>

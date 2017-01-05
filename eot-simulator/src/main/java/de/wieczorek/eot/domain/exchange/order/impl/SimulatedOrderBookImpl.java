@@ -22,7 +22,12 @@ public class SimulatedOrderBookImpl extends AbstractOrderBookImpl {
 		    .collect(Collectors.toList());
 	    orderInfoList.clear();
 	    orderInfoList.addAll(temp);
+
 	}
 
+    }
+
+    public void removeAllOrders() {
+	orders.clear();
     }
 }

@@ -91,6 +91,7 @@ public class SimulatedExchangeImpl extends AbstractExchangeImpl {
 	final int minutesPerHour = 60;
 	if (history == null) {
 	    setHistory(super.getExchangeRateHistory(pair, hours));
+	    return getHistory();
 	}
 
 	return history.getHistoryEntriesBefore(currentExchangeRate.getTime(), hours * minutesPerHour);
@@ -107,12 +108,9 @@ public class SimulatedExchangeImpl extends AbstractExchangeImpl {
      *            the exchange rate history to set
      */
     public final void setHistory(final ExchangeRateHistory historyInput) {
-	final int startPoint = 15 * 60;
+
 	this.history = historyInput;
-	if (historyInput != null) {
-	    iter = historyInput.getCompleteHistoryData().listIterator(startPoint);
-	    currentExchangeRate = iter.next();
-	}
+	resetHistoryIterator();
     }
 
     /**
@@ -126,6 +124,20 @@ public class SimulatedExchangeImpl extends AbstractExchangeImpl {
     @Override
     public List<Order> getCurrentOrders(final Trader trader) {
 	return orderBook.getOrderByTrader(trader);
+    }
+
+    public void resetHistoryIterator() {
+	final int startPoint = 15 * 60;
+	if (history != null) {
+	    iter = history.getCompleteHistoryData().listIterator(startPoint);
+	    currentExchangeRate = iter.next();
+	}
+
+    }
+
+    public void reset() {
+	resetHistoryIterator();
+	((SimulatedOrderBookImpl) orderBook).removeAllOrders();
     }
 
 }

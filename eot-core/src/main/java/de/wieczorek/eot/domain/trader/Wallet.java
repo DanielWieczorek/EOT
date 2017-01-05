@@ -17,10 +17,11 @@ public class Wallet {
 	clear();
     }
 
-    public ExchangableSet countAllExchangablesOfType(ExchangableType type) {
+    public synchronized ExchangableSet countAllExchangablesOfType(ExchangableType type) {
 	List<ExchangableAmount> exchangables = content.get(type);
 	ExchangableSet result = new ExchangableSet();
 	result.setExchangable(type);
+
 	for (ExchangableAmount item : exchangables)
 	    result = result.mergeWith(item.getExchangableAmount());
 
