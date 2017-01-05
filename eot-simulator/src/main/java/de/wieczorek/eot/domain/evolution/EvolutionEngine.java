@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -44,10 +45,9 @@ public class EvolutionEngine {
 
 	final List<IIndividual> result = new ArrayList<>();
 	traders.addAll(traders);
+	final Random r = new Random(System.currentTimeMillis());
 	for (final IIndividual individual : traders) {
-	    for (int i = 0; i < traders.size(); i++) {
-		result.addAll(individual.combineWith(traders.get(i)));
-	    }
+	    result.addAll(individual.combineWith(traders.get(r.nextInt(traders.size()))));
 	}
 	result.addAll(traders);
 
