@@ -11,7 +11,7 @@ public class CoppocGraphMetric extends AbstractGraphMetric {
     }
 
     @Override
-    public double getRating(ExchangeRateHistory history) {
+    public double calculateRatingCPU(ExchangeRateHistory history) {
 
 	ExchangeRateHistory input = history;
 	ExchangeRateHistory racOutput = new ExchangeRateHistory();

@@ -1,18 +1,25 @@
 package de.wieczorek.eot.domain.trading.rule.metric;
 
+import com.aparapi.Kernel;
+import com.aparapi.Range;
+
 import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
 import de.wieczorek.eot.domain.exchangable.rate.TimedExchangeRate;
 
 public class RsiGraphMetric extends AbstractGraphMetric {
 
+    private Kernel kernel1;
+    private Range range;
+
     public RsiGraphMetric() {
 	this.type = GraphMetricType.RSI;
+	this.isGpuEnabled = true;
     }
 
     // private final int MULTIPLICATOR = 15;
 
     @Override
-    public double getRating(ExchangeRateHistory history) {
+    protected double calculateRatingCPU(ExchangeRateHistory history) {
 	ExchangeRateHistory input = history;
 
 	double averageGain = 0.0;
@@ -41,6 +48,60 @@ public class RsiGraphMetric extends AbstractGraphMetric {
 	}
 
 	double relativeStrength = averageGain / averageLoss;
+
+	// System.out.println("Relative Strength: " + (100.0 - (100.0 / (1.0 +
+	// relativeStrength))));
+
+	return 100.0 - (100.0 / (1.0 + relativeStrength));
+    }
+
+    @Override
+    protected double calculateRatingGPU(ExchangeRateHistory history) {
+	ExchangeRateHistory input = history;
+
+	float[] averageGain = new float[1];
+	float[] averageLoss = new float[1];
+
+	float[] datapoints = new float[input.getCompleteHistoryData().size()];
+
+	for (int i = 0; i < input.getCompleteHistoryData().size(); i++)
+	    datapoints[i] = (float) input.getCompleteHistoryData().get(i).getToPrice();
+
+	if (kernel1 == null) {
+	    kernel1 = new Kernel() {
+		@Override
+		public void run() {
+		    int i = getGlobalId();
+
+		    if (i < 15) {
+			if (datapoints[i] > datapoints[i + 1])
+			    averageLoss[0] = averageLoss[0] + datapoints[i] - datapoints[i + 1];
+			else
+			    averageGain[0] = averageGain[0] + datapoints[i + 1] - datapoints[i];
+		    }
+		    if (i == 15) {
+			averageGain[0] /= 14f;
+			averageLoss[0] /= 14f;
+		    }
+
+		    if (i > 15) {
+			float lastDatapoint = datapoints[i];
+			float currentDatapoint = datapoints[i + 1];
+
+			if (lastDatapoint < currentDatapoint)
+			    averageGain[0] = (averageGain[0] * 13.0f + currentDatapoint) / 14.0f;
+			else
+			    averageLoss[0] = (averageLoss[0] * 13.0f + currentDatapoint) / 14.0f;
+		    }
+		}
+
+	    };
+	}
+	if (range == null)
+	    range = Range.create(datapoints.length - 1);
+	kernel1.execute(range);
+
+	float relativeStrength = averageGain[0] / averageLoss[0];
 
 	// System.out.println("Relative Strength: " + (100.0 - (100.0 / (1.0 +
 	// relativeStrength))));
