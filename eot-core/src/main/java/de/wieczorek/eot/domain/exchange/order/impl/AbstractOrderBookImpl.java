@@ -10,69 +10,107 @@ import de.wieczorek.eot.domain.exchange.Order;
 import de.wieczorek.eot.domain.exchange.order.IOrderBook;
 import de.wieczorek.eot.domain.trader.Trader;
 
+/**
+ * Abstract implementation of {@link IOrderBook}.
+ * 
+ * @author Daniel Wieczorek
+ *
+ */
 public abstract class AbstractOrderBookImpl implements IOrderBook {
 
+    /**
+     * Map containing all orders. The orders are assigned to the trader.
+     * Additionally the order is wrapped into an {@link OrderInfo} object which
+     * contains the time of the order execution.
+     */
     protected Map<Trader, List<OrderInfo>> orders;
 
+    /**
+     * Constructor.
+     */
     public AbstractOrderBookImpl() {
 	this.orders = new HashMap<>();
     }
 
     @Override
-    public List<Order> getOrderByTrader(Trader trader) {
+    public final List<Order> getOrderByTrader(final Trader trader) {
 	List<Order> result = new LinkedList<>();
 	List<OrderInfo> orderInfos = orders.get(trader);
-	if (orderInfos == null)
+	if (orderInfos == null) {
 	    return new LinkedList<Order>();
-	else
-	    for (OrderInfo info : orderInfos)
+	} else {
+	    for (OrderInfo info : orderInfos) {
 		result.add(info.getOrder());
+	    }
+	}
 	return result;
     }
 
     @Override
-    public List<Order> getAllOrders() {
+    public final List<Order> getAllOrders() {
 
 	return null;
     }
 
+    /**
+     * Class containing the order information with the submission time stamp.
+     * 
+     * @author Daniel Wieczorek
+     *
+     */
     protected class OrderInfo {
 
+	/**
+	 * The order.
+	 */
 	private Order order;
+
+	/**
+	 * Timestamp of submission.
+	 */
 	private LocalDateTime timeAdded;
 
-	public OrderInfo(Order order, LocalDateTime added) {
-	    this.setOrder(order);
-	    this.setTimeAdded(added);
+	/**
+	 * Constructor.
+	 * 
+	 * @param orderInput
+	 *            the order
+	 * @param addedInput
+	 *            the submisson timestamp
+	 */
+	public OrderInfo(final Order orderInput, final LocalDateTime addedInput) {
+	    this.setOrder(orderInput);
+	    this.setTimeAdded(addedInput);
 
 	}
 
-	public Order getOrder() {
+	public final Order getOrder() {
 	    return order;
 	}
 
-	public void setOrder(Order order) {
-	    this.order = order;
+	public final void setOrder(final Order orderInput) {
+	    this.order = orderInput;
 	}
 
-	public LocalDateTime getTimeAdded() {
+	public final LocalDateTime getTimeAdded() {
 	    return timeAdded;
 	}
 
-	public void setTimeAdded(LocalDateTime timeAdded) {
-	    this.timeAdded = timeAdded;
+	public final void setTimeAdded(final LocalDateTime timeAddedInput) {
+	    this.timeAdded = timeAddedInput;
 	}
     }
 
     @Override
-    public void addOrder(Order order, Trader trader, LocalDateTime time) {
+    public final void addOrder(final Order order, final Trader trader, final LocalDateTime time) {
 	List<OrderInfo> existingOrders = orders.get(order);
 	if (existingOrders == null) {
 	    existingOrders = new LinkedList<>();
 	    existingOrders.add(new OrderInfo(order, time));
 	    orders.put(trader, existingOrders);
-	} else
+	} else {
 	    existingOrders.add(new OrderInfo(order, time));
+	}
 
     }
 

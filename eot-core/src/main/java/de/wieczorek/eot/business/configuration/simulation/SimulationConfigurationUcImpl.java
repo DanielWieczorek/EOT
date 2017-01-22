@@ -6,10 +6,22 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 
+/**
+ * implementation of {@link ISimulationConfigurationUc}.
+ * 
+ * @author Daniel Wieczorek
+ *
+ */
 public class SimulationConfigurationUcImpl implements ISimulationConfigurationUc {
 
+    /**
+     * Object for accessing the configuration.
+     */
     private Configuration simulationConfiguration;
 
+    /**
+     * Constructor.
+     */
     public SimulationConfigurationUcImpl() {
 	final Configurations configs = new Configurations();
 	try {
@@ -23,12 +35,12 @@ public class SimulationConfigurationUcImpl implements ISimulationConfigurationUc
     }
 
     @Override
-    public double getOrderFees() {
+    public final double getOrderFees() {
 	return simulationConfiguration.getDouble("simulation.order.fee");
     }
 
     @Override
-    public int getOrderExecutionTime() {
+    public final int getOrderExecutionTime() {
 	return simulationConfiguration.getInt("simulation.order.time");
     }
 }

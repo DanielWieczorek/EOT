@@ -41,9 +41,15 @@ import de.wieczorek.eot.domain.exchangable.rate.TimedExchangeRate;
  */
 public class ExchangeRateDao {
 
-    final EntityManagerFactory emf;
+    /**
+     * The EM factory for the access to the DB.
+     */
+    private final EntityManagerFactory emf;
 
-    private static final Logger logger = Logger.getLogger(ExchangeRateDao.class.getName());
+    /**
+     * The logger.
+     */
+    private static final Logger LOGGER = Logger.getLogger(ExchangeRateDao.class.getName());
 
     /**
      * instance of helper class to access the API of cex.io.
@@ -118,14 +124,14 @@ public class ExchangeRateDao {
 	for (int x = 0; x < days; x++) {
 	    final String result = api.ohclv(from, to,
 		    LocalDateTime.now().minusDays(x + 1).format(DateTimeFormatter.BASIC_ISO_DATE));
-	    logger.log(Level.INFO, result);
+	    LOGGER.log(Level.INFO, result);
 
 	    final JSONObject obj = new JSONObject(result);
 	    final String array = (String) obj.get("data1m");
 	    final JSONArray arr = new JSONArray(array);
 	    for (int i = 0; i < arr.length(); i++) {
 		final JSONArray item = (JSONArray) arr.get(i);
-		logger.log(Level.INFO,
+		LOGGER.log(Level.INFO,
 			"Timestamp:" + Date.from(Instant.ofEpochSecond(item.getLong(0))) + "\t open: "
 				+ item.getDouble(openingPrice) + "\t high: " + item.getDouble(maxPrice) + "\t low: "
 				+ item.getDouble(minPrice) + "\t close: " + item.getDouble(closePriceIndex)

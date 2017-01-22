@@ -18,7 +18,8 @@ import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
 import de.wieczorek.eot.domain.exchangable.rate.TimedExchangeRate;
 
 /**
- * @see IChartHistoryUc
+ * implementation of {@link IChartHistoryUc}.
+ * 
  * @author Daniel Wieczorek
  *
  */
@@ -56,7 +57,7 @@ public class ChartHistoryUcImpl implements IChartHistoryUc {
     public final ExchangeRateHistory getDetailedHistoryFromDb(final ExchangableType from, final ExchangableType to,
 	    final int hours) {
 	ExchangeRateHistory result = null;
-	final List<ExchangeRateBo> bos;
+	// final List<ExchangeRateBo> bos;
 	// try {
 	// bos = dao.getDetailedHistoryEntries(from, to, hours);
 

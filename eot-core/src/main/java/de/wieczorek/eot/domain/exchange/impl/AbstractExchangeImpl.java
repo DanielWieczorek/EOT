@@ -18,20 +18,28 @@ import de.wieczorek.eot.domain.trader.Trader;
  */
 public abstract class AbstractExchangeImpl implements IExchange {
 
+    /**
+     * The order book of this exchange.
+     */
     protected final IOrderBook orderBook;
+
+    /**
+     * Business layer facade needed to access the API of the exchange to e.g.
+     * execute the orders.
+     */
     protected final IBusinessLayerFacade businessLayer;
 
     /**
      * Constructor.
      *
-     * @param historyUciInput
-     *            the exchange rate history uc.
-     * @param exchangeRateUcInput
-     *            the exchange rate uc.
+     * @param businessLayerInput
+     *            the interface to the business layer
+     * @param orderBookInput
+     *            the order book
      */
-    public AbstractExchangeImpl(IBusinessLayerFacade businessLayer, IOrderBook orderBookInput) {
+    public AbstractExchangeImpl(final IBusinessLayerFacade businessLayerInput, final IOrderBook orderBookInput) {
 	this.orderBook = orderBookInput;
-	this.businessLayer = businessLayer;
+	this.businessLayer = businessLayerInput;
     }
 
     @Override

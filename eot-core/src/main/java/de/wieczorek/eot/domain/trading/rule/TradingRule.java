@@ -5,19 +5,50 @@ import java.util.Map;
 
 import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
 import de.wieczorek.eot.domain.exchangable.rate.TimedExchangeRate;
+import de.wieczorek.eot.domain.trader.Trader;
 import de.wieczorek.eot.domain.trading.rule.metric.AbstractGraphMetric;
 import de.wieczorek.eot.domain.trading.rule.metric.GraphMetricType;
 
+/**
+ * A trading rule which is used by a {@link Trader} to determine whether a trade
+ * should be generated. This trading rule uses an {@link AbstractGraphMetric}
+ * and compares the result to a given threshold. If this condition is fulfilled
+ * then this rule permits the trade.
+ * 
+ * @author Daniel Wieczorek
+ *
+ */
 public class TradingRule {
 
+    /**
+     * Threshold it is compared against.
+     */
     private double threshold;
+
+    /**
+     * Comparator which is compared against.
+     */
     private ComparatorType comparator;
 
+    /**
+     * The metric which computes the current value depending on the current
+     * graph.
+     */
     private AbstractGraphMetric metric;
 
+    /**
+     * The cache for the results from the graph metric.
+     */
     private static Map<Tuple<TimedExchangeRate, GraphMetricType>, Double> ratingCache = new HashMap<>();
 
-    public boolean evaluate(ExchangeRateHistory history) {
+    /**
+     * Determines whether a trade should be performed.
+     * 
+     * @param history
+     *            data the decision is based upon.
+     * @return true if a trade should be performed.
+     */
+    public final boolean evaluate(final ExchangeRateHistory history) {
 	double rating = 0.0;
 	TimedExchangeRate reference = history.getMostRecentExchangeRate();
 	if (ratingCache.containsKey(new Tuple<TimedExchangeRate, GraphMetricType>(reference, metric.getType()))) {
@@ -39,61 +70,100 @@ public class TradingRule {
 	}
     }
 
-    public double getThreshold() {
+    public final double getThreshold() {
 	return threshold;
     }
 
-    public void setThreshold(double threshold) {
-	this.threshold = threshold;
+    public final void setThreshold(final double thresholdInput) {
+	this.threshold = thresholdInput;
     }
 
-    public AbstractGraphMetric getMetric() {
+    public final AbstractGraphMetric getMetric() {
 	return metric;
     }
 
-    public void setMetric(AbstractGraphMetric metric) {
-	this.metric = metric;
+    public final void setMetric(final AbstractGraphMetric metricInput) {
+	this.metric = metricInput;
     }
 
-    public ComparatorType getComparator() {
+    public final ComparatorType getComparator() {
 	return comparator;
     }
 
-    public void setComparator(ComparatorType comparator) {
-	this.comparator = comparator;
+    public final void setComparator(final ComparatorType comparatorInput) {
+	this.comparator = comparatorInput;
     }
 
+    /**
+     * Class representing a two-tuple.
+     * 
+     * @author Daniel Wieczorek
+     *
+     * @param <X>
+     *            type of first component of the tuple
+     * @param <Y>
+     *            type of second component of the tuple
+     */
     public class Tuple<X, Y> {
-	public final X x;
-	public final Y y;
+	/**
+	 * Fist component of the tuple.
+	 */
+	private final X x;
+	/**
+	 * Second component of the tuple.
+	 */
+	private final Y y;
 
-	public Tuple(X x, Y y) {
-	    this.x = x;
-	    this.y = y;
+	/**
+	 * Constructor.
+	 * 
+	 * @param xInput
+	 *            Fist component of the tuple.
+	 * @param yInput
+	 *            Second component of the tuple.
+	 */
+	public Tuple(final X xInput, final Y yInput) {
+	    this.x = xInput;
+	    this.y = yInput;
 	}
 
 	@Override
-	public int hashCode() {
+	public final int hashCode() {
 	    final int prime = 31;
 	    int result = 1;
+	    result = prime * result + getOuterType().hashCode();
 	    result = prime * result + ((x == null) ? 0 : x.hashCode());
+	    result = prime * result + ((y == null) ? 0 : y.hashCode());
 	    return result;
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
-	public boolean equals(Object obj) {
-	    if (this == obj)
+	public final boolean equals(final Object obj) {
+	    if (this == obj) {
 		return true;
-	    if (obj == null)
+	    }
+	    if (obj == null) {
 		return false;
-	    if (getClass() != obj.getClass())
+	    }
+	    if (getClass() != obj.getClass()) {
 		return false;
+	    }
 	    Tuple other = (Tuple) obj;
 	    if (x == null) {
-		if (other.x != null)
+		if (other.x != null) {
 		    return false;
-	    } else if (!x.equals(other.x))
+		}
+	    } else if (!x.equals(other.x)) {
 		return false;
+	    }
+	    if (y == null) {
+		if (other.y != null) {
+		    return false;
+		}
+	    } else if (!y.equals(other.y)) {
+		return false;
+	    }
 	    return true;
 	}
 

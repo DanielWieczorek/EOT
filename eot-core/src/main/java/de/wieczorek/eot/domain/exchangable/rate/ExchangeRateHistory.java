@@ -202,7 +202,13 @@ public class ExchangeRateHistory {
 
     }
 
-    public TimedExchangeRate getMostRecentExchangeRate() {
+    /**
+     * Returns the most recent exchange rate. This is the last entry in the
+     * internal queue/list.
+     * 
+     * @return a {@link TimedExchangeRate} representing exchange rate.
+     */
+    public final TimedExchangeRate getMostRecentExchangeRate() {
 	if (dataPointsAsList == null) {
 	    dataPointsAsList = dataPoints.stream().collect(Collectors.toList());
 	}
