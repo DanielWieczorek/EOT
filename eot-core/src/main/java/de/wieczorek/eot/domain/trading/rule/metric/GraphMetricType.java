@@ -14,5 +14,7 @@ public enum GraphMetricType {
     /**
      * Coppoch momentum indicator.
      */
-    Coppoch
+    Coppoch,
+
+    StochasticFast
 }

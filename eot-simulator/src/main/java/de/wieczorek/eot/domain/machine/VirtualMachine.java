@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
-import de.wieczorek.eot.business.IBusinessLayerFacade;
 import de.wieczorek.eot.domain.evolution.IIndividual;
 import de.wieczorek.eot.domain.evolution.Population;
 import de.wieczorek.eot.domain.exchangable.ExchangablePair;
@@ -34,9 +33,8 @@ public class VirtualMachine extends AbstractMachine {
     private static final int populationSize = 100;
 
     @Inject
-    public VirtualMachine(final IExchange exchange, final Population traders,
-	    final IBusinessLayerFacade businessLayer) {
-	super(exchange, traders, businessLayer);
+    public VirtualMachine(final IExchange exchange, final Population traders) {
+	super(exchange, traders);
 	traderGroups = new ArrayList<>();
 
     }
@@ -50,7 +48,7 @@ public class VirtualMachine extends AbstractMachine {
 		final SimulatedExchangeImpl exchange = (SimulatedExchangeImpl) getExchange();
 		exchange.setHistory(null);
 		exchange.getExchangeRateHistory(new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC),
-			365 * 12);
+			365 * 24);
 
 		for (int j = 0; j < maxPopulations && getState() != MachineState.STOPPED; j++) {
 		    if (j == 0) {
@@ -60,7 +58,7 @@ public class VirtualMachine extends AbstractMachine {
 		    }
 		    exchange.reset();
 		    final int cycles = exchange.getHistory().getCompleteHistoryData().size() - 15 * 60;
-		    logger.info("running over " + cycles + " data points");
+		    logger.severe("running over " + cycles + " data points");
 		    final long start = System.currentTimeMillis();
 		    for (int i = 30 * 15; i < cycles && getState() != MachineState.STOPPED; i += 15) {
 			while (getState() == MachineState.PAUSED) {
@@ -77,25 +75,27 @@ public class VirtualMachine extends AbstractMachine {
 			for (int n = 0; n < 15; n++) {
 			    exchange.icrementTime();
 			}
+			final int realNumberOfExecutors = Math.min(numberOfExecutors,
+				this.getTraders().getAll().size());
 			for (int n = 0; n < numberOfExecutors; n++) {
 			    traderGroups.add(new ArrayList<>());
 			}
 			int n = 0;
-			final CountDownLatch latch = new CountDownLatch(numberOfExecutors);
+			final CountDownLatch latch = new CountDownLatch(realNumberOfExecutors);
 			for (final IIndividual trader : this.getTraders().getAll()) {
 			    traderGroups.get(n).add(trader);
 			    n++;
-			    n %= numberOfExecutors;
+			    n %= realNumberOfExecutors;
 			}
 
 			final List<TraderGroupManager> managers = new ArrayList<>();
 
-			for (n = 0; n < numberOfExecutors; n++) {
+			for (n = 0; n < realNumberOfExecutors; n++) {
 			    managers.add(new TraderGroupManager(traderGroups.get(n), latch));
 
 			}
 
-			for (n = 0; n < numberOfExecutors; n++) {
+			for (n = 0; n < realNumberOfExecutors; n++) {
 			    taskExecutor.execute(managers.get(n));
 			}
 			try {
@@ -106,7 +106,7 @@ public class VirtualMachine extends AbstractMachine {
 
 		    }
 		    final long end = System.currentTimeMillis();
-		    logger.info("Finished simulation of generation " + j + ". It took "
+		    logger.severe("Finished simulation of generation " + j + ". It took "
 			    + (double) ((end - start) / 1000) + " seconds.");
 
 		}

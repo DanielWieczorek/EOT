@@ -3,6 +3,7 @@ package de.wieczorek.eot.domain.evolution;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -12,6 +13,8 @@ public class Population implements IPopulation {
     private List<IIndividual> currentGeneration;
     private final EvolutionEngine engine;
     private int populationNumber;
+
+    private static final Logger logger = Logger.getLogger(Population.class.getName());
 
     @Inject
     public Population(final EvolutionEngine engine) {
@@ -37,7 +40,7 @@ public class Population implements IPopulation {
 	    currentGeneration = engine.getInitialPopulation(size);
 	    populationNumber = 1;
 	} else {
-	    currentGeneration = engine.getNextPopulation(size, getBestIndividuals(20));
+	    currentGeneration = engine.getNextPopulation(size, getBestIndividuals(size / 3));
 	    populationNumber++;
 	}
     }
@@ -45,6 +48,11 @@ public class Population implements IPopulation {
     private List<IIndividual> getBestIndividuals(final int amount) {
 	final Comparator<IIndividual> byRating = (e1, e2) -> Double.compare(e2.calculateFitness(),
 		e1.calculateFitness());
+
+	final List<IIndividual> ordered = currentGeneration.stream().sorted(byRating).collect(Collectors.toList());
+	for (final IIndividual individual : ordered) {
+	    logger.severe("" + individual.getName() + ": " + individual.calculateFitness());
+	}
 
 	final List<IIndividual> result = currentGeneration.stream().sorted(byRating).limit(amount)
 		.collect(Collectors.toList());

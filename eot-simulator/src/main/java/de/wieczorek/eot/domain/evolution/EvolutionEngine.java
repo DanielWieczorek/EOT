@@ -18,14 +18,15 @@ import de.wieczorek.eot.domain.exchangable.ExchangablePair;
 import de.wieczorek.eot.domain.exchangable.ExchangableSet;
 import de.wieczorek.eot.domain.exchangable.ExchangableType;
 import de.wieczorek.eot.domain.exchange.IExchange;
+import de.wieczorek.eot.domain.trader.Account;
 import de.wieczorek.eot.domain.trader.Trader;
 import de.wieczorek.eot.domain.trader.TradingPerformance;
-import de.wieczorek.eot.domain.trader.Wallet;
 import de.wieczorek.eot.domain.trading.rule.ComparatorType;
 import de.wieczorek.eot.domain.trading.rule.TradingRule;
 import de.wieczorek.eot.domain.trading.rule.TradingRulePerceptron;
 import de.wieczorek.eot.domain.trading.rule.metric.CoppocGraphMetric;
 import de.wieczorek.eot.domain.trading.rule.metric.RsiGraphMetric;
+import de.wieczorek.eot.domain.trading.rule.metric.StochasticFastGraphMetric;
 
 public class EvolutionEngine {
 
@@ -38,9 +39,9 @@ public class EvolutionEngine {
     }
 
     public List<IIndividual> getNextPopulation(final int size, final List<IIndividual> traders) {
-	logger.info("input for next Trader generation:");
+	logger.severe("input for next Trader generation:");
 	for (final IIndividual individual : traders) {
-	    logger.info("" + individual.getName() + ": " + individual.calculateFitness());
+	    logger.severe("" + individual.getName() + ": " + individual.calculateFitness());
 	}
 
 	final List<IIndividual> result = new ArrayList<>();
@@ -53,8 +54,8 @@ public class EvolutionEngine {
 
 	for (final IIndividual individual : result) {
 	    final Trader t = (Trader) individual;
-	    t.getWallet().clear();
-	    t.getWallet().deposit(new ExchangableAmount(new ExchangableSet(ExchangableType.BTC, 1), 0));
+	    t.getAccount().clear();
+	    t.getAccount().deposit(new ExchangableAmount(new ExchangableSet(ExchangableType.BTC, 1), 0));
 	    t.setPerformance(new TradingPerformance(new ExchangableSet(ExchangableType.BTC, 1)));
 	    individual.mutate();
 
@@ -74,7 +75,7 @@ public class EvolutionEngine {
 	final int sizePerAlgorithm = size;
 
 	for (int i = 0; i < sizePerAlgorithm; i++) {
-	    final Wallet wallet = new Wallet();
+	    final Account wallet = new Account();
 	    wallet.deposit(new ExchangableAmount(new ExchangableSet(ExchangableType.BTC, 1), 0));
 	    final TradingPerformance performance = new TradingPerformance(new ExchangableSet(ExchangableType.BTC, 1));
 
@@ -100,7 +101,32 @@ public class EvolutionEngine {
 	}
 
 	for (int i = 0; i < sizePerAlgorithm; i++) {
-	    final Wallet wallet = new Wallet();
+	    final Account wallet = new Account();
+	    wallet.deposit(new ExchangableAmount(new ExchangableSet(ExchangableType.BTC, 1), 0));
+	    final TradingPerformance performance = new TradingPerformance(new ExchangableSet(ExchangableType.BTC, 1));
+
+	    final TradingRule rule1 = new TradingRule();
+	    rule1.setThreshold(0.0 + (i / (Math.max(1, 100 / sizePerAlgorithm))));
+	    rule1.setComparator(ComparatorType.LESS);
+	    rule1.setMetric(new StochasticFastGraphMetric());
+
+	    final TradingRule rule21 = new TradingRule();
+	    rule21.setThreshold(100.0 - i / (Math.max(1, 100 / sizePerAlgorithm)));
+	    rule21.setComparator(ComparatorType.GREATER);
+	    rule21.setMetric(new StochasticFastGraphMetric());
+
+	    final TradingRulePerceptron buyRule = new TradingRulePerceptron(rule1, 1, 1);
+	    final TradingRulePerceptron sellRule = new TradingRulePerceptron(rule21, 1, 1);
+	    final Trader newTrader = new Trader("FAST_" + i + "_" + (100 - i), wallet, exchange, buyRule, sellRule,
+		    new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
+	    newTrader.setExchange(exchange);
+	    newTrader.setName(newTrader.generateDescriptiveName());
+	    currentGeneration.add(newTrader);
+
+	}
+
+	for (int i = 0; i < sizePerAlgorithm; i++) {
+	    final Account wallet = new Account();
 	    wallet.deposit(new ExchangableAmount(new ExchangableSet(ExchangableType.BTC, 1), 0));
 	    final TradingPerformance performance = new TradingPerformance(new ExchangableSet(ExchangableType.BTC, 1));
 
@@ -123,6 +149,7 @@ public class EvolutionEngine {
 	    currentGeneration.add(newTrader);
 
 	}
+
 	return currentGeneration;
     }
 }

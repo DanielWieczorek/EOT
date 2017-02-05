@@ -23,5 +23,7 @@
 
     
 
+    
+
     <inherits name="de.wieczorek.eot.MyAppWidgetset" />
 </module>
