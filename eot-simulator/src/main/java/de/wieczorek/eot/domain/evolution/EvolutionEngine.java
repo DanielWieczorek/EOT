@@ -38,7 +38,8 @@ public class EvolutionEngine {
 	this.exchange = exchange;
     }
 
-    public List<IIndividual> getNextPopulation(final int size, final List<IIndividual> traders) {
+    public final List<IIndividual> getNextPopulation(final int size, final List<IIndividual> traders) {
+
 	logger.severe("input for next Trader generation:");
 	for (final IIndividual individual : traders) {
 	    logger.severe("" + individual.getName() + ": " + individual.calculateFitness());
@@ -48,7 +49,9 @@ public class EvolutionEngine {
 	traders.addAll(traders);
 	final Random r = new Random(System.currentTimeMillis());
 	for (final IIndividual individual : traders) {
-	    result.addAll(individual.combineWith(traders.get(r.nextInt(traders.size()))));
+	    if (size < traders.size() + traders.size()) {
+		result.addAll(individual.combineWith(traders.get(r.nextInt(traders.size()))));
+	    }
 	}
 	result.addAll(traders);
 
@@ -57,7 +60,9 @@ public class EvolutionEngine {
 	    t.getAccount().clear();
 	    t.getAccount().deposit(new ExchangableAmount(new ExchangableSet(ExchangableType.BTC, 1), 0));
 	    t.setPerformance(new TradingPerformance(new ExchangableSet(ExchangableType.BTC, 1)));
-	    individual.mutate();
+	    if (r.nextInt(11) == 10 && traders.indexOf(individual) > 5) {
+		individual.mutate();
+	    }
 
 	}
 

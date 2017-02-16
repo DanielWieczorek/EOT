@@ -190,6 +190,9 @@ public class ExchangeRateHistory {
 	    resultExchangeRates = dataPointsAsList.parallelStream().filter(b -> b.getTime().isBefore(date)).sorted()
 		    .collect(Collectors.toList());
 
+	    // TODO
+	    entriesBeforeBuffer.clear();
+
 	    entriesBeforeBuffer.putIfAbsent(new ExchangeRateHistoryEntryKey(date, amount), resultExchangeRates);
 	}
 

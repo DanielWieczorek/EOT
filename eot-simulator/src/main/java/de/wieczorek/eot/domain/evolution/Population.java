@@ -40,7 +40,7 @@ public class Population implements IPopulation {
 	    currentGeneration = engine.getInitialPopulation(size);
 	    populationNumber = 1;
 	} else {
-	    currentGeneration = engine.getNextPopulation(size, getBestIndividuals(size / 3));
+	    currentGeneration = engine.getNextPopulation(size, getBestIndividuals(Math.max(1, size / 3)));
 	    populationNumber++;
 	}
     }

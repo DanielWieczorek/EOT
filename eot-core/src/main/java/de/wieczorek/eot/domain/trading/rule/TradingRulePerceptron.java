@@ -195,6 +195,23 @@ public class TradingRulePerceptron {
 	}
     }
 
+    /**
+     * Randomizes the threshold of of the perceptron.
+     */
+    public final void randomizeOneComparator() {
+	Random r = new Random(System.currentTimeMillis());
+	boolean useMax = r.nextBoolean();
+
+	int numberOfInputs = getInputs().size();
+	int randomIndex = r.nextInt(numberOfInputs);
+	Input input = getInputs().get(randomIndex);
+
+	int numberOfComparators = ComparatorType.values().length;
+	int randomComparatorIndex = r.nextInt(numberOfComparators);
+	input.getRule().setComparator(ComparatorType.values()[randomComparatorIndex]);
+
+    }
+
     public final List<Input> getInputs() {
 	return inputs;
     }

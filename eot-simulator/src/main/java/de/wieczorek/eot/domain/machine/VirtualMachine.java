@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,7 +55,7 @@ public class VirtualMachine extends AbstractMachine {
 		    if (j == 0) {
 			getTraders().getNextPopulation(populationSize);
 		    } else {
-			getTraders().getNextPopulation(getTraders().getAll().size() / 4);
+			getTraders().getNextPopulation(getTraders().getAll().size() / 2);
 		    }
 		    exchange.reset();
 		    final int cycles = exchange.getHistory().getCompleteHistoryData().size() - 15 * 60;
@@ -71,7 +72,9 @@ public class VirtualMachine extends AbstractMachine {
 				e.printStackTrace();
 			    }
 			}
-
+			if (i % 150 == 0) {
+			    logger.severe("current cycle:" + i + " of " + cycles + " data points");
+			}
 			for (int n = 0; n < 15; n++) {
 			    exchange.icrementTime();
 			}
@@ -99,7 +102,7 @@ public class VirtualMachine extends AbstractMachine {
 			    taskExecutor.execute(managers.get(n));
 			}
 			try {
-			    latch.await();
+			    latch.await(1, TimeUnit.MINUTES);
 			} catch (final InterruptedException E) {
 			    E.printStackTrace();
 			}

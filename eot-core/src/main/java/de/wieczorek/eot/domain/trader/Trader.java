@@ -107,7 +107,7 @@ public class Trader extends Observable implements IIndividual {
     public final double calculateFitness() {
 	double result = performance.getNetProfitPercent();
 	if (performance.getNumberOfTrades() == 0) {
-	    result = -1;
+	    result = Double.NEGATIVE_INFINITY;
 	}
 	return result;
     }
@@ -287,6 +287,8 @@ public class Trader extends Observable implements IIndividual {
 	buyRule.setRandomThreshold();
 	sellRule.setRandomThreshold();
 
+	buyRule.randomizeOneComparator();
+	sellRule.randomizeOneComparator();
     }
 
 }

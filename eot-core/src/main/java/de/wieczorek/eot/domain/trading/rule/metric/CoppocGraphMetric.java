@@ -51,8 +51,6 @@ public class CoppocGraphMetric extends AbstractGraphMetric {
 	// System.out.println(weightedAverageSet.getCompleteHistoryData().size());
 	average = average / (1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10);
 	// System.out.println(average);
-	return new TimedExchangeRate(currentDatapoint.getFrom(), currentDatapoint.getTo(), average,
-		currentDatapoint.getTime()).getToPrice();
+	return average;
     }
-
 }

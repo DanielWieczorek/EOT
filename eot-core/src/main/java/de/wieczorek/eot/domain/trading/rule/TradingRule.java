@@ -41,6 +41,8 @@ public class TradingRule {
      */
     private static Map<Tuple<TimedExchangeRate, GraphMetricType>, Double> ratingCache = new HashMap<>();
 
+    private static Map<Double, Double> ratingValueCache = new HashMap();
+
     /**
      * Determines whether a trade should be performed.
      * 
@@ -49,13 +51,19 @@ public class TradingRule {
      * @return true if a trade should be performed.
      */
     public final boolean evaluate(final ExchangeRateHistory history) {
-	double rating = 0.0;
+	Double rating = 0.0;
 	TimedExchangeRate reference = history.getMostRecentExchangeRate();
 	if (ratingCache.containsKey(new Tuple<TimedExchangeRate, GraphMetricType>(reference, metric.getType()))) {
 	    rating = ratingCache.get(new Tuple<TimedExchangeRate, GraphMetricType>(reference, metric.getType()));
 	} else {
+
 	    rating = metric.getRating(history);
-	    ratingCache.put(new Tuple<>(reference, metric.getType()), rating);
+
+	    if (!ratingValueCache.containsKey(rating)) {
+		ratingValueCache.put(rating, rating);
+	    }
+	    Double ratingReference = ratingValueCache.get(rating);
+	    ratingCache.put(new Tuple<>(reference, metric.getType()), ratingReference);
 	}
 
 	switch (getComparator()) {
