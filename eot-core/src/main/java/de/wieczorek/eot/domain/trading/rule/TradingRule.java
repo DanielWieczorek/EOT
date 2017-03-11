@@ -23,7 +23,7 @@ public class TradingRule {
     /**
      * Threshold it is compared against.
      */
-    private double threshold;
+    private double threshold = 0.0;
 
     /**
      * Comparator which is compared against.
@@ -36,12 +36,14 @@ public class TradingRule {
      */
     private AbstractGraphMetric metric;
 
+    private TimedExchangeRate lastReference;
+
     /**
      * The cache for the results from the graph metric.
      */
-    private static Map<Tuple<TimedExchangeRate, GraphMetricType>, Double> ratingCache = new HashMap<>();
+    private static volatile Map<Tuple<TimedExchangeRate, GraphMetricType>, Double> ratingCache = new HashMap<>();
 
-    private static Map<Double, Double> ratingValueCache = new HashMap();
+    private static volatile Map<Double, Double> ratingValueCache = new HashMap<>();
 
     /**
      * Determines whether a trade should be performed.
@@ -53,6 +55,12 @@ public class TradingRule {
     public final boolean evaluate(final ExchangeRateHistory history) {
 	Double rating = 0.0;
 	TimedExchangeRate reference = history.getMostRecentExchangeRate();
+
+	if (ratingCache.size() > 100) {
+	    ratingCache.clear();
+	    ratingValueCache.clear();
+	}
+
 	if (ratingCache.containsKey(new Tuple<TimedExchangeRate, GraphMetricType>(reference, metric.getType()))) {
 	    rating = ratingCache.get(new Tuple<TimedExchangeRate, GraphMetricType>(reference, metric.getType()));
 	} else {
@@ -62,9 +70,17 @@ public class TradingRule {
 	    if (!ratingValueCache.containsKey(rating)) {
 		ratingValueCache.put(rating, rating);
 	    }
+	    // System.out.println("Adding new entry to TradingRule: reference:"
+	    // + reference.getTime().toString().toString()
+	    // + " " + reference.getFrom() + "" + reference.getTo() + " metric:
+	    // " + metric.getType());
 	    Double ratingReference = ratingValueCache.get(rating);
 	    ratingCache.put(new Tuple<>(reference, metric.getType()), ratingReference);
 	}
+
+	lastReference = reference;
+	if (rating == null || Double.isNaN(rating))
+	    return false;
 
 	switch (getComparator()) {
 	case EQUAL:

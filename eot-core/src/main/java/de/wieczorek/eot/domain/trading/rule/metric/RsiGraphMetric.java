@@ -8,12 +8,12 @@ import de.wieczorek.eot.domain.exchangable.rate.TimedExchangeRate;
 
 public class RsiGraphMetric extends AbstractGraphMetric {
 
-    private Kernel kernel1;
-    private Range range;
+    private static Kernel kernel1;
+    private static Range range;
 
     public RsiGraphMetric() {
 	this.type = GraphMetricType.RSI;
-	this.isGpuEnabled = false;
+	this.isGpuEnabled = true;
     }
 
     // private final int MULTIPLICATOR = 15;

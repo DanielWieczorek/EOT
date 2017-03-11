@@ -123,4 +123,40 @@ public class TimedExchangeRate implements Comparable<TimedExchangeRate> {
 	return -1;
     }
 
+    @Override
+    public int hashCode() {
+	final int prime = 31;
+	int result = 1;
+	result = prime * result + ((from == null) ? 0 : from.hashCode());
+	result = prime * result + ((time == null) ? 0 : time.hashCode());
+	result = prime * result + ((to == null) ? 0 : to.hashCode());
+	long temp;
+	temp = Double.doubleToLongBits(toPrice);
+	result = prime * result + (int) (temp ^ (temp >>> 32));
+	return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+	if (this == obj)
+	    return true;
+	if (obj == null)
+	    return false;
+	if (getClass() != obj.getClass())
+	    return false;
+	TimedExchangeRate other = (TimedExchangeRate) obj;
+	if (from != other.from)
+	    return false;
+	if (time == null) {
+	    if (other.time != null)
+		return false;
+	} else if (!time.equals(other.time))
+	    return false;
+	if (to != other.to)
+	    return false;
+	if (Double.doubleToLongBits(toPrice) != Double.doubleToLongBits(other.toPrice))
+	    return false;
+	return true;
+    }
+
 }

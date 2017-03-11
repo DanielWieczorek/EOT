@@ -44,7 +44,7 @@ public class ExchangeRateDao {
     /**
      * The EM factory for the access to the DB.
      */
-    private final EntityManagerFactory emf;
+    private EntityManagerFactory emf;
 
     /**
      * The logger.

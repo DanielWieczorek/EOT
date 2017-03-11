@@ -62,8 +62,19 @@
 			<groupId>com.impetus.kundera.client</groupId>
 			<artifactId>kundera-cassandra</artifactId>
 			<version>3.5</version>
-
-			<exclusions>
+ <exclusions>
+    <!--          <exclusion>
+                <groupId>javax.servlet</groupId>
+                <artifactId>servlet-api</artifactId>
+             </exclusion>
+             <exclusion>
+                <artifactId>jetty-util</artifactId>
+                <groupId>org.mortbay.jetty</groupId>
+             </exclusion>
+             <exclusion>
+                <artifactId>jetty</artifactId>
+                <groupId>org.mortbay.jetty</groupId>
+             </exclusion> -->
 				<exclusion>
 					<groupId>javassist</groupId>
 					<artifactId>javassist</artifactId>
@@ -79,6 +90,12 @@
 			<groupId>com.impetus.kundera.core</groupId>
 			<artifactId>kundera-core</artifactId>
 			<version>3.6</version>
+			<exclusions>
+				<exclusion>
+					<groupId>javassist</groupId>
+					<artifactId>javassist</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

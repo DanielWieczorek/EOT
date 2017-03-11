@@ -20,16 +20,20 @@ public class CoppocGraphMetric extends AbstractGraphMetric {
 		.size(); i += 1 * MULTIPLICATOR) {
 	    TimedExchangeRate currentDatapoint = input.getCompleteHistoryData().get(i);
 	    // System.out.println(currentDatapoint.getTime().toString());
-	    ExchangeRateHistory roc11Set = input.getHistoryEntriesBefore(currentDatapoint.getTime(),
-		    11 * MULTIPLICATOR);
+	    // ExchangeRateHistory roc11Set =
+	    // input.getHistoryEntriesBefore(currentDatapoint.getTime(),
+	    // 11 * MULTIPLICATOR);
 
-	    double roc11 = ((currentDatapoint.getToPrice() - roc11Set.getCompleteHistoryData().get(0).getToPrice())
-		    / roc11Set.getCompleteHistoryData().get(0).getToPrice()) * 100;
+	    double roc11 = ((currentDatapoint.getToPrice()
+		    - input.getCompleteHistoryData().get(i - 11 * MULTIPLICATOR).getToPrice())
+		    / input.getCompleteHistoryData().get(i - 11 * MULTIPLICATOR).getToPrice()) * 100;
 	    // System.out.println("roc 11:"+roc11);
-	    ExchangeRateHistory roc14Set = input.getHistoryEntriesBefore(currentDatapoint.getTime(),
-		    14 * MULTIPLICATOR);
-	    double roc14 = ((currentDatapoint.getToPrice() - roc14Set.getCompleteHistoryData().get(0).getToPrice())
-		    / roc14Set.getCompleteHistoryData().get(0).getToPrice()) * 100;
+	    // ExchangeRateHistory roc14Set =
+	    // input.getHistoryEntriesBefore(currentDatapoint.getTime(),
+	    // 14 * MULTIPLICATOR);
+	    double roc14 = ((currentDatapoint.getToPrice()
+		    - input.getCompleteHistoryData().get(i - 14 * MULTIPLICATOR).getToPrice())
+		    / input.getCompleteHistoryData().get(i - 14 * MULTIPLICATOR).getToPrice()) * 100;
 	    // System.out.println("roc 14:"+roc14);
 	    racOutput.add(new TimedExchangeRate(currentDatapoint.getFrom(), currentDatapoint.getTo(), roc11 + roc14,
 		    currentDatapoint.getTime()));
@@ -50,7 +54,6 @@ public class CoppocGraphMetric extends AbstractGraphMetric {
 	}
 	// System.out.println(weightedAverageSet.getCompleteHistoryData().size());
 	average = average / (1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10);
-	// System.out.println(average);
 	return average;
     }
 }

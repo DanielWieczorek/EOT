@@ -36,7 +36,7 @@ public class ExchangeRateHistory {
      * retrieve the same history subset. The key is the start date and the
      * amount of entries.
      */
-    private final Map<ExchangeRateHistoryEntryKey, List<TimedExchangeRate>> entriesBeforeBuffer;
+    private volatile Map<ExchangeRateHistoryEntryKey, List<TimedExchangeRate>> entriesBeforeBuffer;
 
     /**
      * Key for the cache of the saved sub lists.
@@ -217,4 +217,5 @@ public class ExchangeRateHistory {
 	}
 	return dataPointsAsList.get(dataPoints.size() - 1);
     }
+
 }

@@ -200,7 +200,6 @@ public class TradingRulePerceptron {
      */
     public final void randomizeOneComparator() {
 	Random r = new Random(System.currentTimeMillis());
-	boolean useMax = r.nextBoolean();
 
 	int numberOfInputs = getInputs().size();
 	int randomIndex = r.nextInt(numberOfInputs);

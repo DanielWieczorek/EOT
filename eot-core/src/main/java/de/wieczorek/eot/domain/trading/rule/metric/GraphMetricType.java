@@ -16,5 +16,7 @@ public enum GraphMetricType {
      */
     Coppoch,
 
-    StochasticFast
+    StochasticFast,
+
+    MACD
 }

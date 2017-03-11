@@ -12,7 +12,7 @@ import de.wieczorek.eot.domain.trader.Trader;
  * @author Daniel Wieczorek
  *
  */
-public abstract class AbstractMachine {
+public abstract class AbstractMachine implements IMachine {
 
     /**
      * The exchange on which is being traded. Needed for initialization.
@@ -49,18 +49,21 @@ public abstract class AbstractMachine {
     /**
      * Starts the machine.
      */
+    @Override
     public abstract void start();
 
     /**
      * Pauses the machine, so that it can resume at the same location it was
      * stopped.
      */
+    @Override
     public abstract void pause();
 
     /**
      * Stops the machine. If started again the machine wil start from the
      * beginning.
      */
+    @Override
     public abstract void stop();
 
     /**
