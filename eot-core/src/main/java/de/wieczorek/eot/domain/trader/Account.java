@@ -1,6 +1,7 @@
 package de.wieczorek.eot.domain.trader;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,7 @@ public class Account {
      * @return an exchangable set containing all exchangables of the given type
      */
     public final synchronized ExchangableSet countAllExchangablesOfType(final ExchangableType type) {
-	List<ExchangableAmount> exchangables = content.get(type);
+	List<ExchangableAmount> exchangables = Collections.unmodifiableList(content.get(type));
 	ExchangableSet result = new ExchangableSet();
 	result.setExchangable(type);
 

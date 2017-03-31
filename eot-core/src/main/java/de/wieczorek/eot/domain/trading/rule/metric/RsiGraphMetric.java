@@ -13,7 +13,7 @@ public class RsiGraphMetric extends AbstractGraphMetric {
 
     public RsiGraphMetric() {
 	this.type = GraphMetricType.RSI;
-	this.isGpuEnabled = true;
+	this.strategy = ExecutionLocationStrategy.GPU_ONLY;
     }
 
     // private final int MULTIPLICATOR = 15;

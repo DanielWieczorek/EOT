@@ -2,9 +2,7 @@ package de.wieczorek.eot.domain.exchangable.rate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.stream.Collectors;
 
@@ -29,14 +27,6 @@ public class ExchangeRateHistory {
      * {@link getCompleteHistoryData()}}
      */
     private List<TimedExchangeRate> dataPointsAsList;
-
-    /**
-     * contains a subset of the queue which was generated via
-     * getHistoryEntriesBefore(). This is used for caching when multiple traders
-     * retrieve the same history subset. The key is the start date and the
-     * amount of entries.
-     */
-    private volatile Map<ExchangeRateHistoryEntryKey, List<TimedExchangeRate>> entriesBeforeBuffer;
 
     /**
      * Key for the cache of the saved sub lists.
@@ -118,7 +108,6 @@ public class ExchangeRateHistory {
     public ExchangeRateHistory() {
 	dataPoints = new PriorityQueue<>();
 	dataPointsAsList = new ArrayList<>();
-	entriesBeforeBuffer = new HashMap<>();
     }
 
     /**
@@ -152,7 +141,6 @@ public class ExchangeRateHistory {
 	dataPoints.add(exchangeRate);
 	dataPointsAsList = null;
 
-	entriesBeforeBuffer.clear();
 	return this;
     }
 
@@ -182,23 +170,31 @@ public class ExchangeRateHistory {
      * @return an exchange rate history entry containing a subset of the
      *         history.
      */
+
+    long timeInMillis = 0;
+    long counter = 0;
+
     public final ExchangeRateHistory getHistoryEntriesBefore(final LocalDateTime date, final int amount) {
 
-	List<TimedExchangeRate> resultExchangeRates = entriesBeforeBuffer
-		.get(new ExchangeRateHistoryEntryKey(date.withSecond(0).withNano(0), amount));
-	if (resultExchangeRates == null) {
-	    resultExchangeRates = dataPointsAsList.parallelStream().filter(b -> b.getTime().isBefore(date)).sorted()
-		    .collect(Collectors.toList());
+	List<TimedExchangeRate> resultExchangeRates = null;
 
-	    // TODO
-	    entriesBeforeBuffer.clear();
-
-	    entriesBeforeBuffer.putIfAbsent(new ExchangeRateHistoryEntryKey(date, amount), resultExchangeRates);
+	int low = 0;
+	int high = dataPointsAsList.size();
+	while (high >= low) {
+	    int middle = (low + high) / 2;
+	    if (dataPointsAsList.get(middle).getTime().isBefore(date)) {
+		low = middle + 1;
+	    } else if (dataPointsAsList.get(middle).getTime().isAfter(date)) {
+		high = middle - 1;
+	    } else {
+		resultExchangeRates = dataPointsAsList.subList(Math.max(0, middle - amount), middle);
+		break;
+	    }
 	}
 
 	if (!resultExchangeRates.isEmpty()) {
-	    return ExchangeRateHistory.from(resultExchangeRates
-		    .subList(Math.max(0, resultExchangeRates.size() - 1 - amount), resultExchangeRates.size() - 1));
+	    ExchangeRateHistory result = ExchangeRateHistory.from(resultExchangeRates);
+	    return result;
 	} else {
 	    return new ExchangeRateHistory();
 	}

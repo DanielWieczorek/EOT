@@ -15,42 +15,31 @@ public class CoppocGraphMetric extends AbstractGraphMetric {
 
 	ExchangeRateHistory input = history;
 	ExchangeRateHistory racOutput = new ExchangeRateHistory();
+	int adaptiveMultiplicator = (input.getCompleteHistoryData().size() - 10) / 15;
 
-	for (int i = input.getCompleteHistoryData().size() - 10 * MULTIPLICATOR; i < input.getCompleteHistoryData()
-		.size(); i += 1 * MULTIPLICATOR) {
+	for (int i = input.getCompleteHistoryData().size() - 10; i < input.getCompleteHistoryData().size(); i += 1) {
 	    TimedExchangeRate currentDatapoint = input.getCompleteHistoryData().get(i);
-	    // System.out.println(currentDatapoint.getTime().toString());
-	    // ExchangeRateHistory roc11Set =
-	    // input.getHistoryEntriesBefore(currentDatapoint.getTime(),
-	    // 11 * MULTIPLICATOR);
 
 	    double roc11 = ((currentDatapoint.getToPrice()
-		    - input.getCompleteHistoryData().get(i - 11 * MULTIPLICATOR).getToPrice())
-		    / input.getCompleteHistoryData().get(i - 11 * MULTIPLICATOR).getToPrice()) * 100;
-	    // System.out.println("roc 11:"+roc11);
-	    // ExchangeRateHistory roc14Set =
-	    // input.getHistoryEntriesBefore(currentDatapoint.getTime(),
-	    // 14 * MULTIPLICATOR);
+		    - input.getCompleteHistoryData().get(i - 11 * adaptiveMultiplicator).getToPrice())
+		    / input.getCompleteHistoryData().get(i - 11 * adaptiveMultiplicator).getToPrice()) * 100;
+
 	    double roc14 = ((currentDatapoint.getToPrice()
-		    - input.getCompleteHistoryData().get(i - 14 * MULTIPLICATOR).getToPrice())
-		    / input.getCompleteHistoryData().get(i - 14 * MULTIPLICATOR).getToPrice()) * 100;
-	    // System.out.println("roc 14:"+roc14);
+		    - input.getCompleteHistoryData().get(i - 14 * adaptiveMultiplicator).getToPrice())
+		    / input.getCompleteHistoryData().get(i - 14 * adaptiveMultiplicator).getToPrice()) * 100;
+
 	    racOutput.add(new TimedExchangeRate(currentDatapoint.getFrom(), currentDatapoint.getTo(), roc11 + roc14,
 		    currentDatapoint.getTime()));
-	    // System.out.println("roc 14+11:"+roc14+roc11);
 	}
 
 	TimedExchangeRate currentDatapoint = racOutput.getCompleteHistoryData()
 		.get(racOutput.getCompleteHistoryData().size() - 1);
 	ExchangeRateHistory weightedAverageSet = racOutput.getHistoryEntriesBefore(currentDatapoint.getTime(), 10);
-	// System.out.println(currentDatapoint.getTime().toString());
 
 	double average = 0;
 
 	for (int j = 0; j < weightedAverageSet.getCompleteHistoryData().size(); j++) {
 	    average += weightedAverageSet.getCompleteHistoryData().get(j).getToPrice() * (j + 1.0);
-	    // System.out.println("avg:
-	    // "+j+":"+weightedAverageSet.getCompleteHistoryData().get(j).getToPrice());
 	}
 	// System.out.println(weightedAverageSet.getCompleteHistoryData().size());
 	average = average / (1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10);

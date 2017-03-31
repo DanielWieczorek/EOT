@@ -9,7 +9,7 @@ public class MacdGraphMetric extends AbstractGraphMetric {
 
     public MacdGraphMetric() {
 	this.type = GraphMetricType.MACD;
-	this.isGpuEnabled = false;
+	this.strategy = ExecutionLocationStrategy.CPU_ONLY;
     }
 
     @Override

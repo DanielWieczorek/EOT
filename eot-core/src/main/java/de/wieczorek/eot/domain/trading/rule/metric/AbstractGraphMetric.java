@@ -24,7 +24,7 @@ public abstract class AbstractGraphMetric {
     /**
      * Whether or not the calculation via the GPU is enabled.
      */
-    protected boolean isGpuEnabled;
+    protected ExecutionLocationStrategy strategy = ExecutionLocationStrategy.CPU_ONLY;
 
     /**
      * Whether or not the GPU was used for the last calculaton.
@@ -37,7 +37,7 @@ public abstract class AbstractGraphMetric {
      * @return
      */
     public final double getRating(final ExchangeRateHistory history) {
-	if (isGpuEnabled) {
+	if (ExecutionLocationStrategy.CPU_AND_GPU.equals(strategy)) {
 	    if (wasGpuUsedLast) {
 		wasGpuUsedLast = false;
 		return calculateRatingCPU(history);
@@ -45,8 +45,10 @@ public abstract class AbstractGraphMetric {
 		wasGpuUsedLast = true;
 		return calculateRatingGPU(history);
 	    }
-	} else {
+	} else if (ExecutionLocationStrategy.CPU_ONLY.equals(strategy)) {
 	    return calculateRatingCPU(history);
+	} else {
+	    return calculateRatingGPU(history);
 	}
     }
 

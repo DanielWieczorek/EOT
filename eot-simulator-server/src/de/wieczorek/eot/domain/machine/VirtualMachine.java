@@ -32,7 +32,7 @@ public class VirtualMachine extends AbstractMachine {
 
     private static final int numberOfExecutors = 8;
 
-    private static final int populationSize = 200;
+    private static final int populationSize = 100;
 
     @Inject
     public VirtualMachine(final IExchange exchange, final Population traders) {
@@ -73,7 +73,16 @@ public class VirtualMachine extends AbstractMachine {
 		    final int cycles = exchange.getHistory().getCompleteHistoryData().size() - 15 * 60;
 		    logger.severe("running over " + cycles + " data points");
 		    final long start = System.currentTimeMillis();
+
+		    int n = 0;
+		    final int realNumberOfExecutors = Math.min(numberOfExecutors, this.getTraders().getAll().size());
+		    for (final IIndividual trader : this.getTraders().getAll()) {
+			traderGroups.get(n).add(trader);
+			n++;
+			n %= realNumberOfExecutors;
+		    }
 		    for (int i = 30 * 15; i < cycles && getState() != MachineState.STOPPED; i += 15) {
+
 			while (getState() == MachineState.PAUSED) {
 			    logger.info("simulation paused checking again in 10s");
 			    try {
@@ -87,19 +96,11 @@ public class VirtualMachine extends AbstractMachine {
 			if (i % 150 == 0) {
 			    logger.severe("current cycle:" + i + " of " + cycles + " data points");
 			}
-			for (int n = 0; n < 15; n++) {
+			for (n = 0; n < 15; n++) {
 			    exchange.icrementTime();
 			}
-			final int realNumberOfExecutors = Math.min(numberOfExecutors,
-				this.getTraders().getAll().size());
 
-			int n = 0;
 			final CountDownLatch latch = new CountDownLatch(realNumberOfExecutors);
-			for (final IIndividual trader : this.getTraders().getAll()) {
-			    traderGroups.get(n).add(trader);
-			    n++;
-			    n %= realNumberOfExecutors;
-			}
 
 			for (int x = 0; x < realNumberOfExecutors; x++) {
 			    managers.get(x).setLatch(latch);
@@ -162,9 +163,8 @@ public class VirtualMachine extends AbstractMachine {
 
 	@Override
 	public void run() {
-	    for (final IIndividual trader : getIndividuals()) {
-		trader.performAction();
-	    }
+	    getIndividuals().stream().forEach(t -> t.performAction());
+
 	    getLatch().countDown();
 	}
 

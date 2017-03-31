@@ -57,11 +57,6 @@ public class ExchangeRateDao {
     private final CexAPI api;
 
     /**
-     * Entity manager for the ORM framework to access the DB.
-     */
-    private EntityManager entityManager = null;
-
-    /**
      * Calls the web service for the history and then converts the returned JSON
      * to a list of exchange rates. The history returned has approximately 1
      * entry per 15 minutes.
@@ -180,7 +175,7 @@ public class ExchangeRateDao {
     @SuppressWarnings("unchecked")
     public final List<ExchangeRateBo> getDetailedHistoryEntriesFromDb(final ExchangableType from,
 	    final ExchangableType to, final int hours) {
-	entityManager = emf.createEntityManager();
+	EntityManager entityManager = emf.createEntityManager();
 	final Query q = entityManager.createQuery("Select p from ExchangeRateBo p where p.key.timestamp <="
 		+ LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) + " and p.key.timestamp >= "
 		+ LocalDateTime.now().minusHours(hours).toEpochSecond(ZoneOffset.UTC));
@@ -197,7 +192,7 @@ public class ExchangeRateDao {
      *            entries to save.
      */
     public final void saveHistoryEntries(final List<ExchangeRateBo> entries) {
-	entityManager = emf.createEntityManager();
+	EntityManager entityManager = emf.createEntityManager();
 	entityManager.setFlushMode(FlushModeType.COMMIT);
 	final EntityTransaction transaction = entityManager.getTransaction();
 
@@ -221,7 +216,6 @@ public class ExchangeRateDao {
 	final Map<String, String> props = new HashMap<>();
 	props.put(CassandraConstants.CQL_VERSION, CassandraConstants.CQL_VERSION_3_0);
 	emf = Persistence.createEntityManagerFactory("cassandra_pu", props);
-	this.entityManager = emf.createEntityManager();
 
     }
 

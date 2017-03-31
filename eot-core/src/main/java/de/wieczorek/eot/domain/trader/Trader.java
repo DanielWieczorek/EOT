@@ -71,6 +71,8 @@ public class Trader extends Observable implements IIndividual {
      */
     private TradingPerformance performance;
 
+    private int numberOfObservedHours = 24;
+
     /**
      * Constructor.
      * 
@@ -124,18 +126,19 @@ public class Trader extends Observable implements IIndividual {
      */
     private void trade() {
 	double currentExchangeRate = getExchange().getCurrentExchangeRate(getExchangablesToTrade()).getToPrice();
-	final int hoursPerDay = 24;
 
 	if (currentExchangeRate != lastSeenRate && !areOrdersPending()) {
 	    ExchangableSet from = getAccount().countAllExchangablesOfType(getExchangablesToTrade().getFrom());
-	    ExchangableSet to = getAccount().countAllExchangablesOfType(getExchangablesToTrade().getTo());
 
-	    if (from.getAmount() > 0 && buyRule
-		    .isActivated(getExchange().getExchangeRateHistory(getExchangablesToTrade(), hoursPerDay))) {
+	    if (from.getAmount() > 0 && buyRule.isActivated(
+		    getExchange().getExchangeRateHistory(getExchangablesToTrade(), getNumberOfObservedHours()))) {
 		buy();
-	    } else if (to.getAmount() > 0 && sellRule
-		    .isActivated(getExchange().getExchangeRateHistory(getExchangablesToTrade(), hoursPerDay))) {
-		sell();
+	    } else {
+		ExchangableSet to = getAccount().countAllExchangablesOfType(getExchangablesToTrade().getTo());
+		if (to.getAmount() > 0 && sellRule.isActivated(
+			getExchange().getExchangeRateHistory(getExchangablesToTrade(), getNumberOfObservedHours()))) {
+		    sell();
+		}
 	    }
 	}
 	lastSeenRate = currentExchangeRate;
@@ -247,12 +250,18 @@ public class Trader extends Observable implements IIndividual {
 	Trader result1 = new Trader(name + "|" + individual.getName(), wallet, exchange, buyRule,
 		sellRule.combineWith(((Trader) individual).sellRule), exchangablesToTrade,
 		new TradingPerformance(null));
+	result1.setNumberOfObservedHours(
+		(this.numberOfObservedHours + ((Trader) individual).numberOfObservedHours) / 2);
 	result1.setName(result1.generateDescriptiveName());
+
 	wallet = new Account();
 	Trader result2 = new Trader(name + "|" + individual.getName(), wallet, exchange,
 		buyRule.combineWith(((Trader) individual).buyRule), sellRule, exchangablesToTrade,
 		new TradingPerformance(null));
+	result2.setNumberOfObservedHours(
+		(this.numberOfObservedHours + ((Trader) individual).numberOfObservedHours) / 2);
 	result2.setName(result2.generateDescriptiveName());
+
 	List<IIndividual> result = new ArrayList<>();
 	result.add(result1);
 	result.add(result2);
@@ -266,7 +275,7 @@ public class Trader extends Observable implements IIndividual {
      * @return the name
      */
     public final String generateDescriptiveName() {
-	String result = "b";
+	String result = this.numberOfObservedHours + "b";
 	for (Input i : buyRule.getInputs()) {
 	    result += "::" + i.getRule().getMetric().getType().name() + "_" + i.getRule().getThreshold() + "-"
 		    + i.getWeight();
@@ -289,6 +298,14 @@ public class Trader extends Observable implements IIndividual {
 
 	buyRule.randomizeOneComparator();
 	sellRule.randomizeOneComparator();
+    }
+
+    public int getNumberOfObservedHours() {
+	return numberOfObservedHours;
+    }
+
+    public void setNumberOfObservedHours(int numberOfObservedHours) {
+	this.numberOfObservedHours = numberOfObservedHours;
     }
 
 }

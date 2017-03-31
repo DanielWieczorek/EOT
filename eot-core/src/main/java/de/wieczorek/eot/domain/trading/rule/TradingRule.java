@@ -41,7 +41,7 @@ public class TradingRule {
     /**
      * The cache for the results from the graph metric.
      */
-    private static volatile Map<Tuple<TimedExchangeRate, GraphMetricType>, Double> ratingCache = new HashMap<>();
+    private static volatile Map<Tuple<TimedExchangeRate, Integer, GraphMetricType>, Double> ratingCache = new HashMap<>();
 
     private static volatile Map<Double, Double> ratingValueCache = new HashMap<>();
 
@@ -56,13 +56,15 @@ public class TradingRule {
 	Double rating = 0.0;
 	TimedExchangeRate reference = history.getMostRecentExchangeRate();
 
-	if (ratingCache.size() > 100) {
+	if (ratingCache.size() > 1) {
 	    ratingCache.clear();
 	    ratingValueCache.clear();
 	}
 
-	if (ratingCache.containsKey(new Tuple<TimedExchangeRate, GraphMetricType>(reference, metric.getType()))) {
-	    rating = ratingCache.get(new Tuple<TimedExchangeRate, GraphMetricType>(reference, metric.getType()));
+	if (ratingCache.containsKey(new Tuple<TimedExchangeRate, Integer, GraphMetricType>(reference,
+		history.getCompleteHistoryData().size(), metric.getType()))) {
+	    rating = ratingCache.get(new Tuple<TimedExchangeRate, Integer, GraphMetricType>(reference,
+		    history.getCompleteHistoryData().size(), metric.getType()));
 	} else {
 
 	    rating = metric.getRating(history);
@@ -70,17 +72,15 @@ public class TradingRule {
 	    if (!ratingValueCache.containsKey(rating)) {
 		ratingValueCache.put(rating, rating);
 	    }
-	    // System.out.println("Adding new entry to TradingRule: reference:"
-	    // + reference.getTime().toString().toString()
-	    // + " " + reference.getFrom() + "" + reference.getTo() + " metric:
-	    // " + metric.getType());
 	    Double ratingReference = ratingValueCache.get(rating);
-	    ratingCache.put(new Tuple<>(reference, metric.getType()), ratingReference);
+	    ratingCache.put(new Tuple<>(reference, history.getCompleteHistoryData().size(), metric.getType()),
+		    ratingReference);
 	}
 
 	lastReference = reference;
-	if (rating == null || Double.isNaN(rating))
+	if (rating == null || Double.isNaN(rating)) {
 	    return false;
+	}
 
 	switch (getComparator()) {
 	case EQUAL:
@@ -128,7 +128,7 @@ public class TradingRule {
      * @param <Y>
      *            type of second component of the tuple
      */
-    public class Tuple<X, Y> {
+    public class Tuple<X, Y, Z> {
 	/**
 	 * Fist component of the tuple.
 	 */
@@ -139,6 +139,11 @@ public class TradingRule {
 	private final Y y;
 
 	/**
+	 * Second component of the tuple.
+	 */
+	private final Z z;
+
+	/**
 	 * Constructor.
 	 * 
 	 * @param xInput
@@ -146,24 +151,24 @@ public class TradingRule {
 	 * @param yInput
 	 *            Second component of the tuple.
 	 */
-	public Tuple(final X xInput, final Y yInput) {
+	public Tuple(final X xInput, final Y yInput, final Z zInput) {
 	    this.x = xInput;
 	    this.y = yInput;
+	    this.z = zInput;
 	}
 
 	@Override
-	public final int hashCode() {
+	public int hashCode() {
 	    final int prime = 31;
 	    int result = 1;
-	    result = prime * result + getOuterType().hashCode();
 	    result = prime * result + ((x == null) ? 0 : x.hashCode());
 	    result = prime * result + ((y == null) ? 0 : y.hashCode());
+	    result = prime * result + ((z == null) ? 0 : z.hashCode());
 	    return result;
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Override
-	public final boolean equals(final Object obj) {
+	public boolean equals(Object obj) {
 	    if (this == obj) {
 		return true;
 	    }
@@ -188,12 +193,14 @@ public class TradingRule {
 	    } else if (!y.equals(other.y)) {
 		return false;
 	    }
+	    if (z == null) {
+		if (other.z != null) {
+		    return false;
+		}
+	    } else if (!z.equals(other.z)) {
+		return false;
+	    }
 	    return true;
 	}
-
-	private TradingRule getOuterType() {
-	    return TradingRule.this;
-	}
-
     }
 }
