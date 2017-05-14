@@ -7,7 +7,7 @@ public class CoppocGraphMetric extends AbstractGraphMetric {
     private final int MULTIPLICATOR = 15;
 
     public CoppocGraphMetric() {
-	this.type = GraphMetricType.Coppoch;
+	setType(GraphMetricType.Coppoch);
     }
 
     @Override

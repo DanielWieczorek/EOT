@@ -125,6 +125,11 @@
 			<artifactId>commons-configuration2</artifactId>
 			<version>2.1</version>
 		</dependency>
+		<dependency>
+			<groupId>edu.self</groupId>
+			<artifactId>kraken-api-java</artifactId>
+			<version>1.0</version>
+		</dependency>
 	</dependencies>
 
 </project>

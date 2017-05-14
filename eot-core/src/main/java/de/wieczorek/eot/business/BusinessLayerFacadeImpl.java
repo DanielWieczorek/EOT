@@ -52,11 +52,6 @@ public class BusinessLayerFacadeImpl implements IBusinessLayerFacade {
     }
 
     @Override
-    public final ExchangeRateHistory getHistory(final ExchangableType from, final ExchangableType to, final int hours) {
-	return chartHistoryUc.getHistory(from, to, hours);
-    }
-
-    @Override
     public final ExchangeRateHistory getDetailedHistoryFromDb(final ExchangableType from, final ExchangableType to,
 	    final int hours) {
 	return chartHistoryUc.getDetailedHistoryFromDb(from, to, hours);

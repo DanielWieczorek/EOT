@@ -12,8 +12,8 @@ public class StochasticFastGraphMetric extends AbstractGraphMetric {
     private static Kernel kernel1;
 
     public StochasticFastGraphMetric() {
-	this.type = GraphMetricType.StochasticFast;
-	this.strategy = ExecutionLocationStrategy.GPU_ONLY;
+	this.setType(GraphMetricType.StochasticFast);
+	this.setStrategy(ExecutionLocationStrategy.GPU_ONLY);
     }
 
     @Override

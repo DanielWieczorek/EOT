@@ -8,8 +8,8 @@ import de.wieczorek.eot.domain.exchangable.rate.TimedExchangeRate;
 public class MacdGraphMetric extends AbstractGraphMetric {
 
     public MacdGraphMetric() {
-	this.type = GraphMetricType.MACD;
-	this.strategy = ExecutionLocationStrategy.CPU_ONLY;
+	this.setType(GraphMetricType.MACD);
+	this.setStrategy(ExecutionLocationStrategy.CPU_ONLY);
     }
 
     @Override

@@ -19,12 +19,12 @@ public abstract class AbstractGraphMetric {
     /**
      * Type of the metric. This is needed for the {@link TradingRule}
      */
-    protected GraphMetricType type;
+    private GraphMetricType type;
 
     /**
      * Whether or not the calculation via the GPU is enabled.
      */
-    protected ExecutionLocationStrategy strategy = ExecutionLocationStrategy.CPU_ONLY;
+    private ExecutionLocationStrategy strategy = ExecutionLocationStrategy.CPU_ONLY;
 
     /**
      * Whether or not the GPU was used for the last calculaton.
@@ -37,7 +37,7 @@ public abstract class AbstractGraphMetric {
      * @return
      */
     public final double getRating(final ExchangeRateHistory history) {
-	if (ExecutionLocationStrategy.CPU_AND_GPU.equals(strategy)) {
+	if (ExecutionLocationStrategy.CPU_AND_GPU.equals(getStrategy())) {
 	    if (wasGpuUsedLast) {
 		wasGpuUsedLast = false;
 		return calculateRatingCPU(history);
@@ -45,7 +45,7 @@ public abstract class AbstractGraphMetric {
 		wasGpuUsedLast = true;
 		return calculateRatingGPU(history);
 	    }
-	} else if (ExecutionLocationStrategy.CPU_ONLY.equals(strategy)) {
+	} else if (ExecutionLocationStrategy.CPU_ONLY.equals(getStrategy())) {
 	    return calculateRatingCPU(history);
 	} else {
 	    return calculateRatingGPU(history);
@@ -69,11 +69,23 @@ public abstract class AbstractGraphMetric {
      * @return the calculation result
      */
     protected double calculateRatingGPU(final ExchangeRateHistory history) {
-	throw new UnsupportedOperationException("Calculation via GPU is not enabled for " + type.name());
+	throw new UnsupportedOperationException("Calculation via GPU is not enabled for " + getType().name());
     }
 
     public final GraphMetricType getType() {
 	return type;
+    }
+
+    public ExecutionLocationStrategy getStrategy() {
+	return strategy;
+    }
+
+    public void setStrategy(ExecutionLocationStrategy strategy) {
+	this.strategy = strategy;
+    }
+
+    public void setType(GraphMetricType type) {
+	this.type = type;
     }
 
 }
