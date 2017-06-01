@@ -8,6 +8,9 @@ import java.util.Map;
 
 import com.google.inject.Inject;
 
+import de.wieczorek.eot.business.trade.impl.OrderBo;
+import de.wieczorek.eot.business.trade.impl.OrderExecutionType;
+import de.wieczorek.eot.domain.exchangable.ExchangablePair;
 import de.wieczorek.eot.domain.exchangable.ExchangableType;
 import edu.self.kraken.api.KrakenApi;
 import edu.self.kraken.api.KrakenApi.Method;
@@ -22,6 +25,8 @@ public class KrakenApiWrapper implements IExchangeApi {
 	this.api = api;
 	exchangableConversionMap = new HashMap<ExchangableType, String>();
 	exchangableConversionMap.put(ExchangableType.BTC, "XBT");
+	api.setKey("x");
+	api.setSecret("y==");
     }
 
     public void setSecret(String secret) {
@@ -65,6 +70,36 @@ public class KrakenApiWrapper implements IExchangeApi {
 	    result = type.name();
 	}
 	return result;
+    }
+
+    @Override
+    public String getAccountBalance() throws InvalidKeyException, NoSuchAlgorithmException, IOException {
+	return api.queryPrivate(Method.BALANCE);
+
+    }
+
+    @Override
+    public String getAssetPairInfo(ExchangablePair pair) throws IOException {
+	Map<String, String> input = new HashMap<>();
+
+	input.put("pair", convertExchangableType(pair.getFrom()) + convertExchangableType(pair.getTo()));
+	return api.queryPublic(Method.ASSET_PAIRS, input);
+    }
+
+    @Override
+    public String performOrder(OrderBo order) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
+	Map<String, String> input = new HashMap<>();
+
+	input.put("pair",
+		convertExchangableType(order.getPair().getFrom()) + convertExchangableType(order.getPair().getTo()));
+	input.put("type", order.getType().name().toLowerCase());
+	input.put("ordertype", order.getExecutionType().name());
+	input.put("volume", order.getVolume() + "");
+	if (order.getExecutionType().equals(OrderExecutionType.limit))
+	    input.put("price", order.getPrice() + "");
+	input.put("expiretm", "+55");
+	input.put("trading_agreement", "agree");
+	return api.queryPrivate(Method.ADD_ORDER, input);
     }
 
 }

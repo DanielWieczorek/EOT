@@ -3,6 +3,7 @@ package de.wieczorek.eot.domain.machine;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -12,19 +13,22 @@ import javax.inject.Inject;
 import com.google.inject.Singleton;
 
 import de.wieczorek.eot.domain.evolution.Population;
-import de.wieczorek.eot.domain.exchangable.ExchangableAmount;
 import de.wieczorek.eot.domain.exchangable.ExchangablePair;
 import de.wieczorek.eot.domain.exchangable.ExchangableSet;
 import de.wieczorek.eot.domain.exchangable.ExchangableType;
 import de.wieczorek.eot.domain.exchange.IExchange;
-import de.wieczorek.eot.domain.trader.Account;
+import de.wieczorek.eot.domain.trader.IAccount;
+import de.wieczorek.eot.domain.trader.SynchronizingAccount;
 import de.wieczorek.eot.domain.trader.Trader;
 import de.wieczorek.eot.domain.trader.TradingPerformance;
 import de.wieczorek.eot.domain.trading.rule.ComparatorType;
 import de.wieczorek.eot.domain.trading.rule.TradingRule;
 import de.wieczorek.eot.domain.trading.rule.TradingRulePerceptron;
 import de.wieczorek.eot.domain.trading.rule.metric.AbstractGraphMetric;
-import de.wieczorek.eot.domain.trading.rule.metric.RsiGraphMetric;
+import de.wieczorek.eot.domain.trading.rule.metric.CoppocGraphMetric;
+import de.wieczorek.eot.domain.trading.rule.metric.MacdGraphMetric;
+import de.wieczorek.eot.domain.trading.rule.metric.StochasticFastGraphMetric;
+import de.wieczorek.eot.ui.rest.InjectorSingleton;
 
 @Singleton
 public class RealMachine extends AbstractMachine {
@@ -37,45 +41,110 @@ public class RealMachine extends AbstractMachine {
     @Inject
     public RealMachine(final IExchange exchange, Population population) {
 	super(exchange, population);
+
+	Handler consoleHandler = new ConsoleHandler();
+	consoleHandler.setLevel(Level.FINE);
+	Logger.getAnonymousLogger().addHandler(consoleHandler);
+
 	Logger rootLogger = Logger.getLogger("");
 	for (Handler handler : rootLogger.getHandlers()) {
 	    // Change log level of default handler(s) of root logger
 	    // The paranoid would check that this is the ConsoleHandler ;)
-	    handler.setLevel(Level.ALL);
+	    handler.setLevel(Level.FINE);
 	}
 	// Set root logger level
-	rootLogger.setLevel(Level.ALL);
-	System.setProperty("java.util.logging.SimpleFormatter.format",
-		"%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS.%1$tL %4$-7s [%3$s] (%2$s) %5$s %6$s%n");
+	rootLogger.setLevel(Level.FINE);
 
-	final Account wallet = new Account();
-	wallet.deposit(new ExchangableAmount(new ExchangableSet(ExchangableType.BTC, 1), 0));
+	final SynchronizingAccount wallet = (SynchronizingAccount) InjectorSingleton.getInjector()
+		.getInstance(IAccount.class);
+	wallet.deposit(new ExchangableSet(ExchangableType.BTC, 1));
 	final TradingPerformance performance = new TradingPerformance(new ExchangableSet(ExchangableType.BTC, 1));
 
-	final TradingRule rule1 = new TradingRule();
-	rule1.setThreshold(50);
-	rule1.setComparator(ComparatorType.LESS);
-	AbstractGraphMetric metric1 = new RsiGraphMetric();
-	// metric1.setStrategy(ExecutionLocationStrategy.CPU_ONLY);
-	rule1.setMetric(metric1);
+	AbstractGraphMetric macdMetric = new MacdGraphMetric();
+	AbstractGraphMetric stochasticFastMetric = new StochasticFastGraphMetric();
+	AbstractGraphMetric coppochMetric = new CoppocGraphMetric();
 
-	final TradingRule rule12 = new TradingRule();
-	rule12.setThreshold(50);
-	rule12.setComparator(ComparatorType.GREATER);
-	// metric1.setStrategy(ExecutionLocationStrategy.CPU_ONLY);
-	rule12.setMetric(metric1);
+	final TradingRule buyRule1 = new TradingRule();
+	buyRule1.setThreshold(46.0);
+	buyRule1.setComparator(ComparatorType.GREATER);
+	buyRule1.setMetric(stochasticFastMetric);
 
-	final TradingRulePerceptron buyRule = new TradingRulePerceptron(rule1, 1, 1);
-	buyRule.add(rule12, 1.0);
-	final TradingRulePerceptron sellRule = new TradingRulePerceptron(rule1, 1, 1);
-	sellRule.add(rule12, 1.0);
-	final Trader newTrader = new Trader("rsi_" + 50 + "_" + 50, wallet, exchange, buyRule, sellRule,
+	final TradingRule buyRule2 = new TradingRule();
+	buyRule2.setThreshold(-2.4000000000000004);
+	buyRule2.setComparator(ComparatorType.EQUAL);
+	buyRule2.setMetric(coppochMetric);
+
+	final TradingRule buyRule3 = new TradingRule();
+	buyRule3.setThreshold(-7.42685546875);
+	buyRule3.setComparator(ComparatorType.LESS);
+	buyRule3.setMetric(coppochMetric);
+
+	final TradingRule buyRule4 = new TradingRule();
+	buyRule4.setThreshold(-7.1134765625);
+	buyRule4.setComparator(ComparatorType.LESS);
+	buyRule4.setMetric(macdMetric);
+
+	final TradingRule buyRule5 = new TradingRule();
+	buyRule5.setThreshold(-6.7375);
+	buyRule5.setComparator(ComparatorType.GREATER);
+	buyRule5.setMetric(macdMetric);
+
+	final TradingRulePerceptron buyPerceptron = new TradingRulePerceptron(buyRule1, 3.0, 81);
+	buyPerceptron.add(buyRule2, 2.0);
+	buyPerceptron.add(buyRule3, 29.0);
+	buyPerceptron.add(buyRule4, 51.0);
+	buyPerceptron.add(buyRule5, 5);
+
+	final TradingRule sellRule1 = new TradingRule();
+	sellRule1.setThreshold(2.4000000000000004 - 1.0);
+	sellRule1.setComparator(ComparatorType.LESS);
+	sellRule1.setMetric(coppochMetric);
+
+	final TradingRule sellRule2 = new TradingRule();
+	sellRule2.setThreshold(9.3);
+	sellRule2.setComparator(ComparatorType.GREATER);
+	sellRule2.setMetric(coppochMetric);
+
+	final TradingRule sellRule3 = new TradingRule();
+	sellRule3.setThreshold(5.73203125);
+	sellRule3.setComparator(ComparatorType.GREATER);
+	sellRule3.setMetric(macdMetric);
+
+	final TradingRulePerceptron sellPerceptron = new TradingRulePerceptron(sellRule1, 1, 21);
+	sellPerceptron.add(sellRule2, 1);
+	sellPerceptron.add(sellRule3, 20);
+
+	final Trader newTrader = new Trader("macd_" + -1 + "_" + 1, wallet, exchange, buyPerceptron, sellPerceptron,
 		new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
 	newTrader.setExchange(exchange);
-	newTrader.setNumberOfObservedHours(1);
+	newTrader.setNumberOfObservedHours(7);
 	newTrader.setName(newTrader.generateDescriptiveName());
 
-	this.addTrader(newTrader);
+	final SynchronizingAccount wallet2 = (SynchronizingAccount) InjectorSingleton.getInjector()
+		.getInstance(IAccount.class);
+	wallet2.deposit(new ExchangableSet(ExchangableType.BTC, 1));
+
+	final TradingRule buyRule6 = new TradingRule();
+	buyRule6.setThreshold(-1.1);
+	buyRule6.setComparator(ComparatorType.LESS);
+	buyRule6.setMetric(macdMetric);
+
+	final TradingRule sellRule4 = new TradingRule();
+	sellRule4.setThreshold(1.1);
+	sellRule4.setComparator(ComparatorType.GREATER);
+	sellRule4.setMetric(macdMetric);
+
+	final TradingRulePerceptron buyPerceptron2 = new TradingRulePerceptron(buyRule6, 1, 1);
+	final TradingRulePerceptron sellPerceptron2 = new TradingRulePerceptron(sellRule4, 1, 1);
+
+	final Trader newTrader2 = new Trader("macd_" + -1 + "_" + 1, wallet2, exchange, buyPerceptron2, sellPerceptron2,
+		new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
+	newTrader2.setExchange(exchange);
+	newTrader2.setNumberOfObservedHours(1);
+	newTrader2.setName(newTrader.generateDescriptiveName());
+
+	// this.addTrader(newTrader);
+	this.addTrader(newTrader2);
     }
 
     @Override

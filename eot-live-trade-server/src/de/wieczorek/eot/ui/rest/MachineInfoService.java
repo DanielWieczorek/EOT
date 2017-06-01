@@ -24,7 +24,8 @@ public class MachineInfoService {
     private IMachine machine;
 
     public MachineInfoService() {
-	Session.create("up103150124", "gAmCFnV9w4RpqkUXkjm6r7950g0", "m9iW5OmwHS5dR5IiwULHvKbFiY");
+	Session.create("", "VMzovKgqf0B+WqJPwZBp/SU/Kym8IGOK4rcWf4pMZURAIlUjCjnF7YUO",
+		"n2TsjqvB9zKgTOxi9htyXtiHGdzkmNj8eg7FkkEHpFTX46aFolrVYenIqtEzw+cEnW1Rbj5mwRxeaba2wJeWyg==");
 	machine = InjectorSingleton.getInjector().getInstance(IMachine.class);
     }
 

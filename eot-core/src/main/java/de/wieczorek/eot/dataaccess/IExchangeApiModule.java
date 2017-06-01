@@ -5,7 +5,7 @@ import com.google.inject.AbstractModule;
 import de.wieczorek.eot.dataaccess.kraken.IExchangeApi;
 import de.wieczorek.eot.dataaccess.kraken.KrakenApiWrapper;
 
-public class ExchangeRateDaoModule extends AbstractModule {
+public class IExchangeApiModule extends AbstractModule {
 
     @Override
     protected final void configure() {

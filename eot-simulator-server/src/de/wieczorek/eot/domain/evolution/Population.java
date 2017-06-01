@@ -40,7 +40,7 @@ public class Population implements IPopulation {
 	    currentGeneration = engine.getInitialPopulation(size);
 	    populationNumber = 1;
 	} else {
-	    currentGeneration = engine.getNextPopulation(size, getBestIndividuals(Math.max(1, size / 3)));
+	    currentGeneration = engine.getNextPopulation(size, getBestIndividuals(Math.max(1, size / 2)));
 	    populationNumber++;
 	}
     }
@@ -68,6 +68,18 @@ public class Population implements IPopulation {
     public int getPopulationNumber() {
 
 	return populationNumber;
+    }
+
+    @Override
+    public void printPopulationInfo() {
+	final Comparator<IIndividual> byRating = (e1, e2) -> Double.compare(e2.calculateFitness(),
+		e1.calculateFitness());
+
+	final List<IIndividual> ordered = currentGeneration.stream().sorted(byRating).collect(Collectors.toList());
+	for (final IIndividual individual : ordered) {
+	    logger.severe("" + individual.getName() + ": " + individual.calculateFitness());
+	}
+
     }
 
 }

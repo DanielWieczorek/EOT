@@ -2,6 +2,7 @@ package de.wieczorek.eot.domain.trading.rule;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
 import de.wieczorek.eot.domain.exchangable.rate.TimedExchangeRate;
@@ -19,7 +20,7 @@ import de.wieczorek.eot.domain.trading.rule.metric.GraphMetricType;
  *
  */
 public class TradingRule {
-
+    private static final Logger LOGGER = Logger.getLogger(TradingRule.class.getName());
     /**
      * Threshold it is compared against.
      */
@@ -84,10 +85,14 @@ public class TradingRule {
 
 	switch (getComparator()) {
 	case EQUAL:
+
+	    LOGGER.severe("rating (" + rating + ") == threshold (" + threshold + ")? " + (rating == threshold));
 	    return rating == threshold;
 	case GREATER:
+	    LOGGER.severe("rating (" + rating + ") > threshold (" + threshold + ")? " + (rating > threshold));
 	    return rating > threshold;
 	case LESS:
+	    LOGGER.severe("rating (" + rating + ") < threshold (" + threshold + ")? " + (rating < threshold));
 	    return rating < threshold;
 	default:
 	    return false;

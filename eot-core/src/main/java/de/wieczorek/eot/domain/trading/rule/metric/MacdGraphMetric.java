@@ -15,7 +15,7 @@ public class MacdGraphMetric extends AbstractGraphMetric {
     @Override
     protected final double calculateRatingCPU(final ExchangeRateHistory history) {
 	List<TimedExchangeRate> data = history.getCompleteHistoryData();
-	final int averageRange = 20;
+	final int averageRange = data.size() / 6;
 	int sizeOfBiggerRange = data.size() - 1 - averageRange;
 	int sizeOfSmallerRange = data.size() / 3 - averageRange - 1;
 

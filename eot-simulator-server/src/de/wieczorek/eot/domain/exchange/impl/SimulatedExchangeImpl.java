@@ -75,7 +75,7 @@ public class SimulatedExchangeImpl extends AbstractExchangeImpl {
 		currentExchangeRate.getToPrice(), currentExchangeRate.getTime());
 
 	orderBook.addOrder(o, trader, currentExchangeRate.getTime());
-	if (o.getType().equals(OrderType.BUY)) {
+	if (o.getType().equals(OrderType.SELL)) {
 	    return new ExchangableSet(o.getPair().getTo(),
 		    o.getAmount() * rate.getToPrice() * (1 - orderFees / percentageMax));
 	} else {

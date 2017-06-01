@@ -44,4 +44,6 @@ public interface IPopulation {
      * @return the number of the current generation.
      */
     int getPopulationNumber();
+
+    void printPopulationInfo();
 }

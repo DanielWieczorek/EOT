@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
@@ -16,7 +17,7 @@ import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
  *
  */
 public class TradingRulePerceptron {
-
+    private static final Logger LOGGER = Logger.getLogger(TradingRulePerceptron.class.getName());
     /**
      * List of weighted Trading rules.
      */
@@ -68,6 +69,8 @@ public class TradingRulePerceptron {
 		sumOfInputs += input.getWeight();
 	    }
 	}
+
+	LOGGER.severe("ativation: " + sumOfInputs + " >= " + getThreshold() + "?" + (sumOfInputs >= getThreshold()));
 
 	return sumOfInputs >= getThreshold();
     }

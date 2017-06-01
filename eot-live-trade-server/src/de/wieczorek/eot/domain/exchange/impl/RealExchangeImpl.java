@@ -58,10 +58,14 @@ public class RealExchangeImpl extends AbstractExchangeImpl {
 
 	currentExchangeRate = businessLayer.getCurrentExchangeRate(o.getPair().getFrom(), o.getPair().getTo());
 	orderBook.addOrder(o, trader, currentExchangeRate.getTime());
-	if (o.getType().equals(OrderType.BUY)) {
+
+	if (o.getType().equals(OrderType.SELL)) {
+	    businessLayer.perform(o);
 	    return new ExchangableSet(o.getPair().getTo(), o.getAmount() * rate.getToPrice());
 	} else {
 	    rate = rate.swap();
+	    o.setAmount(o.getAmount() * rate.getToPrice());
+	    businessLayer.perform(o);
 	    return new ExchangableSet(o.getPair().getFrom(), o.getAmount() * rate.getToPrice());
 	}
 

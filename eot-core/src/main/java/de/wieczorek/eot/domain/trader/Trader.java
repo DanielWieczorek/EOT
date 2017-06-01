@@ -7,7 +7,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.wieczorek.eot.domain.evolution.IIndividual;
-import de.wieczorek.eot.domain.exchangable.ExchangableAmount;
 import de.wieczorek.eot.domain.exchangable.ExchangablePair;
 import de.wieczorek.eot.domain.exchangable.ExchangableSet;
 import de.wieczorek.eot.domain.exchange.IExchange;
@@ -34,7 +33,7 @@ public class Trader extends Observable implements IIndividual {
     /**
      * account containing all the exchangables the trader possesses.
      */
-    private Account account;
+    private IAccount account;
 
     /**
      * Name of the trader. Used to display in the UI.
@@ -92,7 +91,7 @@ public class Trader extends Observable implements IIndividual {
      * @param performanceInput
      *            measures the performance of the trader
      */
-    public Trader(final String nameInput, final Account accountInput, final IExchange exchangeInput,
+    public Trader(final String nameInput, final IAccount accountInput, final IExchange exchangeInput,
 	    final TradingRulePerceptron buyRuleInput, final TradingRulePerceptron sellRuleInput,
 	    final ExchangablePair exchangablesToTradeInput, final TradingPerformance performanceInput) {
 	super();
@@ -129,15 +128,18 @@ public class Trader extends Observable implements IIndividual {
 
 	if (currentExchangeRate != lastSeenRate && !areOrdersPending()) {
 	    ExchangableSet from = getAccount().countAllExchangablesOfType(getExchangablesToTrade().getFrom());
-
-	    if (from.getAmount() > 0 && buyRule.isActivated(
+	    LOGGER.severe("from amount: " + from.getAmount() + " " + from.getExchangable().name());
+	    if (from.getAmount() > 0 && sellRule.isActivated(
 		    getExchange().getExchangeRateHistory(getExchangablesToTrade(), getNumberOfObservedHours()))) {
-		buy();
+		LOGGER.fine("triggering sell order");
+		sell(currentExchangeRate);
 	    } else {
 		ExchangableSet to = getAccount().countAllExchangablesOfType(getExchangablesToTrade().getTo());
-		if (to.getAmount() > 0 && sellRule.isActivated(
+		LOGGER.severe("to amount: " + to.getAmount() + " " + to.getExchangable().name());
+		if (to.getAmount() > 0 && buyRule.isActivated(
 			getExchange().getExchangeRateHistory(getExchangablesToTrade(), getNumberOfObservedHours()))) {
-		    sell();
+		    // LOGGER.severe("triggering buy order");
+		    buy(currentExchangeRate);
 		}
 	    }
 	}
@@ -159,15 +161,17 @@ public class Trader extends Observable implements IIndividual {
 
     /**
      * Generates a buy order.
+     * 
+     * @param currentExchangeRate
      */
-    private void buy() {
-	ExchangableSet from = getAccount().countAllExchangablesOfType(getExchangablesToTrade().getFrom());
-	Order order = new Order(getExchangablesToTrade(), from.getAmount(), OrderType.BUY);
+    private void buy(double currentExchangeRate) {
+	ExchangableSet to = getAccount().countAllExchangablesOfType(getExchangablesToTrade().getTo());
+	Order order = new Order(getExchangablesToTrade(), to.getAmount(), OrderType.BUY);
+	order.setPrice(currentExchangeRate);
 	ExchangableSet returnOfInvestment = getExchange().performOrder(order, this);
 
-	getAccount().withdraw(new ExchangableSet(order.getPair().getFrom(), order.getAmount()));
-	getAccount()
-		.deposit(new ExchangableAmount(returnOfInvestment, order.getAmount() / returnOfInvestment.getAmount()));
+	getAccount().withdraw(new ExchangableSet(order.getPair().getTo(), order.getAmount()));
+	getAccount().deposit(returnOfInvestment);
 
 	printAccountInfo();
 	getPerformance().update(this, order);
@@ -175,15 +179,17 @@ public class Trader extends Observable implements IIndividual {
 
     /**
      * Generates a buy order.
+     * 
+     * @param currentExchangeRate
      */
-    private void sell() {
-	ExchangableSet to = getAccount().countAllExchangablesOfType(getExchangablesToTrade().getTo());
-	Order order = new Order(getExchangablesToTrade(), to.getAmount(), OrderType.SELL);
+    private void sell(double currentExchangeRate) {
+	ExchangableSet from = getAccount().countAllExchangablesOfType(getExchangablesToTrade().getFrom());
+	Order order = new Order(getExchangablesToTrade(), from.getAmount(), OrderType.SELL);
+	order.setPrice(currentExchangeRate);
 	ExchangableSet returnOfInvestment = getExchange().performOrder(order, this);
 
-	getAccount().withdraw(new ExchangableSet(order.getPair().getTo(), order.getAmount()));
-	getAccount()
-		.deposit(new ExchangableAmount(returnOfInvestment, order.getAmount() / returnOfInvestment.getAmount()));
+	getAccount().withdraw(new ExchangableSet(order.getPair().getFrom(), order.getAmount()));
+	getAccount().deposit(returnOfInvestment);
 
 	printAccountInfo();
 	getPerformance().update(this, order);
@@ -203,11 +209,11 @@ public class Trader extends Observable implements IIndividual {
 	LOGGER.log(Level.FINE, "BTC: " + to.getAmount());
     }
 
-    public final Account getAccount() {
+    public final IAccount getAccount() {
 	return account;
     }
 
-    public final void setAccount(final Account wallet) {
+    public final void setAccount(final IAccount wallet) {
 	this.account = wallet;
     }
 
@@ -277,14 +283,14 @@ public class Trader extends Observable implements IIndividual {
     public final String generateDescriptiveName() {
 	String result = this.numberOfObservedHours + "b";
 	for (Input i : buyRule.getInputs()) {
-	    result += "::" + i.getRule().getMetric().getType().name() + "_" + i.getRule().getThreshold() + "-"
-		    + i.getWeight();
+	    result += "::" + i.getRule().getMetric().getType().name() + "-" + i.getRule().getComparator().name() + "_"
+		    + i.getRule().getThreshold() + "-" + i.getWeight();
 	}
 	result += "#" + buyRule.getThreshold();
 	result += "|s";
 	for (Input i : sellRule.getInputs()) {
-	    result += "::" + i.getRule().getMetric().getType().name() + "_" + i.getRule().getThreshold() + "-"
-		    + i.getWeight();
+	    result += "::" + i.getRule().getMetric().getType().name() + "-" + i.getRule().getComparator().name() + "_"
+		    + i.getRule().getThreshold() + "-" + i.getWeight();
 	}
 	result += "#" + sellRule.getThreshold();
 

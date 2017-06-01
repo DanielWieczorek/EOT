@@ -17,5 +17,5 @@ public enum OrderType {
      * Sells a given amount of the quote currency for an amount of the base
      * currency.
      */
-    SELL
+    SELL;
 }

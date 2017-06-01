@@ -66,8 +66,8 @@ public class VirtualMachine extends AbstractMachine {
 		    if (j == 0) {
 			getTraders().getNextPopulation(populationSize);
 		    } else {
-			getTraders()
-				.getNextPopulation(getTraders().getAll().size() - getTraders().getAll().size() / 10);
+			getTraders().getNextPopulation(
+				getTraders().getAll().size() - getTraders().getAll().size() / maxPopulations);
 		    }
 		    exchange.reset();
 		    final int cycles = exchange.getHistory().getCompleteHistoryData().size() - 15 * 60;
@@ -122,7 +122,7 @@ public class VirtualMachine extends AbstractMachine {
 			    + (double) ((end - start) / 1000) + " seconds.");
 
 		}
-
+		this.getTraders().printPopulationInfo();
 	    };
 
 	    final Thread thread = new Thread(task);

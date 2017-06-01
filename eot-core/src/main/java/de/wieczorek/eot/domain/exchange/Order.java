@@ -24,6 +24,8 @@ public class Order {
      */
     private OrderType type;
 
+    private double price;
+
     public final OrderType getType() {
 	return type;
     }
@@ -70,6 +72,14 @@ public class Order {
 
     public final void setAmount(final double amountInput) {
 	this.amount = amountInput;
+    }
+
+    public double getPrice() {
+	return price;
+    }
+
+    public void setPrice(double price) {
+	this.price = price;
     }
 
 }

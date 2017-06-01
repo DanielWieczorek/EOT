@@ -1,12 +1,8 @@
 package de.wieczorek.eot.domain.trader;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import de.wieczorek.eot.domain.exchangable.ExchangableAmount;
 import de.wieczorek.eot.domain.exchangable.ExchangableSet;
 import de.wieczorek.eot.domain.exchangable.ExchangableType;
 
@@ -16,13 +12,13 @@ import de.wieczorek.eot.domain.exchangable.ExchangableType;
  * @author Daniel Wieczorek
  *
  */
-public class Account {
+public class Account implements IAccount {
 
     /**
      * store for the exchangables and their amounts. They are separated also by
      * the price they have been obtained at.
      */
-    private Map<ExchangableType, List<ExchangableAmount>> content;
+    protected Map<ExchangableType, ExchangableSet> content;
 
     /**
      * Constructor.
@@ -39,15 +35,9 @@ public class Account {
      *            the type of exchangable.
      * @return an exchangable set containing all exchangables of the given type
      */
-    public final synchronized ExchangableSet countAllExchangablesOfType(final ExchangableType type) {
-	List<ExchangableAmount> exchangables = Collections.unmodifiableList(content.get(type));
-	ExchangableSet result = new ExchangableSet();
-	result.setExchangable(type);
-
-	for (ExchangableAmount item : exchangables) {
-	    result = result.mergeWith(item.getExchangableAmount());
-	}
-	return result;
+    @Override
+    public synchronized ExchangableSet countAllExchangablesOfType(final ExchangableType type) {
+	return content.get(type);
     }
 
     /**
@@ -56,20 +46,10 @@ public class Account {
      * @param from
      *            type and amount of exchangables.
      */
+    @Override
     public final void withdraw(final ExchangableSet from) {
-	List<ExchangableAmount> exchangables = content.get(from.getExchangable());
-	double remainingAmount = from.getAmount();
-	for (ExchangableAmount item : exchangables) {
-	    if (item.getExchangableAmount().getAmount() < remainingAmount) {
-		remainingAmount -= item.getExchangableAmount().getAmount();
-		item.getExchangableAmount().setAmount(0.0);
-		// TODO remove elements;
-	    } else {
-		item.getExchangableAmount().setAmount(item.getExchangableAmount().getAmount() - remainingAmount);
-		break;
-	    }
-	}
-
+	ExchangableSet exchangables = content.get(from.getExchangable());
+	exchangables.setAmount(exchangables.getAmount() - from.getAmount());
     }
 
     /**
@@ -78,18 +58,21 @@ public class Account {
      * @param to
      *            the amount of exchangables to add.
      */
-    public final void deposit(final ExchangableAmount to) {
-	content.get(to.getExchangableAmount().getExchangable()).add(to);
+    @Override
+    public final void deposit(final ExchangableSet to) {
+	ExchangableSet currentAmount = content.get(to.getExchangable());
+	currentAmount.setAmount(currentAmount.getAmount() + to.getAmount());
 
     }
 
     /**
      * Removes all exchangables from the account.
      */
+    @Override
     public final void clear() {
 	content = new HashMap<>();
-	content.put(ExchangableType.BTC, new ArrayList<>());
-	content.put(ExchangableType.ETH, new ArrayList<>());
+	content.put(ExchangableType.BTC, new ExchangableSet(ExchangableType.BTC, 0.0));
+	content.put(ExchangableType.ETH, new ExchangableSet(ExchangableType.ETH, 0.0));
     }
 
 }

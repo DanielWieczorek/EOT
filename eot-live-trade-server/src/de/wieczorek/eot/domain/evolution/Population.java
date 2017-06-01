@@ -36,4 +36,9 @@ public class Population implements IPopulation {
 	return 0;
     }
 
+    @Override
+    public void printPopulationInfo() {
+
+    }
+
 }
