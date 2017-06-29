@@ -43,9 +43,9 @@ public abstract class AbstractExchangeImpl implements IExchange {
     }
 
     @Override
-    public ExchangeRateHistory getExchangeRateHistory(final ExchangablePair pair, final int hours) {
+    public ExchangeRateHistory getExchangeRateHistory(final ExchangablePair pair, final int minutes) {
 
-	return businessLayer.getDetailedHistoryFromDb(pair.getFrom(), pair.getTo(), hours);
+	return businessLayer.getDetailedHistoryFromDb(pair.getFrom(), pair.getTo(), minutes);
     }
 
     @Override

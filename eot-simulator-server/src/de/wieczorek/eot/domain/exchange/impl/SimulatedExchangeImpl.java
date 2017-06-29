@@ -87,14 +87,13 @@ public class SimulatedExchangeImpl extends AbstractExchangeImpl {
     }
 
     @Override
-    public final ExchangeRateHistory getExchangeRateHistory(final ExchangablePair pair, final int hours) {
-	final int minutesPerHour = 60;
+    public final ExchangeRateHistory getExchangeRateHistory(final ExchangablePair pair, final int minutes) {
 	if (history == null) {
-	    setHistory(super.getExchangeRateHistory(pair, hours));
+	    setHistory(super.getExchangeRateHistory(pair, minutes));
 	    return getHistory();
 	}
 
-	return history.getHistoryEntriesBefore(currentExchangeRate.getTime(), hours * minutesPerHour);
+	return history.getHistoryEntriesBefore(currentExchangeRate.getTime(), minutes);
     }
 
     public final ExchangeRateHistory getHistory() {

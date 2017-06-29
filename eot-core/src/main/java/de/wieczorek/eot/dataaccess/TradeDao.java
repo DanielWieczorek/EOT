@@ -36,10 +36,13 @@ public class TradeDao {
 
     public void performOrder(OrderBo order)
 	    throws IOException, JSONException, InvalidKeyException, NoSuchAlgorithmException {
+	LOGGER.info("peforming order:" + " " + order.getType().name() + " " + order.getVolume() + " "
+		+ order.getPair().getFrom().name() + "/" + order.getPair().getTo().name() + " @ " + order.getPrice());
+
 	String json = exchange.performOrder(order);
 	// final JSONObject obj = new JSONObject(json);
 	// final double arr = ((JSONObject) ((JSONObject)
 	// obj.get("result")).get("XETHXXBT")).getDouble("lot_multiplier");
-	System.out.println(json);
+	LOGGER.info(json);
     }
 }

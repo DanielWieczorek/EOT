@@ -8,6 +8,7 @@ public class CoppocGraphMetric extends AbstractGraphMetric {
 
     public CoppocGraphMetric() {
 	setType(GraphMetricType.Coppoch);
+	this.setStrategy(ExecutionLocationStrategy.CPU_ONLY);
     }
 
     @Override

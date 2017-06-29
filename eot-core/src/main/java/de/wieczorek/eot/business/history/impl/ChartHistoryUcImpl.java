@@ -44,15 +44,15 @@ public class ChartHistoryUcImpl implements IChartHistoryUc {
 
     @Override
     public final ExchangeRateHistory getDetailedHistoryFromDb(final ExchangableType from, final ExchangableType to,
-	    final int hours) {
+	    final int minutes) {
 	ExchangeRateHistory result = null;
 	final List<ExchangeRateBo> bos;
 	try {
-	    bos = dao.getDetailedHistoryEntries(from, to, hours);
+	    bos = dao.getDetailedHistoryEntries(from, to, minutes);
 
 	    dao.saveHistoryEntries(bos);
 	    final List<TimedExchangeRate> ter = new ArrayList<>();
-	    for (final ExchangeRateBo item : dao.getDetailedHistoryEntriesFromDb(from, to, hours)) {
+	    for (final ExchangeRateBo item : dao.getDetailedHistoryEntriesFromDb(from, to, minutes)) {
 		ter.add(new TimedExchangeRate(item.getKey().getFromCurrency(), item.getKey().getToCurrency(),
 			item.getExchangeRate(), LocalDateTime
 				.ofInstant(Instant.ofEpochSecond(item.getKey().getTimestamp()), ZoneId.of("GMT"))));

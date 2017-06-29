@@ -70,7 +70,7 @@ public class TradingRulePerceptron {
 	    }
 	}
 
-	LOGGER.severe("ativation: " + sumOfInputs + " >= " + getThreshold() + "?" + (sumOfInputs >= getThreshold()));
+	LOGGER.fine("ativation: " + sumOfInputs + " >= " + getThreshold() + "?" + (sumOfInputs >= getThreshold()));
 
 	return sumOfInputs >= getThreshold();
     }

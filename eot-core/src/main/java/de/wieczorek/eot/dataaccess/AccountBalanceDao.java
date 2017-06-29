@@ -5,6 +5,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
@@ -16,6 +17,10 @@ import de.wieczorek.eot.domain.exchangable.ExchangableSet;
 import de.wieczorek.eot.domain.exchangable.ExchangableType;
 
 public class AccountBalanceDao {
+    /**
+     * The logger.
+     */
+    private static final Logger LOGGER = Logger.getLogger(ExchangeRateDao.class.getName());
 
     private final IExchangeApi exchange;
 
@@ -27,8 +32,9 @@ public class AccountBalanceDao {
     public List<ExchangableSet> getAccountBalance() {
 	List<ExchangableSet> result = new ArrayList<>();
 	try {
-
+	    LOGGER.info("Retrieving account balance");
 	    String balanceJson = exchange.getAccountBalance();
+	    LOGGER.info(balanceJson);
 
 	    JSONObject obj = new JSONObject(balanceJson);
 	    obj = ((JSONObject) obj.get("result"));
@@ -41,7 +47,6 @@ public class AccountBalanceDao {
 		    result.add(item);
 	    }
 
-	    System.out.println(balanceJson);
 	} catch (InvalidKeyException | NoSuchAlgorithmException | IOException e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();

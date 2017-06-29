@@ -66,15 +66,18 @@ public class ExchangeRateDao {
      *            source currency
      * @param to
      *            target currency
-     * @param hours
-     *            number of hours for which to return the exchange rate history
+     * @param minutes
+     *            number of minutes for which to return the exchange rate
+     *            history
      * @return a list of exchange rates
      * @throws JSONException
      *             if the JSON string cannot be parsed
      * @throws IOException
      */
     public final List<ExchangeRateBo> getDetailedHistoryEntries(final ExchangableType from, final ExchangableType to,
-	    final int hours) throws JSONException, IOException {
+	    final int minutes) throws JSONException, IOException {
+	LOGGER.info("Retrieving detailed history for " + from.name() + "/" + to.name() + " with length of " + minutes
+		+ " minutes");
 	final List<ExchangeRateBo> entries = new ArrayList<>();
 	final int openingPrice = 1;
 	final int maxPrice = 2;
@@ -84,8 +87,8 @@ public class ExchangeRateDao {
 	final int secondsPerMinute = 60;
 
 	final ZoneOffset offset = ZoneId.systemDefault().getRules().getOffset(Instant.now());
-	final long startTime = LocalDateTime.now().minusHours(hours).toEpochSecond(offset);
-	LOGGER.log(Level.INFO, LocalDateTime.now().minusHours(hours).toString());
+	final long startTime = LocalDateTime.now().minusMinutes(minutes).toEpochSecond(offset);
+	LOGGER.log(Level.INFO, LocalDateTime.now().minusMinutes(minutes).toString());
 	final String result = exchange.ohclv(from, to, startTime);
 	LOGGER.log(Level.INFO, result);
 
@@ -131,19 +134,20 @@ public class ExchangeRateDao {
      *            source currency
      * @param to
      *            target currency
-     * @param hours
-     *            number of hours for which to return the exchange rate history
+     * @param minutes
+     *            number of minutes for which to return the exchange rate
+     *            history
      * @return a list of exchange rates
      * @throws JSONException
      *             if the JSON string cannot be parsed
      */
     @SuppressWarnings("unchecked")
     public final List<ExchangeRateBo> getDetailedHistoryEntriesFromDb(final ExchangableType from,
-	    final ExchangableType to, final int hours) {
+	    final ExchangableType to, final int minutes) {
 	EntityManager entityManager = emf.createEntityManager();
 	final Query q = entityManager.createQuery("Select p from ExchangeRateBo p where p.key.timestamp <="
 		+ LocalDateTime.now().toEpochSecond(ZoneOffset.systemDefault().getRules().getOffset(Instant.now()))
-		+ " and p.key.timestamp >= " + LocalDateTime.now().minusHours(hours)
+		+ " and p.key.timestamp >= " + LocalDateTime.now().minusMinutes(minutes)
 			.toEpochSecond(ZoneOffset.systemDefault().getRules().getOffset(Instant.now())));
 	q.setMaxResults(Integer.MAX_VALUE);
 	final List<ExchangeRateBo> result = q.getResultList();

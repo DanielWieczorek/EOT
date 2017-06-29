@@ -13,7 +13,7 @@ public class StochasticFastGraphMetric extends AbstractGraphMetric {
 
     public StochasticFastGraphMetric() {
 	this.setType(GraphMetricType.StochasticFast);
-	this.setStrategy(ExecutionLocationStrategy.GPU_ONLY);
+	this.setStrategy(ExecutionLocationStrategy.CPU_ONLY);
     }
 
     @Override

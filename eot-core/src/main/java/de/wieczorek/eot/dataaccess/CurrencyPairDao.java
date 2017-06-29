@@ -34,7 +34,9 @@ public class CurrencyPairDao {
     }
 
     public double getLotSize(ExchangablePair pair) throws IOException, JSONException {
+	LOGGER.info("Retrieving lot size for pair " + pair.getFrom().name() + "/" + pair.getTo().name());
 	String json = exchange.getAssetPairInfo(pair);
+	LOGGER.info(json);
 	final JSONObject obj = new JSONObject(json);
 	final double arr = ((JSONObject) ((JSONObject) obj.get("result")).get("XETHXXBT")).getDouble("lot_multiplier");
 	return arr;

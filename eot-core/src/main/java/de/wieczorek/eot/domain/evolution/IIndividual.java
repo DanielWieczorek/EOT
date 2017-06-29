@@ -44,4 +44,8 @@ public interface IIndividual {
      * Changes the inidvidual.
      */
     void mutate();
+
+    int getNumberOfTrades();
+
+    double getNetProfit();
 }

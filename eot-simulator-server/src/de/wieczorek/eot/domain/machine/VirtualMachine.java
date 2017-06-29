@@ -26,13 +26,13 @@ public class VirtualMachine extends AbstractMachine {
     private static final Logger logger = Logger.getLogger(VirtualMachine.class.getName());
 
     private final ExecutorService taskExecutor = Executors.newFixedThreadPool(numberOfExecutors);
-    private final int maxPopulations = 20;
+    private final int maxPopulations = 100;
 
     private final List<List<IIndividual>> traderGroups;
 
     private static final int numberOfExecutors = 8;
 
-    private static final int populationSize = 100;
+    private static final int populationSize = 25;
 
     @Inject
     public VirtualMachine(final IExchange exchange, final Population traders) {
@@ -50,7 +50,7 @@ public class VirtualMachine extends AbstractMachine {
 		final SimulatedExchangeImpl exchange = (SimulatedExchangeImpl) getExchange();
 		exchange.setHistory(null);
 		exchange.getExchangeRateHistory(new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC),
-			365 * 24);
+			31 * 24 * 60);
 
 		final List<TraderGroupManager> managers = new ArrayList<>();
 
@@ -81,7 +81,7 @@ public class VirtualMachine extends AbstractMachine {
 			n++;
 			n %= realNumberOfExecutors;
 		    }
-		    for (int i = 30 * 15; i < cycles && getState() != MachineState.STOPPED; i += 15) {
+		    for (int i = 60 * 24; i < cycles && getState() != MachineState.STOPPED; i++) {
 
 			while (getState() == MachineState.PAUSED) {
 			    logger.info("simulation paused checking again in 10s");
@@ -96,9 +96,8 @@ public class VirtualMachine extends AbstractMachine {
 			if (i % 150 == 0) {
 			    logger.severe("current cycle:" + i + " of " + cycles + " data points");
 			}
-			for (n = 0; n < 15; n++) {
-			    exchange.icrementTime();
-			}
+
+			exchange.icrementTime();
 
 			final CountDownLatch latch = new CountDownLatch(realNumberOfExecutors);
 

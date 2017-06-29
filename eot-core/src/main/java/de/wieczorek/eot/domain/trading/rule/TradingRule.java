@@ -85,14 +85,13 @@ public class TradingRule {
 
 	switch (getComparator()) {
 	case EQUAL:
-
-	    LOGGER.severe("rating (" + rating + ") == threshold (" + threshold + ")? " + (rating == threshold));
+	    LOGGER.fine("rating (" + rating + ") == threshold (" + threshold + ")? " + (rating == threshold));
 	    return rating == threshold;
 	case GREATER:
-	    LOGGER.severe("rating (" + rating + ") > threshold (" + threshold + ")? " + (rating > threshold));
+	    LOGGER.fine("rating (" + rating + ") > threshold (" + threshold + ")? " + (rating > threshold));
 	    return rating > threshold;
 	case LESS:
-	    LOGGER.severe("rating (" + rating + ") < threshold (" + threshold + ")? " + (rating < threshold));
+	    LOGGER.fine("rating (" + rating + ") < threshold (" + threshold + ")? " + (rating < threshold));
 	    return rating < threshold;
 	default:
 	    return false;

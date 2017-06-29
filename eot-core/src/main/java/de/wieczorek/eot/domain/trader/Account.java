@@ -74,5 +74,4 @@ public class Account implements IAccount {
 	content.put(ExchangableType.BTC, new ExchangableSet(ExchangableType.BTC, 0.0));
 	content.put(ExchangableType.ETH, new ExchangableSet(ExchangableType.ETH, 0.0));
     }
-
 }

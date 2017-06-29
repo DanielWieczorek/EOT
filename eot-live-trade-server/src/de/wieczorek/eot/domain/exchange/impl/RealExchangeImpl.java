@@ -72,8 +72,8 @@ public class RealExchangeImpl extends AbstractExchangeImpl {
     }
 
     @Override
-    public final ExchangeRateHistory getExchangeRateHistory(final ExchangablePair pair, final int hours) {
-	return businessLayer.getDetailedHistoryFromDb(pair.getFrom(), pair.getTo(), hours);
+    public final ExchangeRateHistory getExchangeRateHistory(final ExchangablePair pair, final int minutes) {
+	return businessLayer.getDetailedHistoryFromDb(pair.getFrom(), pair.getTo(), minutes);
     }
 
     @Override

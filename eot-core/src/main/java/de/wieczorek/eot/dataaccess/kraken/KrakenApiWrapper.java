@@ -25,8 +25,8 @@ public class KrakenApiWrapper implements IExchangeApi {
 	this.api = api;
 	exchangableConversionMap = new HashMap<ExchangableType, String>();
 	exchangableConversionMap.put(ExchangableType.BTC, "XBT");
-	api.setKey("x");
-	api.setSecret("y==");
+	api.setKey("ccc");
+	api.setSecret("xxx");
     }
 
     public void setSecret(String secret) {

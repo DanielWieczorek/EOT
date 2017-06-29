@@ -51,7 +51,7 @@ public class TradingPerformance implements Observer {
     }
 
     @Override
-    public final void update(final Observable arg0, final Object arg1) {
+    public final void update(final Observable arg0, final Object order) {
 	Trader trader = (Trader) arg0;
 	final int maxPercent = 100;
 
@@ -64,8 +64,8 @@ public class TradingPerformance implements Observer {
 	    result = new ExchangableSet(to.getExchangable(), to.getAmount() + from.getAmount()
 		    * trader.getExchange().getCurrentExchangeRate(trader.getExchangablesToTrade()).getToPrice());
 	} else {
-	    result = new ExchangableSet(to.getExchangable(), to.getAmount() + from.getAmount() * 1.0
-		    / trader.getExchange().getCurrentExchangeRate(trader.getExchangablesToTrade()).getToPrice());
+	    result = new ExchangableSet(to.getExchangable(), from.getAmount() + to.getAmount() * 1.0
+		    * trader.getExchange().getCurrentExchangeRate(trader.getExchangablesToTrade()).getToPrice());
 	}
 
 	double netProfitOld = getNetProfit();
@@ -107,6 +107,16 @@ public class TradingPerformance implements Observer {
 
     public final void setNetProfit(final double netProfitInput) {
 	this.netProfit = netProfitInput;
+    }
+
+    public double getPerformanceRating() {
+	double result = getNetProfitPercent();
+	if (getNumberOfTrades() == 0) {
+	    result = Double.NEGATIVE_INFINITY;
+	} else {
+	    result = result * (numberOfTrades - numberOfTradesWithLosses);
+	}
+	return result;
     }
 
 }

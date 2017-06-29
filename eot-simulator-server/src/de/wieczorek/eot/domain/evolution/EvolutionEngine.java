@@ -42,20 +42,21 @@ public class EvolutionEngine {
 
 	logger.severe("input for next Trader generation:");
 	for (final IIndividual individual : traders) {
-	    logger.severe("" + individual.getName() + ": " + individual.calculateFitness());
+	    logger.severe("" + individual.getName() + ": rating:" + individual.calculateFitness() + " trades:"
+		    + individual.getNumberOfTrades() + " profit: " + individual.getNetProfit());
 	}
 
 	final List<IIndividual> result = new ArrayList<>();
-	// traders.addAll(traders);
+	result.addAll(traders);
 	final Random r = new Random(System.currentTimeMillis());
 	for (final IIndividual individual : traders) {
-	    if (size > result.size() + traders.size()) {
+	    if (size > result.size()) {
 		IIndividual temp = traders.get(r.nextInt(traders.size()));
 		logger.severe("combining " + individual.getName() + " and " + temp.getName());
 		result.addAll(individual.combineWith(temp));
 	    }
 	}
-	result.addAll(traders);
+	// result.addAll(traders);
 
 	for (final IIndividual individual : result) {
 	    final Trader t = (Trader) individual;
@@ -81,7 +82,7 @@ public class EvolutionEngine {
 
 	final int sizePerAlgorithm = size;
 
-	for (int n = 1; n < 25; n += 8) {
+	for (int n = 11; n < 25 * 60 * 7; n += 8 * 60 * 14) {
 	    for (int i = 0; i < sizePerAlgorithm; i++) {
 		final Account wallet = new Account();
 		wallet.deposit(new ExchangableSet(ExchangableType.BTC, 1));
@@ -103,7 +104,7 @@ public class EvolutionEngine {
 		final Trader newTrader = new Trader("rsi_" + i + "_" + (100 - i), wallet, exchange, buyRule, sellRule,
 			new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
 		newTrader.setExchange(exchange);
-		newTrader.setNumberOfObservedHours(n);
+		newTrader.setNumberOfObservedMinutes(n);
 		newTrader.setName(newTrader.generateDescriptiveName());
 		currentGeneration.add(newTrader);
 
@@ -130,7 +131,7 @@ public class EvolutionEngine {
 		final Trader newTrader = new Trader("FAST_" + i + "_" + (100 - i), wallet, exchange, buyRule, sellRule,
 			new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
 		newTrader.setExchange(exchange);
-		newTrader.setNumberOfObservedHours(n);
+		newTrader.setNumberOfObservedMinutes(n);
 		newTrader.setName(newTrader.generateDescriptiveName());
 		currentGeneration.add(newTrader);
 
@@ -157,7 +158,7 @@ public class EvolutionEngine {
 		final Trader newTrader = new Trader("coppoch_" + i + "_" + (100 - i), wallet, exchange, buyRule,
 			sellRule, new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
 		newTrader.setExchange(exchange);
-		newTrader.setNumberOfObservedHours(n);
+		newTrader.setNumberOfObservedMinutes(n);
 		newTrader.setName(newTrader.generateDescriptiveName());
 		currentGeneration.add(newTrader);
 
@@ -184,7 +185,7 @@ public class EvolutionEngine {
 		final Trader newTrader = new Trader("MACD_" + i + "_" + (100 - i), wallet, exchange, buyRule, sellRule,
 			new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
 		newTrader.setExchange(exchange);
-		newTrader.setNumberOfObservedHours(n);
+		newTrader.setNumberOfObservedMinutes(n);
 		newTrader.setName(newTrader.generateDescriptiveName());
 		currentGeneration.add(newTrader);
 
@@ -212,7 +213,7 @@ public class EvolutionEngine {
 		final Trader newTrader = new Trader("rsi_" + i + "_" + (100 - i), wallet, exchange, buyRule, sellRule,
 			new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
 		newTrader.setExchange(exchange);
-		newTrader.setNumberOfObservedHours(n);
+		newTrader.setNumberOfObservedMinutes(n);
 		newTrader.setName(newTrader.generateDescriptiveName());
 		currentGeneration.add(newTrader);
 
@@ -239,7 +240,7 @@ public class EvolutionEngine {
 		final Trader newTrader = new Trader("FAST_" + i + "_" + (100 - i), wallet, exchange, buyRule, sellRule,
 			new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
 		newTrader.setExchange(exchange);
-		newTrader.setNumberOfObservedHours(n);
+		newTrader.setNumberOfObservedMinutes(n);
 		newTrader.setName(newTrader.generateDescriptiveName());
 		currentGeneration.add(newTrader);
 
@@ -266,7 +267,7 @@ public class EvolutionEngine {
 		final Trader newTrader = new Trader("coppoch_" + i + "_" + (100 - i), wallet, exchange, buyRule,
 			sellRule, new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
 		newTrader.setExchange(exchange);
-		newTrader.setNumberOfObservedHours(n);
+		newTrader.setNumberOfObservedMinutes(n);
 		newTrader.setName(newTrader.generateDescriptiveName());
 		currentGeneration.add(newTrader);
 
@@ -293,7 +294,7 @@ public class EvolutionEngine {
 		final Trader newTrader = new Trader("MACD_" + i + "_" + (100 - i), wallet, exchange, buyRule, sellRule,
 			new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
 		newTrader.setExchange(exchange);
-		newTrader.setNumberOfObservedHours(n);
+		newTrader.setNumberOfObservedMinutes(n);
 		newTrader.setName(newTrader.generateDescriptiveName());
 		currentGeneration.add(newTrader);
 

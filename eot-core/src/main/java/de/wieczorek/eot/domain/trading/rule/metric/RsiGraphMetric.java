@@ -13,7 +13,7 @@ public class RsiGraphMetric extends AbstractGraphMetric {
 
     public RsiGraphMetric() {
 	this.setType(GraphMetricType.RSI);
-	this.setStrategy(ExecutionLocationStrategy.GPU_ONLY);
+	this.setStrategy(ExecutionLocationStrategy.CPU_ONLY);
     }
 
     // private final int MULTIPLICATOR = 15;
@@ -25,7 +25,9 @@ public class RsiGraphMetric extends AbstractGraphMetric {
 	double averageGain = 0.0;
 	double averageLoss = 0.0;
 
-	for (int i = 1; i < 15; i += 1) {
+	int numberDataPointsForInitialAverage = Math.min(15, input.getCompleteHistoryData().size() / 2);
+
+	for (int i = 1; i < numberDataPointsForInitialAverage; i += 1) {
 	    TimedExchangeRate lastDatapoint = input.getCompleteHistoryData().get(i - 1);
 	    TimedExchangeRate currentDatapoint = input.getCompleteHistoryData().get(i);
 
@@ -97,8 +99,8 @@ public class RsiGraphMetric extends AbstractGraphMetric {
 
 	    };
 	}
-	if (range == null)
-	    range = Range.create(datapoints.length - 1);
+	// if (range == null)
+	range = Range.create(datapoints.length - 1);
 	try {
 	    kernel1.execute(range);
 	} catch (Exception e) {
@@ -107,8 +109,7 @@ public class RsiGraphMetric extends AbstractGraphMetric {
 
 	float relativeStrength = averageGain[0] / averageLoss[0];
 
-	// System.out.println("Relative Strength: " + (100.0 - (100.0 / (1.0 +
-	// relativeStrength))));
+	System.out.println("Relative Strength: " + (100.0 - (100.0 / (1.0 + relativeStrength))));
 
 	return 100.0 - (100.0 / (1.0 + relativeStrength));
     }

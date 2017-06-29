@@ -28,7 +28,10 @@ public class SynchronizingAccount extends Account {
 	List<ExchangableSet> result = businessLayer.getAccountBalance();
 	clear();
 	for (ExchangableSet item : result) {
-	    item.setAmount(round(item.getAmount(), 6));
+	    if (item.getExchangable().equals(ExchangableType.BTC)) // TODO
+		item.setAmount(round(item.getAmount(), 4));
+	    if (item.getExchangable().equals(ExchangableType.ETH))
+		item.setAmount(round(item.getAmount(), 2));
 	    this.content.put(item.getExchangable(), item);
 	}
     }
