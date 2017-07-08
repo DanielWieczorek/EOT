@@ -21,6 +21,8 @@ import de.wieczorek.eot.domain.trader.Account;
 import de.wieczorek.eot.domain.trader.Trader;
 import de.wieczorek.eot.domain.trader.TradingPerformance;
 import de.wieczorek.eot.domain.trading.rule.ComparatorType;
+import de.wieczorek.eot.domain.trading.rule.TraderNeuralNetwork;
+import de.wieczorek.eot.domain.trading.rule.TraderNeuralNetwork.NetworkType;
 import de.wieczorek.eot.domain.trading.rule.TradingRule;
 import de.wieczorek.eot.domain.trading.rule.TradingRulePerceptron;
 import de.wieczorek.eot.domain.trading.rule.metric.CoppocGraphMetric;
@@ -82,225 +84,195 @@ public class EvolutionEngine {
 
 	final int sizePerAlgorithm = size;
 
+	NetworkType[] types = NetworkType.values();
 	for (int n = 11; n < 25 * 60 * 7; n += 8 * 60 * 14) {
-	    for (int i = 0; i < sizePerAlgorithm; i++) {
-		final Account wallet = new Account();
-		wallet.deposit(new ExchangableSet(ExchangableType.BTC, 1));
-		final TradingPerformance performance = new TradingPerformance(
-			new ExchangableSet(ExchangableType.BTC, 1));
+	    for (int i = 0; i < types.length; i++) {
+		buildRsiTrader(currentGeneration, sizePerAlgorithm, n, ComparatorType.LESS, ComparatorType.GREATER,
+			types[i]);
+		buildRsiTrader(currentGeneration, sizePerAlgorithm, n, ComparatorType.GREATER, ComparatorType.LESS,
+			types[i]);
 
-		final TradingRule rule1 = new TradingRule();
-		rule1.setThreshold(i);
-		rule1.setComparator(ComparatorType.LESS);
-		rule1.setMetric(new RsiGraphMetric());
+		buildStochasticFastTrader(currentGeneration, sizePerAlgorithm, n, ComparatorType.LESS,
+			ComparatorType.GREATER, types[i]);
+		buildStochasticFastTrader(currentGeneration, sizePerAlgorithm, n, ComparatorType.GREATER,
+			ComparatorType.LESS, types[i]);
 
-		final TradingRule rule21 = new TradingRule();
-		rule21.setThreshold(100 - i);
-		rule21.setComparator(ComparatorType.GREATER);
-		rule21.setMetric(new RsiGraphMetric());
+		buildCoppocTrader(currentGeneration, sizePerAlgorithm, n, ComparatorType.LESS, ComparatorType.GREATER,
+			types[i]);
+		buildCoppocTrader(currentGeneration, sizePerAlgorithm, n, ComparatorType.GREATER, ComparatorType.LESS,
+			types[i]);
 
-		final TradingRulePerceptron buyRule = new TradingRulePerceptron(rule1, 1, 1);
-		final TradingRulePerceptron sellRule = new TradingRulePerceptron(rule21, 1, 1);
-		final Trader newTrader = new Trader("rsi_" + i + "_" + (100 - i), wallet, exchange, buyRule, sellRule,
-			new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
-		newTrader.setExchange(exchange);
-		newTrader.setNumberOfObservedMinutes(n);
-		newTrader.setName(newTrader.generateDescriptiveName());
-		currentGeneration.add(newTrader);
-
+		buildMacdTrader(currentGeneration, sizePerAlgorithm, n, ComparatorType.GREATER, ComparatorType.LESS,
+			types[i]);
+		buildMacdTrader(currentGeneration, sizePerAlgorithm, n, ComparatorType.LESS, ComparatorType.GREATER,
+			types[i]);
 	    }
 
-	    for (int i = 0; i < sizePerAlgorithm; i++) {
-		final Account wallet = new Account();
-		wallet.deposit(new ExchangableSet(ExchangableType.BTC, 1));
-		final TradingPerformance performance = new TradingPerformance(
-			new ExchangableSet(ExchangableType.BTC, 1));
-
-		final TradingRule rule1 = new TradingRule();
-		rule1.setThreshold(0.0 + (i / (Math.max(1, 100 / sizePerAlgorithm))));
-		rule1.setComparator(ComparatorType.LESS);
-		rule1.setMetric(new StochasticFastGraphMetric());
-
-		final TradingRule rule21 = new TradingRule();
-		rule21.setThreshold(100.0 - i / (Math.max(1, 100 / sizePerAlgorithm)));
-		rule21.setComparator(ComparatorType.GREATER);
-		rule21.setMetric(new StochasticFastGraphMetric());
-
-		final TradingRulePerceptron buyRule = new TradingRulePerceptron(rule1, 1, 1);
-		final TradingRulePerceptron sellRule = new TradingRulePerceptron(rule21, 1, 1);
-		final Trader newTrader = new Trader("FAST_" + i + "_" + (100 - i), wallet, exchange, buyRule, sellRule,
-			new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
-		newTrader.setExchange(exchange);
-		newTrader.setNumberOfObservedMinutes(n);
-		newTrader.setName(newTrader.generateDescriptiveName());
-		currentGeneration.add(newTrader);
-
-	    }
-
-	    for (int i = 0; i < sizePerAlgorithm; i++) {
-		final Account wallet = new Account();
-		wallet.deposit(new ExchangableSet(ExchangableType.BTC, 1));
-		final TradingPerformance performance = new TradingPerformance(
-			new ExchangableSet(ExchangableType.BTC, 1));
-
-		final TradingRule rule1 = new TradingRule();
-		rule1.setThreshold(-10.0 + (i / 10.0));
-		rule1.setComparator(ComparatorType.LESS);
-		rule1.setMetric(new CoppocGraphMetric());
-
-		final TradingRule rule21 = new TradingRule();
-		rule21.setThreshold(10.0 - i / 10.0);
-		rule21.setComparator(ComparatorType.GREATER);
-		rule21.setMetric(new CoppocGraphMetric());
-
-		final TradingRulePerceptron buyRule = new TradingRulePerceptron(rule1, 1, 1);
-		final TradingRulePerceptron sellRule = new TradingRulePerceptron(rule21, 1, 1);
-		final Trader newTrader = new Trader("coppoch_" + i + "_" + (100 - i), wallet, exchange, buyRule,
-			sellRule, new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
-		newTrader.setExchange(exchange);
-		newTrader.setNumberOfObservedMinutes(n);
-		newTrader.setName(newTrader.generateDescriptiveName());
-		currentGeneration.add(newTrader);
-
-	    }
-
-	    for (int i = 0; i < sizePerAlgorithm; i++) {
-		final Account wallet = new Account();
-		wallet.deposit(new ExchangableSet(ExchangableType.BTC, 1));
-		final TradingPerformance performance = new TradingPerformance(
-			new ExchangableSet(ExchangableType.BTC, 1));
-
-		final TradingRule rule1 = new TradingRule();
-		rule1.setThreshold(-10.0 + (i / 10.0));
-		rule1.setComparator(ComparatorType.LESS);
-		rule1.setMetric(new MacdGraphMetric());
-
-		final TradingRule rule21 = new TradingRule();
-		rule21.setThreshold(10.0 - i / 10.0);
-		rule21.setComparator(ComparatorType.GREATER);
-		rule21.setMetric(new MacdGraphMetric());
-
-		final TradingRulePerceptron buyRule = new TradingRulePerceptron(rule1, 1, 1);
-		final TradingRulePerceptron sellRule = new TradingRulePerceptron(rule21, 1, 1);
-		final Trader newTrader = new Trader("MACD_" + i + "_" + (100 - i), wallet, exchange, buyRule, sellRule,
-			new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
-		newTrader.setExchange(exchange);
-		newTrader.setNumberOfObservedMinutes(n);
-		newTrader.setName(newTrader.generateDescriptiveName());
-		currentGeneration.add(newTrader);
-
-	    }
-	    // ==============================================
-
-	    for (int i = 0; i < sizePerAlgorithm; i++) {
-		final Account wallet = new Account();
-		wallet.deposit(new ExchangableSet(ExchangableType.BTC, 1));
-		final TradingPerformance performance = new TradingPerformance(
-			new ExchangableSet(ExchangableType.BTC, 1));
-
-		final TradingRule rule1 = new TradingRule();
-		rule1.setThreshold(i);
-		rule1.setComparator(ComparatorType.GREATER);
-		rule1.setMetric(new RsiGraphMetric());
-
-		final TradingRule rule21 = new TradingRule();
-		rule21.setThreshold(100 - i);
-		rule21.setComparator(ComparatorType.LESS);
-		rule21.setMetric(new RsiGraphMetric());
-
-		final TradingRulePerceptron buyRule = new TradingRulePerceptron(rule1, 1, 1);
-		final TradingRulePerceptron sellRule = new TradingRulePerceptron(rule21, 1, 1);
-		final Trader newTrader = new Trader("rsi_" + i + "_" + (100 - i), wallet, exchange, buyRule, sellRule,
-			new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
-		newTrader.setExchange(exchange);
-		newTrader.setNumberOfObservedMinutes(n);
-		newTrader.setName(newTrader.generateDescriptiveName());
-		currentGeneration.add(newTrader);
-
-	    }
-
-	    for (int i = 0; i < sizePerAlgorithm; i++) {
-		final Account wallet = new Account();
-		wallet.deposit(new ExchangableSet(ExchangableType.BTC, 1));
-		final TradingPerformance performance = new TradingPerformance(
-			new ExchangableSet(ExchangableType.BTC, 1));
-
-		final TradingRule rule1 = new TradingRule();
-		rule1.setThreshold(0.0 + (i / (Math.max(1, 100 / sizePerAlgorithm))));
-		rule1.setComparator(ComparatorType.GREATER);
-		rule1.setMetric(new StochasticFastGraphMetric());
-
-		final TradingRule rule21 = new TradingRule();
-		rule21.setThreshold(100.0 - i / (Math.max(1, 100 / sizePerAlgorithm)));
-		rule21.setComparator(ComparatorType.LESS);
-		rule21.setMetric(new StochasticFastGraphMetric());
-
-		final TradingRulePerceptron buyRule = new TradingRulePerceptron(rule1, 1, 1);
-		final TradingRulePerceptron sellRule = new TradingRulePerceptron(rule21, 1, 1);
-		final Trader newTrader = new Trader("FAST_" + i + "_" + (100 - i), wallet, exchange, buyRule, sellRule,
-			new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
-		newTrader.setExchange(exchange);
-		newTrader.setNumberOfObservedMinutes(n);
-		newTrader.setName(newTrader.generateDescriptiveName());
-		currentGeneration.add(newTrader);
-
-	    }
-
-	    for (int i = 0; i < sizePerAlgorithm; i++) {
-		final Account wallet = new Account();
-		wallet.deposit(new ExchangableSet(ExchangableType.BTC, 1));
-		final TradingPerformance performance = new TradingPerformance(
-			new ExchangableSet(ExchangableType.BTC, 1));
-
-		final TradingRule rule1 = new TradingRule();
-		rule1.setThreshold(-10.0 + (i / 10.0));
-		rule1.setComparator(ComparatorType.GREATER);
-		rule1.setMetric(new CoppocGraphMetric());
-
-		final TradingRule rule21 = new TradingRule();
-		rule21.setThreshold(10.0 - i / 10.0);
-		rule21.setComparator(ComparatorType.LESS);
-		rule21.setMetric(new CoppocGraphMetric());
-
-		final TradingRulePerceptron buyRule = new TradingRulePerceptron(rule1, 1, 1);
-		final TradingRulePerceptron sellRule = new TradingRulePerceptron(rule21, 1, 1);
-		final Trader newTrader = new Trader("coppoch_" + i + "_" + (100 - i), wallet, exchange, buyRule,
-			sellRule, new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
-		newTrader.setExchange(exchange);
-		newTrader.setNumberOfObservedMinutes(n);
-		newTrader.setName(newTrader.generateDescriptiveName());
-		currentGeneration.add(newTrader);
-
-	    }
-
-	    for (int i = 0; i < sizePerAlgorithm; i++) {
-		final Account wallet = new Account();
-		wallet.deposit(new ExchangableSet(ExchangableType.BTC, 1));
-		final TradingPerformance performance = new TradingPerformance(
-			new ExchangableSet(ExchangableType.BTC, 1));
-
-		final TradingRule rule1 = new TradingRule();
-		rule1.setThreshold(-10.0 + (i / 10.0));
-		rule1.setComparator(ComparatorType.GREATER);
-		rule1.setMetric(new MacdGraphMetric());
-
-		final TradingRule rule21 = new TradingRule();
-		rule21.setThreshold(10.0 - i / 10.0);
-		rule21.setComparator(ComparatorType.LESS);
-		rule21.setMetric(new MacdGraphMetric());
-
-		final TradingRulePerceptron buyRule = new TradingRulePerceptron(rule1, 1, 1);
-		final TradingRulePerceptron sellRule = new TradingRulePerceptron(rule21, 1, 1);
-		final Trader newTrader = new Trader("MACD_" + i + "_" + (100 - i), wallet, exchange, buyRule, sellRule,
-			new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
-		newTrader.setExchange(exchange);
-		newTrader.setNumberOfObservedMinutes(n);
-		newTrader.setName(newTrader.generateDescriptiveName());
-		currentGeneration.add(newTrader);
-
-	    }
 	}
 
 	return currentGeneration;
+    }
+
+    private void buildMacdTrader(final List<IIndividual> currentGeneration, final int sizePerAlgorithm, int n,
+	    ComparatorType buyComparator, ComparatorType sellComparator, NetworkType type) {
+	for (int i = 0; i < sizePerAlgorithm; i++) {
+	    final Account wallet = new Account();
+	    wallet.deposit(new ExchangableSet(ExchangableType.BTC, 1));
+	    final TradingPerformance performance = new TradingPerformance(new ExchangableSet(ExchangableType.BTC, 1));
+
+	    final TradingRule rule1 = new TradingRule();
+	    rule1.setThreshold(-10.0 + (i / 10.0));
+	    rule1.setComparator(buyComparator);
+	    rule1.setMetric(new MacdGraphMetric());
+
+	    final TradingRule rule21 = new TradingRule();
+	    rule21.setThreshold(10.0 - i / 10.0);
+	    rule21.setComparator(sellComparator);
+	    rule21.setMetric(new MacdGraphMetric());
+
+	    final TradingRulePerceptron buyRule = new TradingRulePerceptron(rule1, 1, 1);
+	    final TradingRulePerceptron sellRule = new TradingRulePerceptron(rule21, 1, 1);
+
+	    final TradingRulePerceptron neverFiring = new TradingRulePerceptron(rule21, 1, 2);
+	    TraderNeuralNetwork buyNetwork = null;
+	    TraderNeuralNetwork sellNetwork = null;
+	    if (type.equals(NetworkType.AND) || type.equals(NetworkType.OR)) {
+		buyNetwork = new TraderNeuralNetwork(buyRule, buyRule, type);
+		sellNetwork = new TraderNeuralNetwork(sellRule, sellRule, type);
+	    } else {
+		buyNetwork = new TraderNeuralNetwork(buyRule, neverFiring, type);
+		sellNetwork = new TraderNeuralNetwork(sellRule, neverFiring, type);
+	    }
+
+	    final Trader newTrader = new Trader("MACD_" + i + "_" + (100 - i), wallet, exchange, buyNetwork,
+		    sellNetwork, new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
+	    newTrader.setExchange(exchange);
+	    newTrader.setNumberOfObservedMinutes(n);
+	    newTrader.setName(newTrader.generateDescriptiveName());
+	    currentGeneration.add(newTrader);
+
+	}
+    }
+
+    private void buildCoppocTrader(final List<IIndividual> currentGeneration, final int sizePerAlgorithm, int n,
+	    ComparatorType buyComparator, ComparatorType sellComparator, NetworkType type) {
+	for (int i = 0; i < sizePerAlgorithm; i++) {
+	    final Account wallet = new Account();
+	    wallet.deposit(new ExchangableSet(ExchangableType.BTC, 1));
+	    final TradingPerformance performance = new TradingPerformance(new ExchangableSet(ExchangableType.BTC, 1));
+
+	    final TradingRule rule1 = new TradingRule();
+	    rule1.setThreshold(-10.0 + (i / 10.0));
+	    rule1.setComparator(buyComparator);
+	    rule1.setMetric(new CoppocGraphMetric());
+
+	    final TradingRule rule21 = new TradingRule();
+	    rule21.setThreshold(10.0 - i / 10.0);
+	    rule21.setComparator(sellComparator);
+	    rule21.setMetric(new CoppocGraphMetric());
+
+	    final TradingRulePerceptron buyRule = new TradingRulePerceptron(rule1, 1, 1);
+	    final TradingRulePerceptron sellRule = new TradingRulePerceptron(rule21, 1, 1);
+
+	    final TradingRulePerceptron neverFiring = new TradingRulePerceptron(rule21, 1, 2);
+	    TraderNeuralNetwork buyNetwork = null;
+	    TraderNeuralNetwork sellNetwork = null;
+	    if (type.equals(NetworkType.AND) || type.equals(NetworkType.OR)) {
+		buyNetwork = new TraderNeuralNetwork(buyRule, buyRule, type);
+		sellNetwork = new TraderNeuralNetwork(sellRule, sellRule, type);
+	    } else {
+		buyNetwork = new TraderNeuralNetwork(buyRule, neverFiring, type);
+		sellNetwork = new TraderNeuralNetwork(sellRule, neverFiring, type);
+	    }
+
+	    final Trader newTrader = new Trader("coppoch_" + i + "_" + (100 - i), wallet, exchange, buyNetwork,
+		    sellNetwork, new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
+	    newTrader.setExchange(exchange);
+	    newTrader.setNumberOfObservedMinutes(n);
+	    newTrader.setName(newTrader.generateDescriptiveName());
+	    currentGeneration.add(newTrader);
+
+	}
+    }
+
+    private void buildStochasticFastTrader(final List<IIndividual> currentGeneration, final int sizePerAlgorithm, int n,
+	    ComparatorType buyComparator, ComparatorType sellComparator, NetworkType type) {
+	for (int i = 0; i < sizePerAlgorithm; i++) {
+	    final Account wallet = new Account();
+	    wallet.deposit(new ExchangableSet(ExchangableType.BTC, 1));
+	    final TradingPerformance performance = new TradingPerformance(new ExchangableSet(ExchangableType.BTC, 1));
+
+	    final TradingRule rule1 = new TradingRule();
+	    rule1.setThreshold(0.0 + (i / (Math.max(1, 100 / sizePerAlgorithm))));
+	    rule1.setComparator(buyComparator);
+	    rule1.setMetric(new StochasticFastGraphMetric());
+
+	    final TradingRule rule21 = new TradingRule();
+	    rule21.setThreshold(100.0 - i / (Math.max(1, 100 / sizePerAlgorithm)));
+	    rule21.setComparator(sellComparator);
+	    rule21.setMetric(new StochasticFastGraphMetric());
+
+	    final TradingRulePerceptron buyRule = new TradingRulePerceptron(rule1, 1, 1);
+	    final TradingRulePerceptron sellRule = new TradingRulePerceptron(rule21, 1, 1);
+
+	    final TradingRulePerceptron neverFiring = new TradingRulePerceptron(rule21, 1, 2);
+	    TraderNeuralNetwork buyNetwork = null;
+	    TraderNeuralNetwork sellNetwork = null;
+	    if (type.equals(NetworkType.AND) || type.equals(NetworkType.OR)) {
+		buyNetwork = new TraderNeuralNetwork(buyRule, buyRule, type);
+		sellNetwork = new TraderNeuralNetwork(sellRule, sellRule, type);
+	    } else {
+		buyNetwork = new TraderNeuralNetwork(buyRule, neverFiring, type);
+		sellNetwork = new TraderNeuralNetwork(sellRule, neverFiring, type);
+	    }
+
+	    final Trader newTrader = new Trader("FAST_" + i + "_" + (100 - i), wallet, exchange, buyNetwork,
+		    sellNetwork, new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
+	    newTrader.setExchange(exchange);
+	    newTrader.setNumberOfObservedMinutes(n);
+	    newTrader.setName(newTrader.generateDescriptiveName());
+	    currentGeneration.add(newTrader);
+
+	}
+    }
+
+    private void buildRsiTrader(final List<IIndividual> currentGeneration, final int sizePerAlgorithm, int n,
+	    ComparatorType buyComparator, ComparatorType sellComparator, NetworkType type) {
+	for (int i = 0; i < sizePerAlgorithm; i++) {
+	    final Account wallet = new Account();
+	    wallet.deposit(new ExchangableSet(ExchangableType.BTC, 1));
+	    final TradingPerformance performance = new TradingPerformance(new ExchangableSet(ExchangableType.BTC, 1));
+
+	    final TradingRule rule1 = new TradingRule();
+	    rule1.setThreshold(i);
+	    rule1.setComparator(buyComparator);
+	    rule1.setMetric(new RsiGraphMetric());
+
+	    final TradingRule rule21 = new TradingRule();
+	    rule21.setThreshold(100 - i);
+	    rule21.setComparator(sellComparator);
+	    rule21.setMetric(new RsiGraphMetric());
+
+	    final TradingRulePerceptron buyRule = new TradingRulePerceptron(rule1, 1, 1);
+	    final TradingRulePerceptron sellRule = new TradingRulePerceptron(rule21, 1, 1);
+
+	    final TradingRulePerceptron neverFiring = new TradingRulePerceptron(rule21, 1, 2);
+	    TraderNeuralNetwork buyNetwork = null;
+	    TraderNeuralNetwork sellNetwork = null;
+	    if (type.equals(NetworkType.AND) || type.equals(NetworkType.OR)) {
+		buyNetwork = new TraderNeuralNetwork(buyRule, buyRule, type);
+		sellNetwork = new TraderNeuralNetwork(sellRule, sellRule, type);
+	    } else {
+		buyNetwork = new TraderNeuralNetwork(buyRule, neverFiring, type);
+		sellNetwork = new TraderNeuralNetwork(sellRule, neverFiring, type);
+	    }
+	    final Trader newTrader = new Trader("rsi_" + i + "_" + (100 - i), wallet, exchange, buyNetwork, sellNetwork,
+		    new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
+	    newTrader.setExchange(exchange);
+	    newTrader.setNumberOfObservedMinutes(n);
+	    newTrader.setName(newTrader.generateDescriptiveName());
+	    currentGeneration.add(newTrader);
+
+	}
     }
 }

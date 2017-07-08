@@ -16,7 +16,7 @@ import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
  * @author Daniel Wieczorek
  *
  */
-public class TradingRulePerceptron {
+public class TradingRulePerceptron implements INeuralNetworkNode {
     private static final Logger LOGGER = Logger.getLogger(TradingRulePerceptron.class.getName());
     /**
      * List of weighted Trading rules.
@@ -61,6 +61,7 @@ public class TradingRulePerceptron {
      *            metrics.
      * @return true if the perceptron activates, false else.
      */
+    @Override
     public final boolean isActivated(final ExchangeRateHistory history) {
 
 	double sumOfInputs = 0.0;

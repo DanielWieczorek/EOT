@@ -114,7 +114,7 @@ public class TradingPerformance implements Observer {
 	if (getNumberOfTrades() == 0) {
 	    result = Double.NEGATIVE_INFINITY;
 	} else {
-	    result = result * (numberOfTrades - numberOfTradesWithLosses);
+	    // result = result * (numberOfTrades - numberOfTradesWithLosses);
 	}
 	return result;
     }

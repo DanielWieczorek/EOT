@@ -13,7 +13,7 @@ import de.wieczorek.eot.domain.exchange.IExchange;
 import de.wieczorek.eot.domain.exchange.Order;
 import de.wieczorek.eot.domain.exchange.OrderType;
 import de.wieczorek.eot.domain.exchange.impl.AbstractExchangeImpl;
-import de.wieczorek.eot.domain.trading.rule.TradingRulePerceptron;
+import de.wieczorek.eot.domain.trading.rule.TraderNeuralNetwork;
 import de.wieczorek.eot.domain.trading.rule.TradingRulePerceptron.Input;
 
 /**
@@ -48,12 +48,12 @@ public class Trader extends Observable implements IIndividual {
     /**
      * Perceptron determining whether the trader should buy an exchangable.
      */
-    private TradingRulePerceptron buyRule;
+    private TraderNeuralNetwork buyRule;
 
     /**
      * Perceptron determining whether the trader should sell an exchangable.
      */
-    private TradingRulePerceptron sellRule;
+    private TraderNeuralNetwork sellRule;
 
     /**
      * The exchangable pair that the trader is trading.
@@ -92,7 +92,7 @@ public class Trader extends Observable implements IIndividual {
      *            measures the performance of the trader
      */
     public Trader(final String nameInput, final IAccount accountInput, final IExchange exchangeInput,
-	    final TradingRulePerceptron buyRuleInput, final TradingRulePerceptron sellRuleInput,
+	    final TraderNeuralNetwork buyRuleInput, final TraderNeuralNetwork sellRuleInput,
 	    final ExchangablePair exchangablesToTradeInput, final TradingPerformance performanceInput) {
 	super();
 	this.setName(nameInput);
@@ -261,18 +261,18 @@ public class Trader extends Observable implements IIndividual {
 
     @Override
     public final List<IIndividual> combineWith(final IIndividual individual) {
+	List<TraderNeuralNetwork> sellRules = sellRule.combineWith(((Trader) individual).sellRule);
+	List<TraderNeuralNetwork> buyRules = buyRule.combineWith(((Trader) individual).buyRule);
 	Account wallet = new Account();
-	Trader result1 = new Trader(name + "|" + individual.getName(), wallet, exchange, buyRule,
-		sellRule.combineWith(((Trader) individual).sellRule), exchangablesToTrade,
-		new TradingPerformance(null));
+	Trader result1 = new Trader(name + "|" + individual.getName(), wallet, exchange, buyRules.get(1),
+		sellRules.get(0), exchangablesToTrade, new TradingPerformance(null));
 	result1.setNumberOfObservedMinutes(
 		(this.numberOfObservedMinutes + ((Trader) individual).numberOfObservedMinutes) / 2);
 	result1.setName(result1.generateDescriptiveName());
 
 	wallet = new Account();
-	Trader result2 = new Trader(name + "|" + individual.getName(), wallet, exchange,
-		buyRule.combineWith(((Trader) individual).buyRule), sellRule, exchangablesToTrade,
-		new TradingPerformance(null));
+	Trader result2 = new Trader(name + "|" + individual.getName(), wallet, exchange, buyRules.get(0),
+		sellRules.get(1), exchangablesToTrade, new TradingPerformance(null));
 	result2.setNumberOfObservedMinutes(
 		(this.numberOfObservedMinutes + ((Trader) individual).numberOfObservedMinutes) / 2);
 	result2.setName(result2.generateDescriptiveName());
@@ -291,17 +291,32 @@ public class Trader extends Observable implements IIndividual {
      */
     public final String generateDescriptiveName() {
 	String result = this.numberOfObservedMinutes + "b";
-	for (Input i : buyRule.getInputs()) {
+	for (Input i : buyRule.getPerceptron1().getInputs()) {
 	    result += "::" + i.getRule().getMetric().getType().name() + "-" + i.getRule().getComparator().name() + "_"
 		    + i.getRule().getThreshold() + "-" + i.getWeight();
 	}
-	result += "#" + buyRule.getThreshold();
+	result += "#" + buyRule.getPerceptron1().getThreshold();
+	result += "TYPE:" + buyRule.getType().name();
+
+	for (Input i : buyRule.getPerceptron2().getInputs()) {
+	    result += "::" + i.getRule().getMetric().getType().name() + "-" + i.getRule().getComparator().name() + "_"
+		    + i.getRule().getThreshold() + "-" + i.getWeight();
+	}
+	result += "#" + buyRule.getPerceptron2().getThreshold();
 	result += "|s";
-	for (Input i : sellRule.getInputs()) {
+	for (Input i : sellRule.getPerceptron1().getInputs()) {
 	    result += "::" + i.getRule().getMetric().getType().name() + "-" + i.getRule().getComparator().name() + "_"
 		    + i.getRule().getThreshold() + "-" + i.getWeight();
 	}
-	result += "#" + sellRule.getThreshold();
+	result += "#" + sellRule.getPerceptron1().getThreshold();
+	result += "TYPE:" + buyRule.getType().name();
+
+	result += "|s";
+	for (Input i : sellRule.getPerceptron2().getInputs()) {
+	    result += "::" + i.getRule().getMetric().getType().name() + "-" + i.getRule().getComparator().name() + "_"
+		    + i.getRule().getThreshold() + "-" + i.getWeight();
+	}
+	result += "#" + sellRule.getPerceptron2().getThreshold();
 
 	return result;
     }
@@ -313,6 +328,9 @@ public class Trader extends Observable implements IIndividual {
 
 	buyRule.randomizeOneComparator();
 	sellRule.randomizeOneComparator();
+
+	buyRule.randomizeNetworkType();
+	sellRule.randomizeNetworkType();
     }
 
     public int getNumberOfObservedMinutes() {

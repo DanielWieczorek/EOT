@@ -49,11 +49,6 @@ public class Population implements IPopulation {
 	final Comparator<IIndividual> byRating = (e1, e2) -> Double.compare(e2.calculateFitness(),
 		e1.calculateFitness());
 
-	final List<IIndividual> ordered = currentGeneration.stream().sorted(byRating).collect(Collectors.toList());
-	for (final IIndividual individual : ordered) {
-	    logger.severe("" + individual.getName() + ": " + individual.calculateFitness());
-	}
-
 	final List<IIndividual> result = currentGeneration.stream().sorted(byRating).limit(amount)
 		.collect(Collectors.toList());
 	return result;

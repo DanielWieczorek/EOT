@@ -21,6 +21,7 @@ import de.wieczorek.eot.domain.trader.SynchronizingAccount;
 import de.wieczorek.eot.domain.trader.Trader;
 import de.wieczorek.eot.domain.trader.TradingPerformance;
 import de.wieczorek.eot.domain.trading.rule.ComparatorType;
+import de.wieczorek.eot.domain.trading.rule.TraderNeuralNetwork;
 import de.wieczorek.eot.domain.trading.rule.TradingRule;
 import de.wieczorek.eot.domain.trading.rule.TradingRulePerceptron;
 import de.wieczorek.eot.domain.trading.rule.metric.AbstractGraphMetric;
@@ -133,7 +134,9 @@ public class RealMachine extends AbstractMachine {
 		.getInstance(IAccount.class);
 	wallet3.deposit(new ExchangableSet(ExchangableType.BTC, 1));
 
-	final Trader newTrader3 = new Trader("macd_" + -1 + "_" + 1, wallet3, exchange, buyPerceptron3, sellPerceptron3,
+	final Trader newTrader3 = new Trader("macd_" + -1 + "_" + 1, wallet3, exchange,
+		new TraderNeuralNetwork(buyPerceptron3, buyPerceptron3),
+		new TraderNeuralNetwork(sellPerceptron3, sellPerceptron3),
 		new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
 	newTrader3.setExchange(exchange);
 	newTrader3.setNumberOfObservedMinutes(1651);
@@ -156,7 +159,9 @@ public class RealMachine extends AbstractMachine {
 		.getInstance(IAccount.class);
 	wallet2.deposit(new ExchangableSet(ExchangableType.BTC, 1));
 
-	final Trader newTrader2 = new Trader("macd_" + -1 + "_" + 1, wallet2, exchange, buyPerceptron2, sellPerceptron2,
+	final Trader newTrader2 = new Trader("macd_" + -1 + "_" + 1, wallet2, exchange,
+		new TraderNeuralNetwork(buyPerceptron2, buyPerceptron2),
+		new TraderNeuralNetwork(sellPerceptron2, sellPerceptron2),
 		new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance2);
 	newTrader2.setExchange(exchange);
 	newTrader2.setNumberOfObservedMinutes(11);
