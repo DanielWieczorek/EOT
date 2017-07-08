@@ -97,4 +97,15 @@ public class BusinessLayerFacadeImpl implements IBusinessLayerFacade {
 	tradeUc.perform(order);
     }
 
+    @Override
+    public final String getKey() {
+
+	return configurationUc.getKey();
+    }
+
+    @Override
+    public final String getSecret() {
+	return configurationUc.getSecret();
+    }
+
 }

@@ -1,5 +1,6 @@
 package de.wieczorek.eot.business.configuration;
 
+import de.wieczorek.eot.business.configuration.exchange.IExchangeConfigurationUc;
 import de.wieczorek.eot.business.configuration.simulation.ISimulationConfigurationUc;
 
 /**
@@ -8,6 +9,6 @@ import de.wieczorek.eot.business.configuration.simulation.ISimulationConfigurati
  * @author Daniel Wieczorek
  *
  */
-public interface IConfigurationUc extends ISimulationConfigurationUc {
+public interface IConfigurationUc extends ISimulationConfigurationUc, IExchangeConfigurationUc {
 
 }

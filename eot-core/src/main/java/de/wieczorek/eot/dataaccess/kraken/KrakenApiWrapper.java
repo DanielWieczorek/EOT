@@ -8,6 +8,7 @@ import java.util.Map;
 
 import com.google.inject.Inject;
 
+import de.wieczorek.eot.business.configuration.exchange.IExchangeConfigurationUc;
 import de.wieczorek.eot.business.trade.impl.OrderBo;
 import de.wieczorek.eot.business.trade.impl.OrderExecutionType;
 import de.wieczorek.eot.domain.exchangable.ExchangablePair;
@@ -21,12 +22,12 @@ public class KrakenApiWrapper implements IExchangeApi {
     private Map<ExchangableType, String> exchangableConversionMap;
 
     @Inject
-    public KrakenApiWrapper(KrakenApi api) {
+    public KrakenApiWrapper(KrakenApi api, IExchangeConfigurationUc exchangeConfigUc) {
 	this.api = api;
 	exchangableConversionMap = new HashMap<ExchangableType, String>();
 	exchangableConversionMap.put(ExchangableType.BTC, "XBT");
-	api.setKey("ccc");
-	api.setSecret("xxx");
+	api.setKey(exchangeConfigUc.getKey());
+	api.setSecret(exchangeConfigUc.getSecret());
     }
 
     public void setSecret(String secret) {

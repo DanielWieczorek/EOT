@@ -2,6 +2,7 @@ package de.wieczorek.eot.business.configuration;
 
 import javax.inject.Inject;
 
+import de.wieczorek.eot.business.configuration.exchange.IExchangeConfigurationUc;
 import de.wieczorek.eot.business.configuration.simulation.ISimulationConfigurationUc;
 
 /**
@@ -17,6 +18,8 @@ public class ConfigurationUcImpl implements IConfigurationUc {
      */
     private ISimulationConfigurationUc simulationConf;
 
+    private IExchangeConfigurationUc exchangeConf;
+
     /**
      * Constructor.
      * 
@@ -24,8 +27,10 @@ public class ConfigurationUcImpl implements IConfigurationUc {
      *            configuration of the simulation.
      */
     @Inject
-    public ConfigurationUcImpl(final ISimulationConfigurationUc simulationConfInput) {
+    public ConfigurationUcImpl(final ISimulationConfigurationUc simulationConfInput,
+	    final IExchangeConfigurationUc exchangeConfInput) {
 	this.simulationConf = simulationConfInput;
+	this.exchangeConf = exchangeConfInput;
     }
 
     @Override
@@ -36,5 +41,15 @@ public class ConfigurationUcImpl implements IConfigurationUc {
     @Override
     public final int getOrderExecutionTime() {
 	return simulationConf.getOrderExecutionTime();
+    }
+
+    @Override
+    public String getKey() {
+	return exchangeConf.getKey();
+    }
+
+    @Override
+    public String getSecret() {
+	return exchangeConf.getSecret();
     }
 }
