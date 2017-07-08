@@ -3,8 +3,6 @@ package de.wieczorek.eot.domain.exchangable.rate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.PriorityQueue;
-import java.util.stream.Collectors;
 
 /**
  * Class representing a sequence of exchange rates.
@@ -13,13 +11,6 @@ import java.util.stream.Collectors;
  *
  */
 public class ExchangeRateHistory {
-
-    /**
-     * A Queue containing the sequence of exchange rates. The data in this Queue
-     * is the master. All other structures are just for caching and performance
-     * optimization.
-     */
-    private final PriorityQueue<TimedExchangeRate> dataPoints;
 
     /**
      * contains the same data from the queue if initialized. This list is used
@@ -106,7 +97,6 @@ public class ExchangeRateHistory {
      * Default Constructor.
      */
     public ExchangeRateHistory() {
-	dataPoints = new PriorityQueue<>();
 	dataPointsAsList = new ArrayList<>();
     }
 
@@ -121,9 +111,14 @@ public class ExchangeRateHistory {
     public static ExchangeRateHistory from(final List<TimedExchangeRate> exchangeRates) {
 	final ExchangeRateHistory newHistory = new ExchangeRateHistory();
 
-	for (final TimedExchangeRate exchangeRate : exchangeRates) {
-	    newHistory.add(exchangeRate);
-	}
+	exchangeRates.forEach(e -> newHistory.add(e));
+	return newHistory;
+
+    }
+
+    public static ExchangeRateHistory fromSortedList(final List<TimedExchangeRate> exchangeRates) {
+	final ExchangeRateHistory newHistory = new ExchangeRateHistory();
+	newHistory.dataPointsAsList.addAll(exchangeRates);
 	return newHistory;
 
     }
@@ -138,8 +133,8 @@ public class ExchangeRateHistory {
      *         entry.
      */
     public final ExchangeRateHistory add(final TimedExchangeRate exchangeRate) {
-	dataPoints.add(exchangeRate);
-	dataPointsAsList = null;
+	int index = getIndexByDate(exchangeRate.getTime());
+	dataPointsAsList.add(index, exchangeRate);
 
 	return this;
     }
@@ -151,11 +146,29 @@ public class ExchangeRateHistory {
      * @return a list of exchange rates.
      */
     public final List<TimedExchangeRate> getCompleteHistoryData() {
-	if (dataPointsAsList == null) {
-	    dataPointsAsList = dataPoints.stream().collect(Collectors.toList());
-	}
 	return dataPointsAsList;
 
+    }
+
+    private int getIndexByDate(LocalDateTime date) {
+	int low = 0;
+	int high = dataPointsAsList.size() - 1;
+	int result = 0;
+	int middle = 0;
+	while (high >= low) {
+	    middle = (low + high) >>> 1;
+	    if (dataPointsAsList.get(middle).getTime().isBefore(date)) {
+		low = middle + 1;
+		result = low;
+	    } else if (dataPointsAsList.get(middle).getTime().isAfter(date)) {
+		high = middle - 1;
+		result = high;
+	    } else {
+		result = middle;
+		break;
+	    }
+	}
+	return result;
     }
 
     /**
@@ -193,7 +206,7 @@ public class ExchangeRateHistory {
 	}
 
 	if (!resultExchangeRates.isEmpty()) {
-	    ExchangeRateHistory result = ExchangeRateHistory.from(resultExchangeRates);
+	    ExchangeRateHistory result = ExchangeRateHistory.fromSortedList(resultExchangeRates);
 	    return result;
 	} else {
 	    return new ExchangeRateHistory();
@@ -208,10 +221,7 @@ public class ExchangeRateHistory {
      * @return a {@link TimedExchangeRate} representing exchange rate.
      */
     public final TimedExchangeRate getMostRecentExchangeRate() {
-	if (dataPointsAsList == null) {
-	    dataPointsAsList = dataPoints.stream().collect(Collectors.toList());
-	}
-	return dataPointsAsList.get(dataPoints.size() - 1);
+	return dataPointsAsList.get(dataPointsAsList.size() - 1);
     }
 
 }
