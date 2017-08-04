@@ -26,13 +26,13 @@ public class VirtualMachine extends AbstractMachine {
     private static final Logger logger = Logger.getLogger(VirtualMachine.class.getName());
 
     private final ExecutorService taskExecutor = Executors.newFixedThreadPool(numberOfExecutors);
-    private final int maxPopulations = 100;
+    private final int maxPopulations = 20;
 
     private final List<List<IIndividual>> traderGroups;
 
     private static final int numberOfExecutors = 8;
 
-    private static final int populationSize = 25;
+    private static final int populationSize = 100;
 
     @Inject
     public VirtualMachine(final IExchange exchange, final Population traders) {
@@ -71,7 +71,7 @@ public class VirtualMachine extends AbstractMachine {
 		    }
 		    exchange.reset();
 		    final int cycles = exchange.getHistory().getCompleteHistoryData().size() - 15 * 60;
-		    logger.severe("running over " + cycles + " data points");
+		    logger.severe("running over " + cycles + " data points for " + getTraders().getAll().size());
 		    final long start = System.currentTimeMillis();
 
 		    int n = 0;
@@ -114,12 +114,11 @@ public class VirtualMachine extends AbstractMachine {
 			} catch (final InterruptedException E) {
 			    E.printStackTrace();
 			}
-
 		    }
 		    final long end = System.currentTimeMillis();
-		    logger.severe("Finished simulation of generation " + j + ". It took "
-			    + (double) ((end - start) / 1000) + " seconds.");
-
+		    logger.severe(
+			    "Finished simulation of generation " + j + " with " + this.getTraders().getAll().size()
+				    + " individuals. It took " + (double) ((end - start) / 1000) + " seconds.");
 		}
 		this.getTraders().printPopulationInfo();
 	    };

@@ -13,7 +13,6 @@ public class StochasticFastGraphMetric extends AbstractGraphMetric {
 
     public StochasticFastGraphMetric() {
 	this.setType(GraphMetricType.StochasticFast);
-	this.setStrategy(ExecutionLocationStrategy.CPU_ONLY);
     }
 
     @Override
@@ -40,39 +39,4 @@ public class StochasticFastGraphMetric extends AbstractGraphMetric {
 	result *= 100;
 	return result;
     }
-
-    @Override
-    protected final double calculateRatingGPU(final ExchangeRateHistory history) {
-	double[] minPrice = new double[] { Double.MAX_VALUE };
-	double[] maxPrice = new double[] { Double.MIN_VALUE };
-	double[] priceRange = new double[] { Double.MIN_NORMAL };
-
-	if (kernel1 == null) {
-	    kernel1 = new Kernel() {
-		@Override
-		public void run() {
-		    int i = getGlobalId();
-
-		    List<TimedExchangeRate> historyData = history.getCompleteHistoryData();
-		    TimedExchangeRate rate = historyData.get(i);
-		    if (rate.getToPrice() < minPrice[0]) {
-			minPrice[0] = rate.getToPrice();
-		    }
-		    if (rate.getToPrice() > maxPrice[0]) {
-			maxPrice[0] = rate.getToPrice();
-		    }
-		}
-
-	    };
-	}
-
-	priceRange[0] = maxPrice[0] - minPrice[0];
-
-	double result = history.getMostRecentExchangeRate().getToPrice();
-	result -= minPrice[0];
-	result /= priceRange[0];
-	result *= 100;
-	return result;
-    }
-
 }

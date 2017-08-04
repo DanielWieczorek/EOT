@@ -1,5 +1,7 @@
 package de.wieczorek.eot.domain.trading.rule.metric;
 
+import java.util.List;
+
 import com.aparapi.Kernel;
 import com.aparapi.Range;
 
@@ -13,10 +15,7 @@ public class RsiGraphMetric extends AbstractGraphMetric {
 
     public RsiGraphMetric() {
 	this.setType(GraphMetricType.RSI);
-	this.setStrategy(ExecutionLocationStrategy.CPU_ONLY);
     }
-
-    // private final int MULTIPLICATOR = 15;
 
     @Override
     protected double calculateRatingCPU(ExchangeRateHistory history) {
@@ -25,23 +24,26 @@ public class RsiGraphMetric extends AbstractGraphMetric {
 	double averageGain = 0.0;
 	double averageLoss = 0.0;
 
-	int numberDataPointsForInitialAverage = Math.min(15, input.getCompleteHistoryData().size() / 2);
+	List<TimedExchangeRate> historyData = input.getCompleteHistoryData();
+	int historySize = historyData.size();
+	int numberDataPointsForInitialAverage = Math.min(15, historySize / 10);
 
 	for (int i = 1; i < numberDataPointsForInitialAverage; i += 1) {
-	    TimedExchangeRate lastDatapoint = input.getCompleteHistoryData().get(i - 1);
-	    TimedExchangeRate currentDatapoint = input.getCompleteHistoryData().get(i);
+	    TimedExchangeRate lastDatapoint = historyData.get(i - 1);
+	    TimedExchangeRate currentDatapoint = historyData.get(i);
 
 	    if (lastDatapoint.getToPrice() > currentDatapoint.getToPrice())
 		averageLoss += lastDatapoint.getToPrice() - currentDatapoint.getToPrice();
 	    else
 		averageGain += currentDatapoint.getToPrice() - lastDatapoint.getToPrice();
 	}
-	averageGain /= 14;
-	averageLoss /= 14;
 
-	for (int i = 15; i < input.getCompleteHistoryData().size(); i += 1) {
-	    TimedExchangeRate lastDatapoint = input.getCompleteHistoryData().get(i - 1);
-	    TimedExchangeRate currentDatapoint = input.getCompleteHistoryData().get(i);
+	averageGain /= numberDataPointsForInitialAverage;
+	averageLoss /= numberDataPointsForInitialAverage;
+
+	for (int i = numberDataPointsForInitialAverage + 1; i < historySize; i += 1) {
+	    TimedExchangeRate lastDatapoint = historyData.get(i - 1);
+	    TimedExchangeRate currentDatapoint = historyData.get(i);
 
 	    if (lastDatapoint.getToPrice() < currentDatapoint.getToPrice())
 		averageGain = (averageGain * 13.0 + currentDatapoint.getToPrice()) / 14.0;
@@ -56,62 +58,4 @@ public class RsiGraphMetric extends AbstractGraphMetric {
 
 	return 100.0 - (100.0 / (1.0 + relativeStrength));
     }
-
-    @Override
-    protected double calculateRatingGPU(ExchangeRateHistory history) {
-	ExchangeRateHistory input = history;
-
-	float[] averageGain = new float[1];
-	float[] averageLoss = new float[1];
-
-	float[] datapoints = new float[input.getCompleteHistoryData().size()];
-
-	for (int i = 0; i < input.getCompleteHistoryData().size(); i++)
-	    datapoints[i] = (float) input.getCompleteHistoryData().get(i).getToPrice();
-
-	if (kernel1 == null) {
-	    kernel1 = new Kernel() {
-		@Override
-		public void run() {
-		    int i = getGlobalId();
-
-		    if (i < 15) {
-			if (datapoints[i] > datapoints[i + 1])
-			    averageLoss[0] = averageLoss[0] + datapoints[i] - datapoints[i + 1];
-			else
-			    averageGain[0] = averageGain[0] + datapoints[i + 1] - datapoints[i];
-		    }
-		    if (i == 15) {
-			averageGain[0] /= 14f;
-			averageLoss[0] /= 14f;
-		    }
-
-		    if (i > 15) {
-			float lastDatapoint = datapoints[i];
-			float currentDatapoint = datapoints[i + 1];
-
-			if (lastDatapoint < currentDatapoint)
-			    averageGain[0] = (averageGain[0] * 13.0f + currentDatapoint) / 14.0f;
-			else
-			    averageLoss[0] = (averageLoss[0] * 13.0f + currentDatapoint) / 14.0f;
-		    }
-		}
-
-	    };
-	}
-	// if (range == null)
-	range = Range.create(datapoints.length - 1);
-	try {
-	    kernel1.execute(range);
-	} catch (Exception e) {
-	    e.printStackTrace();
-	}
-
-	float relativeStrength = averageGain[0] / averageLoss[0];
-
-	System.out.println("Relative Strength: " + (100.0 - (100.0 / (1.0 + relativeStrength))));
-
-	return 100.0 - (100.0 / (1.0 + relativeStrength));
-    }
-
 }

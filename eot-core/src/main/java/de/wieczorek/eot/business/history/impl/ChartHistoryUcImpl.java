@@ -45,7 +45,7 @@ public class ChartHistoryUcImpl implements IChartHistoryUc {
     @Override
     public final ExchangeRateHistory getDetailedHistoryFromDb(final ExchangableType from, final ExchangableType to,
 	    final int minutes) {
-	ExchangeRateHistory result = null;
+	ExchangeRateHistory result = new ExchangeRateHistory();
 	final List<ExchangeRateBo> bos;
 	try {
 	    bos = dao.getDetailedHistoryEntries(from, to, minutes);

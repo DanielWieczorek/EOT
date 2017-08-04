@@ -35,11 +35,6 @@ public class Trader extends Observable implements IIndividual {
      */
     private IAccount account;
 
-    /**
-     * Name of the trader. Used to display in the UI.
-     */
-    private String name;
-
     /***
      * The exchange the trader is trading at.
      */
@@ -70,7 +65,9 @@ public class Trader extends Observable implements IIndividual {
      */
     private TradingPerformance performance;
 
-    private int numberOfObservedMinutes = 24 * 60;
+    // private int numberOfObservedMinutes = 24 * 60;
+
+    private int numberOfChunks = 10;
 
     /**
      * Constructor.
@@ -91,11 +88,10 @@ public class Trader extends Observable implements IIndividual {
      * @param performanceInput
      *            measures the performance of the trader
      */
-    public Trader(final String nameInput, final IAccount accountInput, final IExchange exchangeInput,
-	    final TraderNeuralNetwork buyRuleInput, final TraderNeuralNetwork sellRuleInput,
-	    final ExchangablePair exchangablesToTradeInput, final TradingPerformance performanceInput) {
+    public Trader(final IAccount accountInput, final IExchange exchangeInput, final TraderNeuralNetwork buyRuleInput,
+	    final TraderNeuralNetwork sellRuleInput, final ExchangablePair exchangablesToTradeInput,
+	    final TradingPerformance performanceInput) {
 	super();
-	this.setName(nameInput);
 	this.setAccount(accountInput);
 	this.setExchange(exchangeInput);
 	this.buyRule = buyRuleInput;
@@ -126,15 +122,15 @@ public class Trader extends Observable implements IIndividual {
 	if (currentExchangeRate != lastSeenRate && !areOrdersPending()) {
 	    ExchangableSet from = getAccount().countAllExchangablesOfType(getExchangablesToTrade().getFrom());
 	    LOGGER.fine("from amount: " + from.getAmount() + " " + from.getExchangable().name());
-	    if (from.getAmount() > 0 && sellRule.isActivated(
-		    getExchange().getExchangeRateHistory(getExchangablesToTrade(), getNumberOfObservedMinutes()))) {
+	    if (from.getAmount() > 0 && sellRule.isActivated(getExchange()
+		    .getExchangeRateHistory(getExchangablesToTrade(), sellRule.getHighestObservationTime()))) {
 		LOGGER.fine("triggering sell order");
 		sell(currentExchangeRate);
 	    } else {
 		ExchangableSet to = getAccount().countAllExchangablesOfType(getExchangablesToTrade().getTo());
 		LOGGER.fine("to amount: " + to.getAmount() + " " + to.getExchangable().name());
-		if (to.getAmount() > 0 && buyRule.isActivated(
-			getExchange().getExchangeRateHistory(getExchangablesToTrade(), getNumberOfObservedMinutes()))) {
+		if (to.getAmount() > 0 && buyRule.isActivated(getExchange()
+			.getExchangeRateHistory(getExchangablesToTrade(), buyRule.getHighestObservationTime()))) {
 		    // LOGGER.severe("triggering buy order");
 		    buy(currentExchangeRate);
 		}
@@ -178,7 +174,7 @@ public class Trader extends Observable implements IIndividual {
 	ExchangableSet to = getAccount().countAllExchangablesOfType(getExchangablesToTrade().getTo());
 	ExchangableSet from = getAccount().countAllExchangablesOfType(getExchangablesToTrade().getFrom());
 
-	double fullAmount = (to.getAmount() / currentExchangeRate + from.getAmount()) / 10.0;
+	double fullAmount = (to.getAmount() / currentExchangeRate + from.getAmount()) / (numberOfChunks);
 	if (OrderType.BUY.equals(type)) {
 	    return Math.min(to.getAmount(), fullAmount * currentExchangeRate);
 	} else {
@@ -228,11 +224,7 @@ public class Trader extends Observable implements IIndividual {
 
     @Override
     public final String getName() {
-	return name;
-    }
-
-    public final void setName(final String nameInput) {
-	this.name = nameInput;
+	return generateDescriptiveName();
     }
 
     public final ExchangablePair getExchangablesToTrade() {
@@ -264,18 +256,22 @@ public class Trader extends Observable implements IIndividual {
 	List<TraderNeuralNetwork> sellRules = sellRule.combineWith(((Trader) individual).sellRule);
 	List<TraderNeuralNetwork> buyRules = buyRule.combineWith(((Trader) individual).buyRule);
 	Account wallet = new Account();
-	Trader result1 = new Trader(name + "|" + individual.getName(), wallet, exchange, buyRules.get(1),
-		sellRules.get(0), exchangablesToTrade, new TradingPerformance(null));
-	result1.setNumberOfObservedMinutes(
-		(this.numberOfObservedMinutes + ((Trader) individual).numberOfObservedMinutes) / 2);
-	result1.setName(result1.generateDescriptiveName());
+	Trader result1 = new Trader(wallet, exchange, buyRules.get(1), sellRules.get(0), exchangablesToTrade,
+		new TradingPerformance(null));
+	// result1.setNumberOfObservedMinutes(
+	// (this.numberOfObservedMinutes + ((Trader)
+	// individual).numberOfObservedMinutes) / 2);
+
+	result1.setNumberOfChunks((this.numberOfChunks + ((Trader) individual).numberOfChunks) / 2);
 
 	wallet = new Account();
-	Trader result2 = new Trader(name + "|" + individual.getName(), wallet, exchange, buyRules.get(0),
-		sellRules.get(1), exchangablesToTrade, new TradingPerformance(null));
-	result2.setNumberOfObservedMinutes(
-		(this.numberOfObservedMinutes + ((Trader) individual).numberOfObservedMinutes) / 2);
-	result2.setName(result2.generateDescriptiveName());
+	Trader result2 = new Trader(wallet, exchange, buyRules.get(0), sellRules.get(1), exchangablesToTrade,
+		new TradingPerformance(null));
+	// result2.setNumberOfObservedMinutes(
+	// (this.numberOfObservedMinutes + ((Trader)
+	// individual).numberOfObservedMinutes) / 2);
+
+	result1.setNumberOfChunks((this.numberOfChunks + ((Trader) individual).numberOfChunks) / 2);
 
 	List<IIndividual> result = new ArrayList<>();
 	result.add(result1);
@@ -290,25 +286,30 @@ public class Trader extends Observable implements IIndividual {
      * @return the name
      */
     public final String generateDescriptiveName() {
-	String result = this.numberOfObservedMinutes + "b";
+
+	String result = ""; // this.numberOfObservedMinutes + "_n|";
+	result += this.numberOfChunks + "_c|b";
 	for (Input i : buyRule.getPerceptron1().getInputs()) {
 	    result += "::" + i.getRule().getMetric().getType().name() + "-" + i.getRule().getComparator().name() + "_"
 		    + i.getRule().getThreshold() + "-" + i.getWeight();
 	}
-	result += "#" + buyRule.getPerceptron1().getThreshold();
+	result += "#t_" + buyRule.getPerceptron1().getThreshold();
+	result += "#o_" + buyRule.getPerceptron1().getObservationTime();
 	result += "TYPE:" + buyRule.getType().name();
 
 	for (Input i : buyRule.getPerceptron2().getInputs()) {
 	    result += "::" + i.getRule().getMetric().getType().name() + "-" + i.getRule().getComparator().name() + "_"
 		    + i.getRule().getThreshold() + "-" + i.getWeight();
 	}
-	result += "#" + buyRule.getPerceptron2().getThreshold();
+	result += "#t_" + buyRule.getPerceptron2().getThreshold();
+	result += "#o_" + buyRule.getPerceptron2().getObservationTime();
 	result += "|s";
 	for (Input i : sellRule.getPerceptron1().getInputs()) {
 	    result += "::" + i.getRule().getMetric().getType().name() + "-" + i.getRule().getComparator().name() + "_"
 		    + i.getRule().getThreshold() + "-" + i.getWeight();
 	}
-	result += "#" + sellRule.getPerceptron1().getThreshold();
+	result += "#t_" + sellRule.getPerceptron1().getThreshold();
+	result += "#o_" + sellRule.getPerceptron1().getObservationTime();
 	result += "TYPE:" + buyRule.getType().name();
 
 	result += "|s";
@@ -316,7 +317,8 @@ public class Trader extends Observable implements IIndividual {
 	    result += "::" + i.getRule().getMetric().getType().name() + "-" + i.getRule().getComparator().name() + "_"
 		    + i.getRule().getThreshold() + "-" + i.getWeight();
 	}
-	result += "#" + sellRule.getPerceptron2().getThreshold();
+	result += "#t_" + sellRule.getPerceptron2().getThreshold();
+	result += "#o_" + sellRule.getPerceptron2().getObservationTime();
 
 	return result;
     }
@@ -333,14 +335,6 @@ public class Trader extends Observable implements IIndividual {
 	sellRule.randomizeNetworkType();
     }
 
-    public int getNumberOfObservedMinutes() {
-	return numberOfObservedMinutes;
-    }
-
-    public void setNumberOfObservedMinutes(int numberOfObservedMinutes) {
-	this.numberOfObservedMinutes = numberOfObservedMinutes;
-    }
-
     @Override
     public int getNumberOfTrades() {
 	return performance.getNumberOfTrades();
@@ -350,6 +344,14 @@ public class Trader extends Observable implements IIndividual {
     public double getNetProfit() {
 
 	return performance.getNetProfit();
+    }
+
+    public int getNumberOfChunks() {
+	return numberOfChunks;
+    }
+
+    public void setNumberOfChunks(int numberOfChunks) {
+	this.numberOfChunks = numberOfChunks;
     }
 
 }

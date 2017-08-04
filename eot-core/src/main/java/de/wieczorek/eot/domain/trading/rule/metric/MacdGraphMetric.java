@@ -9,7 +9,6 @@ public class MacdGraphMetric extends AbstractGraphMetric {
 
     public MacdGraphMetric() {
 	this.setType(GraphMetricType.MACD);
-	this.setStrategy(ExecutionLocationStrategy.CPU_ONLY);
     }
 
     @Override
@@ -43,8 +42,6 @@ public class MacdGraphMetric extends AbstractGraphMetric {
 		    + biggerMovingAverage;
 	}
 
-	// System.out.println((smallerMovingAverage - biggerMovingAverage) *
-	// 10000);
 	return (smallerMovingAverage - biggerMovingAverage) * 10000;
     }
 

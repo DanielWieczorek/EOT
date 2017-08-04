@@ -1,10 +1,10 @@
 package de.wieczorek.eot.domain.exchange.order.impl;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import de.wieczorek.eot.domain.exchange.Order;
 import de.wieczorek.eot.domain.exchange.order.IOrderBook;
@@ -29,16 +29,17 @@ public abstract class AbstractOrderBookImpl implements IOrderBook {
      * Constructor.
      */
     public AbstractOrderBookImpl() {
-	this.orders = new HashMap<>();
+	this.orders = new ConcurrentHashMap<>();
     }
 
     @Override
     public final List<Order> getOrderByTrader(final Trader trader) {
-	List<Order> result = new LinkedList<>();
+	List<Order> result = new ArrayList<>();
 	List<OrderInfo> orderInfos = orders.get(trader);
 	if (orderInfos == null) {
-	    return new LinkedList<Order>();
+	    return new ArrayList<Order>();
 	} else {
+	    orderInfos = new ArrayList<>(orderInfos);
 	    for (OrderInfo info : orderInfos) {
 		result.add(info.getOrder());
 	    }
@@ -103,9 +104,9 @@ public abstract class AbstractOrderBookImpl implements IOrderBook {
 
     @Override
     public final void addOrder(final Order order, final Trader trader, final LocalDateTime time) {
-	List<OrderInfo> existingOrders = orders.get(order);
+	List<OrderInfo> existingOrders = orders.get(trader);
 	if (existingOrders == null) {
-	    existingOrders = new LinkedList<>();
+	    existingOrders = new ArrayList<>();
 	    existingOrders.add(new OrderInfo(order, time));
 	    orders.put(trader, existingOrders);
 	} else {

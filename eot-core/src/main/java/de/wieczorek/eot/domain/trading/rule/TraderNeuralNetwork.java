@@ -146,4 +146,8 @@ public class TraderNeuralNetwork implements INeuralNetworkNode {
 	}
     }
 
+    public int getHighestObservationTime() {
+	return Math.max(perceptron1.getObservationTime(), perceptron2.getObservationTime());
+    }
+
 }

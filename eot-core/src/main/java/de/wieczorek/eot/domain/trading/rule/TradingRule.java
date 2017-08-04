@@ -1,11 +1,13 @@
 package de.wieczorek.eot.domain.trading.rule;
 
-import java.util.HashMap;
+import java.time.ZoneOffset;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 
 import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
-import de.wieczorek.eot.domain.exchangable.rate.TimedExchangeRate;
 import de.wieczorek.eot.domain.trader.Trader;
 import de.wieczorek.eot.domain.trading.rule.metric.AbstractGraphMetric;
 import de.wieczorek.eot.domain.trading.rule.metric.GraphMetricType;
@@ -37,14 +39,10 @@ public class TradingRule {
      */
     private AbstractGraphMetric metric;
 
-    private TimedExchangeRate lastReference;
+    private static final int MAX_CACHE_SIZE = 64;
 
-    /**
-     * The cache for the results from the graph metric.
-     */
-    private static volatile Map<Tuple<TimedExchangeRate, Integer, GraphMetricType>, Double> ratingCache = new HashMap<>();
-
-    private static volatile Map<Double, Double> ratingValueCache = new HashMap<>();
+    private static volatile Map<CalculationResultKey, Double> cache = new ConcurrentHashMap<>();
+    private static volatile Queue<CalculationResultKey> cacheList = new ConcurrentLinkedQueue<>();
 
     /**
      * Determines whether a trade should be performed.
@@ -55,30 +53,28 @@ public class TradingRule {
      */
     public final boolean evaluate(final ExchangeRateHistory history) {
 	Double rating = 0.0;
-	TimedExchangeRate reference = history.getMostRecentExchangeRate();
+	// TimedExchangeRate reference = history.getMostRecentExchangeRate();
 
-	if (ratingCache.size() > 1) {
-	    ratingCache.clear();
-	    ratingValueCache.clear();
-	}
+	CalculationResultKey key = new CalculationResultKey(
+		history.getMostRecentExchangeRate().getTime().toEpochSecond(ZoneOffset.UTC), metric.getType(),
+		history.getCompleteHistoryData().size());
 
-	if (ratingCache.containsKey(new Tuple<TimedExchangeRate, Integer, GraphMetricType>(reference,
-		history.getCompleteHistoryData().size(), metric.getType()))) {
-	    rating = ratingCache.get(new Tuple<TimedExchangeRate, Integer, GraphMetricType>(reference,
-		    history.getCompleteHistoryData().size(), metric.getType()));
-	} else {
-
+	rating = cache.get(key);
+	if (rating == null) {
 	    rating = metric.getRating(history);
 
-	    if (!ratingValueCache.containsKey(rating)) {
-		ratingValueCache.put(rating, rating);
+	    cache.put(key, rating);
+	    cacheList.add(key);
+
+	    int superflousItems = cache.size() - MAX_CACHE_SIZE;
+
+	    for (int i = 0; i < superflousItems; i++) {
+		if (!cacheList.isEmpty()) {
+		    cache.remove(cacheList.poll());
+		}
 	    }
-	    Double ratingReference = ratingValueCache.get(rating);
-	    ratingCache.put(new Tuple<>(reference, history.getCompleteHistoryData().size(), metric.getType()),
-		    ratingReference);
 	}
 
-	lastReference = reference;
 	if (rating == null || Double.isNaN(rating)) {
 	    return false;
 	}
@@ -122,52 +118,26 @@ public class TradingRule {
 	this.comparator = comparatorInput;
     }
 
-    /**
-     * Class representing a two-tuple.
-     * 
-     * @author Daniel Wieczorek
-     *
-     * @param <X>
-     *            type of first component of the tuple
-     * @param <Y>
-     *            type of second component of the tuple
-     */
-    public class Tuple<X, Y, Z> {
-	/**
-	 * Fist component of the tuple.
-	 */
-	private final X x;
-	/**
-	 * Second component of the tuple.
-	 */
-	private final Y y;
+    public class CalculationResultKey {
 
-	/**
-	 * Second component of the tuple.
-	 */
-	private final Z z;
+	private long endTimeInMillies;
+	private GraphMetricType metric;
+	private int historySize;
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param xInput
-	 *            Fist component of the tuple.
-	 * @param yInput
-	 *            Second component of the tuple.
-	 */
-	public Tuple(final X xInput, final Y yInput, final Z zInput) {
-	    this.x = xInput;
-	    this.y = yInput;
-	    this.z = zInput;
+	public CalculationResultKey(long endTimeInMillies, GraphMetricType metric, int historySize) {
+	    super();
+	    this.endTimeInMillies = endTimeInMillies;
+	    this.metric = metric;
+	    this.historySize = historySize;
 	}
 
 	@Override
 	public int hashCode() {
 	    final int prime = 31;
 	    int result = 1;
-	    result = prime * result + ((x == null) ? 0 : x.hashCode());
-	    result = prime * result + ((y == null) ? 0 : y.hashCode());
-	    result = prime * result + ((z == null) ? 0 : z.hashCode());
+	    result = prime * result + (int) (endTimeInMillies ^ (endTimeInMillies >>> 32));
+	    result = prime * result + historySize;
+	    result = prime * result + ((metric == null) ? 0 : metric.hashCode());
 	    return result;
 	}
 
@@ -182,26 +152,14 @@ public class TradingRule {
 	    if (getClass() != obj.getClass()) {
 		return false;
 	    }
-	    Tuple other = (Tuple) obj;
-	    if (x == null) {
-		if (other.x != null) {
-		    return false;
-		}
-	    } else if (!x.equals(other.x)) {
+	    CalculationResultKey other = (CalculationResultKey) obj;
+	    if (endTimeInMillies != other.endTimeInMillies) {
 		return false;
 	    }
-	    if (y == null) {
-		if (other.y != null) {
-		    return false;
-		}
-	    } else if (!y.equals(other.y)) {
+	    if (historySize != other.historySize) {
 		return false;
 	    }
-	    if (z == null) {
-		if (other.z != null) {
-		    return false;
-		}
-	    } else if (!z.equals(other.z)) {
+	    if (metric != other.metric) {
 		return false;
 	    }
 	    return true;

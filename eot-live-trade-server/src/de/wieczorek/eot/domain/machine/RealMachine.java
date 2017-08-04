@@ -1,10 +1,12 @@
 package de.wieczorek.eot.domain.machine;
 
+import java.util.Enumeration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -56,119 +58,67 @@ public class RealMachine extends AbstractMachine {
 	AbstractGraphMetric rsiMetric = new RsiGraphMetric();
 
 	final TradingRule buyRule10 = new TradingRule();
-	buyRule10.setThreshold(3.5645843346913653);
-	buyRule10.setComparator(ComparatorType.GREATER);
-	buyRule10.setMetric(stochasticFastMetric);
+	buyRule10.setThreshold(-9.0);
+	buyRule10.setComparator(ComparatorType.LESS);
+	buyRule10.setMetric(coppochMetric);
 
-	final TradingRule buyRule11 = new TradingRule();
-	buyRule11.setThreshold(-8.31146240234375);
-	buyRule11.setComparator(ComparatorType.EQUAL);
-	buyRule11.setMetric(macdMetric);
+	final TradingRule buyRule20 = new TradingRule();
+	buyRule20.setThreshold(-6.9);
+	buyRule20.setComparator(ComparatorType.LESS);
+	buyRule20.setMetric(coppochMetric);
 
-	final TradingRule buyRule12 = new TradingRule();
-	buyRule12.setThreshold(-9.798828125);
-	buyRule12.setComparator(ComparatorType.LESS);
-	buyRule12.setMetric(coppochMetric);
-
-	final TradingRule buyRule13 = new TradingRule();
-	buyRule13.setThreshold(17.51402791341146);
-	buyRule13.setComparator(ComparatorType.LESS);
-	buyRule13.setMetric(rsiMetric);
-
-	final TradingRule buyRule14 = new TradingRule();
-	buyRule14.setThreshold(-8.585250409444171);
-	buyRule14.setComparator(ComparatorType.LESS);
-	buyRule14.setMetric(macdMetric);
-
-	final TradingRule buyRule15 = new TradingRule();
-	buyRule15.setThreshold(3.703125);
-	buyRule15.setComparator(ComparatorType.LESS);
-	buyRule15.setMetric(stochasticFastMetric);
-
-	final TradingRule buyRule16 = new TradingRule();
-	buyRule16.setThreshold(-9.796340942382812);
-	buyRule16.setComparator(ComparatorType.GREATER);
-	buyRule16.setMetric(coppochMetric);
-
-	final TradingRule buyRule17 = new TradingRule();
-	buyRule17.setThreshold(20.0);
-	buyRule17.setComparator(ComparatorType.GREATER);
-	buyRule17.setMetric(rsiMetric);
-
-	final TradingRule buyRule18 = new TradingRule();
-	buyRule18.setThreshold(-8.88683738708496);
-	buyRule18.setComparator(ComparatorType.GREATER);
-	buyRule18.setMetric(macdMetric);
+	final TradingRule buyRule21 = new TradingRule();
+	buyRule21.setThreshold(-0.40000000000000036);
+	buyRule21.setComparator(ComparatorType.LESS);
+	buyRule21.setMetric(macdMetric);
 
 	final TradingRule sellRule10 = new TradingRule();
-	sellRule10.setThreshold(96.72565877437592);
+	sellRule10.setThreshold(9.0);
 	sellRule10.setComparator(ComparatorType.GREATER);
-	sellRule10.setMetric(stochasticFastMetric);
+	sellRule10.setMetric(coppochMetric);
 
 	final TradingRule sellRule11 = new TradingRule();
-	sellRule11.setThreshold(7.9);
+	sellRule11.setThreshold(0.40000000000000036);
 	sellRule11.setComparator(ComparatorType.GREATER);
-	sellRule11.setMetric(coppochMetric);
+	sellRule11.setMetric(macdMetric);
 
-	final TradingRule sellRule12 = new TradingRule();
-	sellRule12.setThreshold(8.64804103448987);
-	sellRule12.setComparator(ComparatorType.GREATER);
-	sellRule12.setMetric(macdMetric);
+	final TradingRule sellRule20 = new TradingRule();
+	sellRule20.setThreshold(0.40000000000000036);
+	sellRule20.setComparator(ComparatorType.GREATER);
+	sellRule20.setMetric(macdMetric);
 
-	final TradingRulePerceptron buyPerceptron3 = new TradingRulePerceptron(buyRule10, 5883, 10634);
-	final TradingRulePerceptron sellPerceptron3 = new TradingRulePerceptron(sellRule10, 8588, 47710);
+	final TradingRulePerceptron buyPerceptron1 = new TradingRulePerceptron(buyRule10, 1, 1);
 
-	buyPerceptron3.add(buyRule11, 79);
-	buyPerceptron3.add(buyRule12, 112);
-	buyPerceptron3.add(buyRule13, 629);
-	buyPerceptron3.add(buyRule14, 2527);
-	buyPerceptron3.add(buyRule15, 11);
-	buyPerceptron3.add(buyRule16, 1054);
-	buyPerceptron3.add(buyRule17, 846);
-	buyPerceptron3.add(buyRule18, 10634);
+	final TradingRulePerceptron buyPerceptron2 = new TradingRulePerceptron(buyRule20, 1, 3);
+	buyPerceptron2.add(buyRule21, 2);
 
-	sellPerceptron3.add(sellRule11, 4206);
-	sellPerceptron3.add(sellRule12, 34916);
+	final TradingRulePerceptron sellPerceptron1 = new TradingRulePerceptron(sellRule10, 1, 2);
+	sellPerceptron1.add(sellRule11, 1);
+
+	final TradingRulePerceptron sellPerceptron2 = new TradingRulePerceptron(sellRule20, 1, 1);
 
 	final SynchronizingAccount wallet3 = (SynchronizingAccount) InjectorSingleton.getInjector()
 		.getInstance(IAccount.class);
 	wallet3.deposit(new ExchangableSet(ExchangableType.BTC, 1));
 
-	final Trader newTrader3 = new Trader("macd_" + -1 + "_" + 1, wallet3, exchange,
-		new TraderNeuralNetwork(buyPerceptron3, buyPerceptron3),
-		new TraderNeuralNetwork(sellPerceptron3, sellPerceptron3),
+	final Trader newTrader3 = new Trader(wallet3, exchange, new TraderNeuralNetwork(buyPerceptron1, buyPerceptron2),
+		new TraderNeuralNetwork(sellPerceptron1, sellPerceptron2),
 		new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
 	newTrader3.setExchange(exchange);
-	newTrader3.setNumberOfObservedMinutes(1651);
-	newTrader3.setName(newTrader3.generateDescriptiveName());
-
-	final TradingRule buyRule20 = new TradingRule();
-	buyRule20.setThreshold(-6.15);
-	buyRule20.setComparator(ComparatorType.LESS);
-	buyRule20.setMetric(macdMetric);
-
-	final TradingRule sellRule20 = new TradingRule();
-	sellRule20.setThreshold(7.1);
-	sellRule20.setComparator(ComparatorType.GREATER);
-	sellRule20.setMetric(macdMetric);
-
-	final TradingRulePerceptron buyPerceptron2 = new TradingRulePerceptron(buyRule20, 1, 1);
-	final TradingRulePerceptron sellPerceptron2 = new TradingRulePerceptron(sellRule20, 1, 1);
-
-	final SynchronizingAccount wallet2 = (SynchronizingAccount) InjectorSingleton.getInjector()
-		.getInstance(IAccount.class);
-	wallet2.deposit(new ExchangableSet(ExchangableType.BTC, 1));
-
-	final Trader newTrader2 = new Trader("macd_" + -1 + "_" + 1, wallet2, exchange,
-		new TraderNeuralNetwork(buyPerceptron2, buyPerceptron2),
-		new TraderNeuralNetwork(sellPerceptron2, sellPerceptron2),
-		new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance2);
-	newTrader2.setExchange(exchange);
-	newTrader2.setNumberOfObservedMinutes(11);
-	newTrader2.setName(newTrader3.generateDescriptiveName());
+	newTrader3.setNumberOfObservedMinutes(491);
+	newTrader3.setNumberOfChunks(4);
 
 	this.addTrader(newTrader3);
 	// #this.addTrader(newTrader2);
+
+	Enumeration<String> loggers = LogManager.getLogManager().getLoggerNames();
+	while (loggers.hasMoreElements()) {
+	    String nextLoggerName = loggers.nextElement();
+	    if (nextLoggerName.startsWith("de.wieczorek.eot"))
+		LogManager.getLogManager().getLogger(nextLoggerName).setLevel(Level.ALL);
+	    else
+		LogManager.getLogManager().getLogger(nextLoggerName).setLevel(Level.OFF);
+	}
     }
 
     @Override
@@ -176,7 +126,7 @@ public class RealMachine extends AbstractMachine {
 	logger.log(Level.FINE, "started real machine");
 	service = Executors.newSingleThreadScheduledExecutor();
 	service.scheduleAtFixedRate(this::triggerAllIndividuals, 0, 1, TimeUnit.MINUTES);
-
+	this.state = MachineState.STARTED;
     }
 
     private void triggerAllIndividuals() {

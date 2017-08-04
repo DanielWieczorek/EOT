@@ -2,6 +2,7 @@ package de.wieczorek.eot.domain.exchangable.rate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -18,80 +19,6 @@ public class ExchangeRateHistory {
      * {@link getCompleteHistoryData()}}
      */
     private List<TimedExchangeRate> dataPointsAsList;
-
-    /**
-     * Key for the cache of the saved sub lists.
-     *
-     * @author Daniel Wieczorek
-     *
-     */
-    private class ExchangeRateHistoryEntryKey {
-	/**
-	 * Last possible date of the entry.
-	 */
-	private final LocalDateTime start;
-
-	/**
-	 * Amount of entries before the start date.
-	 */
-	private final int amount;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param startInput
-	 *            last date
-	 * @param amountInput
-	 *            length of the history
-	 */
-	ExchangeRateHistoryEntryKey(final LocalDateTime startInput, final int amountInput) {
-	    this.start = startInput;
-	    this.amount = amountInput;
-	}
-
-	@Override
-	public int hashCode() {
-	    final int prime = 31;
-	    int result = 1;
-	    result = prime * result + getOuterType().hashCode();
-	    result = prime * result + amount;
-	    result = prime * result + ((start == null) ? 0 : start.hashCode());
-	    return result;
-	}
-
-	@Override
-	public boolean equals(final Object obj) {
-	    if (this == obj) {
-		return true;
-	    }
-	    if (obj == null) {
-		return false;
-	    }
-	    if (getClass() != obj.getClass()) {
-		return false;
-	    }
-	    final ExchangeRateHistoryEntryKey other = (ExchangeRateHistoryEntryKey) obj;
-	    if (!getOuterType().equals(other.getOuterType())) {
-		return false;
-	    }
-	    if (amount != other.amount) {
-		return false;
-	    }
-	    if (start == null) {
-		if (other.start != null) {
-		    return false;
-		}
-	    } else if (!start.equals(other.start)) {
-		return false;
-	    }
-	    return true;
-	}
-
-	private ExchangeRateHistory getOuterType() {
-	    return ExchangeRateHistory.this;
-	}
-
-    }
 
     /**
      * Default Constructor.
@@ -118,7 +45,7 @@ public class ExchangeRateHistory {
 
     public static ExchangeRateHistory fromSortedList(final List<TimedExchangeRate> exchangeRates) {
 	final ExchangeRateHistory newHistory = new ExchangeRateHistory();
-	newHistory.dataPointsAsList.addAll(exchangeRates);
+	newHistory.dataPointsAsList = Collections.unmodifiableList(exchangeRates);
 	return newHistory;
 
     }
@@ -222,6 +149,14 @@ public class ExchangeRateHistory {
      */
     public final TimedExchangeRate getMostRecentExchangeRate() {
 	return dataPointsAsList.get(dataPointsAsList.size() - 1);
+    }
+
+    public ExchangeRateHistory getEntriesForMinutes(int numberOfMinutes) {
+	int endIndex = numberOfMinutes;
+	if (endIndex > dataPointsAsList.size() - 1) {
+	    endIndex = dataPointsAsList.size() - 1;
+	}
+	return ExchangeRateHistory.fromSortedList(dataPointsAsList.subList(0, endIndex));
     }
 
 }

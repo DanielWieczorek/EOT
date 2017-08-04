@@ -27,6 +27,8 @@ public class TradingRulePerceptron implements INeuralNetworkNode {
      */
     private double threshold;
 
+    private int observationTime;
+
     /**
      * Constructor.
      * 
@@ -48,9 +50,11 @@ public class TradingRulePerceptron implements INeuralNetworkNode {
      * @param thresholdInput
      *            threshold when the perceptron activates.
      */
-    public TradingRulePerceptron(final TradingRule rule, final double weight, final double thresholdInput) {
+    public TradingRulePerceptron(final TradingRule rule, final double weight, final double thresholdInput,
+	    final int observationTime) {
 	this(thresholdInput);
 	getInputs().add(new Input(rule, weight));
+	this.observationTime = observationTime;
     }
 
     /**
@@ -66,7 +70,7 @@ public class TradingRulePerceptron implements INeuralNetworkNode {
 
 	double sumOfInputs = 0.0;
 	for (Input input : getInputs()) {
-	    if (input.getRule().evaluate(history)) {
+	    if (input.getRule().evaluate(history.getEntriesForMinutes(observationTime))) {
 		sumOfInputs += input.getWeight();
 	    }
 	}
@@ -160,6 +164,7 @@ public class TradingRulePerceptron implements INeuralNetworkNode {
 
 	result.setInputs(newInputs);
 	result.setThreshold(this.getThreshold() + p2.getThreshold());
+	result.setObservationTime(((this.getObservationTime() + p2.getObservationTime()) / 2));
 	return result;
     }
 
@@ -229,5 +234,13 @@ public class TradingRulePerceptron implements INeuralNetworkNode {
 
     public final void setThreshold(final double thresholdInput) {
 	this.threshold = thresholdInput;
+    }
+
+    public int getObservationTime() {
+	return observationTime;
+    }
+
+    public void setObservationTime(int observationTime) {
+	this.observationTime = observationTime;
     }
 }

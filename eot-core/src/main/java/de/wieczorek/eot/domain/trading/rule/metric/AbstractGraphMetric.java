@@ -22,34 +22,12 @@ public abstract class AbstractGraphMetric {
     private GraphMetricType type;
 
     /**
-     * Whether or not the calculation via the GPU is enabled.
-     */
-    private ExecutionLocationStrategy strategy = ExecutionLocationStrategy.CPU_ONLY;
-
-    /**
-     * Whether or not the GPU was used for the last calculaton.
-     */
-    private boolean wasGpuUsedLast;
-
-    /**
      * 
      * @param history
      * @return
      */
     public final double getRating(final ExchangeRateHistory history) {
-	if (ExecutionLocationStrategy.CPU_AND_GPU.equals(getStrategy())) {
-	    if (wasGpuUsedLast) {
-		wasGpuUsedLast = false;
-		return calculateRatingCPU(history);
-	    } else {
-		wasGpuUsedLast = true;
-		return calculateRatingGPU(history);
-	    }
-	} else if (ExecutionLocationStrategy.CPU_ONLY.equals(getStrategy())) {
-	    return calculateRatingCPU(history);
-	} else {
-	    return calculateRatingGPU(history);
-	}
+	return calculateRatingCPU(history);
     }
 
     /**
@@ -74,14 +52,6 @@ public abstract class AbstractGraphMetric {
 
     public final GraphMetricType getType() {
 	return type;
-    }
-
-    public ExecutionLocationStrategy getStrategy() {
-	return strategy;
-    }
-
-    public void setStrategy(ExecutionLocationStrategy strategy) {
-	this.strategy = strategy;
     }
 
     public void setType(GraphMetricType type) {
