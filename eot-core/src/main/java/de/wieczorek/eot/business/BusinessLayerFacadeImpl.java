@@ -38,8 +38,14 @@ public class BusinessLayerFacadeImpl implements IBusinessLayerFacade {
      */
     private IConfigurationUc configurationUc;
 
+    /**
+     * Used to read information about the current account balance.
+     */
     private IAccountBalanceUc accountBalanceUc;
 
+    /**
+     * UC to perform trades.
+     */
     private ITradeUc tradeUc;
 
     /**
@@ -51,10 +57,16 @@ public class BusinessLayerFacadeImpl implements IBusinessLayerFacade {
      *            the UC for reading the exchange rate
      * @param configurationUcInput
      *            the UC for reading and altering the configuration
+     * @param accountBalanceUc
+     *            the UC to retrieve the account balance
+     * @param tradeUc
+     *            the UC for performing trades
+     * 
      */
     @Inject
     public BusinessLayerFacadeImpl(final IChartHistoryUc chartHistoryUcInput, final IExchangeRateUc exchangeRateUcInput,
-	    final IConfigurationUc configurationUcInput, final IAccountBalanceUc accountBalanceUc, ITradeUc tradeUc) {
+	    final IConfigurationUc configurationUcInput, final IAccountBalanceUc accountBalanceUc,
+	    final ITradeUc tradeUc) {
 	super();
 	this.chartHistoryUc = chartHistoryUcInput;
 	this.exchangeRateUc = exchangeRateUcInput;

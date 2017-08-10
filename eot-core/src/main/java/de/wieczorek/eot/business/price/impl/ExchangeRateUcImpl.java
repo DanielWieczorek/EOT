@@ -1,10 +1,8 @@
 package de.wieczorek.eot.business.price.impl;
 
-import java.io.IOException;
+import java.util.Optional;
 
 import javax.inject.Inject;
-
-import org.json.JSONException;
 
 import de.wieczorek.eot.business.price.IExchangeRateUc;
 import de.wieczorek.eot.dataaccess.ExchangeRateDao;
@@ -37,17 +35,13 @@ public class ExchangeRateUcImpl implements IExchangeRateUc {
 
     @Override
     public final TimedExchangeRate getCurrentExchangeRate(final ExchangableType from, final ExchangableType to) {
+	Optional<TimedExchangeRate> result = dao.getCurrentExchangeRate(from, to);
 
-	try {
-	    return dao.getCurrentExchangeRate(from, to);
-	} catch (IOException e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
-	} catch (JSONException e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
+	while (!result.isPresent()) {
+	    result = dao.getCurrentExchangeRate(from, to);
 	}
-	return new TimedExchangeRate(from, to, 0.0, null);
+
+	return result.get();
     }
 
 }

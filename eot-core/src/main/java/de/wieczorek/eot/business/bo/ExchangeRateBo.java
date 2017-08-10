@@ -50,18 +50,19 @@ public class ExchangeRateBo {
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
+	final int fourBytes = 32;
 	final int prime = 31;
 	int result = 1;
 	long temp;
 	temp = Double.doubleToLongBits(exchangeRate);
-	result = prime * result + (int) (temp ^ (temp >>> 32));
+	result = prime * result + (int) (temp ^ (temp >>> fourBytes));
 	result = prime * result + ((key == null) ? 0 : key.hashCode());
 	return result;
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public final boolean equals(final Object obj) {
 	if (this == obj) {
 	    return true;
 	}

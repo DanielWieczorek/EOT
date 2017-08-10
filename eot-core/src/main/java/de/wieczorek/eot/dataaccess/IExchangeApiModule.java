@@ -5,6 +5,12 @@ import com.google.inject.AbstractModule;
 import de.wieczorek.eot.dataaccess.kraken.IExchangeApi;
 import de.wieczorek.eot.dataaccess.kraken.KrakenApiWrapper;
 
+/**
+ * Module for the {@link IExchangeApi}.
+ * 
+ * @author Daniel Wieczorek
+ *
+ */
 public class IExchangeApiModule extends AbstractModule {
 
     @Override

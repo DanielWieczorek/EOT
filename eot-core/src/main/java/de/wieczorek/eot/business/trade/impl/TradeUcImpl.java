@@ -3,6 +3,7 @@ package de.wieczorek.eot.business.trade.impl;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -27,6 +28,9 @@ public class TradeUcImpl implements ITradeUc {
      */
     private CurrencyPairDao currencyPairDao;
 
+    /**
+     * Dao which performs the trades.
+     */
     private TradeDao tradeDao;
 
     /**
@@ -34,13 +38,17 @@ public class TradeUcImpl implements ITradeUc {
      * 
      * @param currencyPairDaoInput
      *            currency pair dao.
+     * @param tradeDaoInput
+     *            trade dao
      */
     @Inject
-    public TradeUcImpl(final CurrencyPairDao currencyPairDaoInput, TradeDao tradeDaoInput) {
+    public TradeUcImpl(final CurrencyPairDao currencyPairDaoInput, final TradeDao tradeDaoInput) {
 	this.currencyPairDao = currencyPairDaoInput;
 	this.tradeDao = tradeDaoInput;
     }
 
+    // Return result when an IO exception occured. This way we can retry to
+    // perform the order.
     @Override
     public final void perform(final Order order) {
 	try {
@@ -79,16 +87,14 @@ public class TradeUcImpl implements ITradeUc {
 	intermediateResult.setPair(order.getPair());
 	intermediateResult.setVolume(0.0);
 	intermediateResult.setPrice(order.getPrice());
-	try {
-	    intermediateResult.setVolume(order.getAmount() / currencyPairDao.getLotSize(order.getPair()));
-	    result = intermediateResult;
-	} catch (IOException e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
-	} catch (JSONException e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
+
+	Optional<Double> lotSize = currencyPairDao.getLotSize(order.getPair());
+	while (!lotSize.isPresent()) {
+	    lotSize = currencyPairDao.getLotSize(order.getPair());
 	}
+	intermediateResult.setVolume(order.getAmount() / lotSize.get());
+	result = intermediateResult;
+
 	return result;
     }
 

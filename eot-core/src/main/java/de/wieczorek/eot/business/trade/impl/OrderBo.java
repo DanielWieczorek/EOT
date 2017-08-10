@@ -24,6 +24,9 @@ public class OrderBo {
      */
     private OrderType type;
 
+    /**
+     * Price at which the buy/sell should be peformed.
+     */
     private double price;
 
     /**
@@ -31,43 +34,43 @@ public class OrderBo {
      */
     private OrderExecutionType executionType;
 
-    public ExchangablePair getPair() {
+    public final ExchangablePair getPair() {
 	return pair;
     }
 
-    public void setPair(ExchangablePair pair) {
+    public final void setPair(final ExchangablePair pair) {
 	this.pair = pair;
     }
 
-    public double getVolume() {
+    public final double getVolume() {
 	return volume;
     }
 
-    public void setVolume(double volume) {
+    public final void setVolume(final double volume) {
 	this.volume = volume;
     }
 
-    public OrderType getType() {
+    public final OrderType getType() {
 	return type;
     }
 
-    public void setType(OrderType type) {
+    public final void setType(final OrderType type) {
 	this.type = type;
     }
 
-    public OrderExecutionType getExecutionType() {
+    public final OrderExecutionType getExecutionType() {
 	return executionType;
     }
 
-    public void setExecutionType(OrderExecutionType executionType) {
+    public final void setExecutionType(final OrderExecutionType executionType) {
 	this.executionType = executionType;
     }
 
-    public double getPrice() {
+    public final double getPrice() {
 	return price;
     }
 
-    public void setPrice(double price) {
+    public final void setPrice(final double price) {
 	this.price = price;
     }
 

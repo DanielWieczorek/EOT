@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -73,9 +74,11 @@ public class ExchangeRateDao {
      * @throws JSONException
      *             if the JSON string cannot be parsed
      * @throws IOException
+     *             if there are problems regarding the connection to the
+     *             exchange
      */
-    public final List<ExchangeRateBo> getDetailedHistoryEntries(final ExchangableType from, final ExchangableType to,
-	    final int minutes) throws JSONException, IOException {
+    public final Optional<List<ExchangeRateBo>> getDetailedHistoryEntries(final ExchangableType from,
+	    final ExchangableType to, final int minutes) {
 	LOGGER.info("Retrieving detailed history for " + from.name() + "/" + to.name() + " with length of " + minutes
 		+ " minutes");
 	final List<ExchangeRateBo> entries = new ArrayList<>();
@@ -89,40 +92,53 @@ public class ExchangeRateDao {
 	final ZoneOffset offset = ZoneId.systemDefault().getRules().getOffset(Instant.now());
 	final long startTime = LocalDateTime.now().minusMinutes(minutes).toEpochSecond(offset);
 	LOGGER.log(Level.INFO, LocalDateTime.now().minusMinutes(minutes).toString());
-	final String result = exchange.ohclv(from, to, startTime);
-	LOGGER.log(Level.INFO, result);
+	String result;
+	try {
+	    result = exchange.ohclv(from, to, startTime);
 
-	final JSONObject obj = new JSONObject(result);
-	final JSONArray arr = (JSONArray) ((JSONObject) obj.get("result")).get("XETHXXBT");
-	for (int i = 0; i < arr.length(); i++) {
-	    final JSONArray item = (JSONArray) arr.get(i);
-	    LOGGER.log(Level.INFO,
-		    "Timestamp:" + Date.from(Instant.ofEpochSecond(item.getLong(0))) + "\t open: "
-			    + item.getDouble(openingPrice) + "\t high: " + item.getDouble(maxPrice) + "\t low: "
-			    + item.getDouble(minPrice) + "\t close: " + item.getDouble(closePriceIndex) + "\t volume: "
-			    + item.getDouble(volumeIndex));
+	    LOGGER.log(Level.INFO, result);
 
-	    final ExchangeRateBo rate = new ExchangeRateBo();
-	    rate.setExchangeRate(item.getDouble(closePriceIndex));
-	    rate.setKey(new ExchangeRateBoKey(item.getLong(0), ExchangableType.ETH, ExchangableType.BTC));
+	    final JSONObject obj = new JSONObject(result);
+	    final JSONArray arr = (JSONArray) ((JSONObject) obj.get("result")).get("XETHXXBT");
+	    for (int i = 0; i < arr.length(); i++) {
+		final JSONArray item = (JSONArray) arr.get(i);
+		LOGGER.log(Level.INFO,
+			"Timestamp:" + Date.from(Instant.ofEpochSecond(item.getLong(0))) + "\t open: "
+				+ item.getDouble(openingPrice) + "\t high: " + item.getDouble(maxPrice) + "\t low: "
+				+ item.getDouble(minPrice) + "\t close: " + item.getDouble(closePriceIndex)
+				+ "\t volume: " + item.getDouble(volumeIndex));
 
-	    if (!entries.isEmpty()) {
-		final ExchangeRateBo lastExchangeRate = entries.get(entries.size() - 1);
+		final ExchangeRateBo rate = new ExchangeRateBo();
+		rate.setExchangeRate(item.getDouble(closePriceIndex));
+		rate.setKey(new ExchangeRateBoKey(item.getLong(0), ExchangableType.ETH, ExchangableType.BTC));
 
-		final int entriesToInsert = (int) ((item.getLong(0) - lastExchangeRate.getKey().getTimestamp()) / 60);
-		for (int j = 1; j < entriesToInsert; j++) {
-		    final ExchangeRateBo insertRate = new ExchangeRateBo();
-		    insertRate.setExchangeRate(lastExchangeRate.getExchangeRate());
-		    insertRate.setKey(
-			    new ExchangeRateBoKey(lastExchangeRate.getKey().getTimestamp() + secondsPerMinute * j,
-				    ExchangableType.ETH, ExchangableType.BTC));
-		    entries.add(insertRate);
+		if (!entries.isEmpty()) {
+		    final ExchangeRateBo lastExchangeRate = entries.get(entries.size() - 1);
+
+		    final int entriesToInsert = (int) ((item.getLong(0) - lastExchangeRate.getKey().getTimestamp())
+			    / 60);
+		    for (int j = 1; j < entriesToInsert; j++) {
+			final ExchangeRateBo insertRate = new ExchangeRateBo();
+			insertRate.setExchangeRate(lastExchangeRate.getExchangeRate());
+			insertRate.setKey(
+				new ExchangeRateBoKey(lastExchangeRate.getKey().getTimestamp() + secondsPerMinute * j,
+					ExchangableType.ETH, ExchangableType.BTC));
+			entries.add(insertRate);
+		    }
 		}
-	    }
 
-	    entries.add(rate);
+		entries.add(rate);
+	    }
+	} catch (IOException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	    return Optional.empty();
+	} catch (JSONException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	    return Optional.empty();
 	}
-	return entries;
+	return Optional.of(entries);
     }
 
     /**
@@ -200,19 +216,27 @@ public class ExchangeRateDao {
      * @throws JSONException
      *             if the response from the server could not be parsed
      * @throws IOException
-     * @throws ExchangeException
-     * @throws NotYetImplementedForExchangeException
-     * @throws NotAvailableFromExchangeException
+     *             if the communication with the exchange failed.
      */
-    public final TimedExchangeRate getCurrentExchangeRate(final ExchangableType from, final ExchangableType to)
-	    throws IOException, JSONException {
+    public final Optional<TimedExchangeRate> getCurrentExchangeRate(final ExchangableType from,
+	    final ExchangableType to) {
 	double value = 0.0;
+	String json;
+	try {
+	    json = exchange.lastPrice(from, to);
 
-	String json = exchange.lastPrice(from, to);
-	final JSONObject obj = new JSONObject(json);
-	final JSONArray arr = (JSONArray) ((JSONObject) ((JSONObject) obj.get("result")).get("XETHXXBT")).get("c");
-	value = arr.getDouble(0);
-
-	return new TimedExchangeRate(from, to, value, LocalDateTime.now());
+	    final JSONObject obj = new JSONObject(json);
+	    final JSONArray arr = (JSONArray) ((JSONObject) ((JSONObject) obj.get("result")).get("XETHXXBT")).get("c");
+	    value = arr.getDouble(0);
+	} catch (IOException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	    return Optional.empty();
+	} catch (JSONException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	    return Optional.empty();
+	}
+	return Optional.of(new TimedExchangeRate(from, to, value, LocalDateTime.now()));
     }
 }

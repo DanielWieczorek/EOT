@@ -18,6 +18,9 @@ public class ConfigurationUcImpl implements IConfigurationUc {
      */
     private ISimulationConfigurationUc simulationConf;
 
+    /**
+     * UC for the configuration for the exchange access.
+     */
     private IExchangeConfigurationUc exchangeConf;
 
     /**
@@ -25,6 +28,8 @@ public class ConfigurationUcImpl implements IConfigurationUc {
      * 
      * @param simulationConfInput
      *            configuration of the simulation.
+     * @param exchangeConfInput
+     *            configuration of the exchange
      */
     @Inject
     public ConfigurationUcImpl(final ISimulationConfigurationUc simulationConfInput,
@@ -44,12 +49,12 @@ public class ConfigurationUcImpl implements IConfigurationUc {
     }
 
     @Override
-    public String getKey() {
+    public final String getKey() {
 	return exchangeConf.getKey();
     }
 
     @Override
-    public String getSecret() {
+    public final String getSecret() {
 	return exchangeConf.getSecret();
     }
 }

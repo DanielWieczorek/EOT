@@ -87,15 +87,15 @@ public class RealMachine extends AbstractMachine {
 	sellRule20.setComparator(ComparatorType.GREATER);
 	sellRule20.setMetric(macdMetric);
 
-	final TradingRulePerceptron buyPerceptron1 = new TradingRulePerceptron(buyRule10, 1, 1);
+	final TradingRulePerceptron buyPerceptron1 = new TradingRulePerceptron(buyRule10, 1, 1, 491);
 
-	final TradingRulePerceptron buyPerceptron2 = new TradingRulePerceptron(buyRule20, 1, 3);
+	final TradingRulePerceptron buyPerceptron2 = new TradingRulePerceptron(buyRule20, 1, 3, 491);
 	buyPerceptron2.add(buyRule21, 2);
 
-	final TradingRulePerceptron sellPerceptron1 = new TradingRulePerceptron(sellRule10, 1, 2);
+	final TradingRulePerceptron sellPerceptron1 = new TradingRulePerceptron(sellRule10, 1, 2, 491);
 	sellPerceptron1.add(sellRule11, 1);
 
-	final TradingRulePerceptron sellPerceptron2 = new TradingRulePerceptron(sellRule20, 1, 1);
+	final TradingRulePerceptron sellPerceptron2 = new TradingRulePerceptron(sellRule20, 1, 1, 491);
 
 	final SynchronizingAccount wallet3 = (SynchronizingAccount) InjectorSingleton.getInjector()
 		.getInstance(IAccount.class);
@@ -105,7 +105,6 @@ public class RealMachine extends AbstractMachine {
 		new TraderNeuralNetwork(sellPerceptron1, sellPerceptron2),
 		new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance);
 	newTrader3.setExchange(exchange);
-	newTrader3.setNumberOfObservedMinutes(491);
 	newTrader3.setNumberOfChunks(4);
 
 	this.addTrader(newTrader3);
@@ -113,7 +112,9 @@ public class RealMachine extends AbstractMachine {
 
 	Enumeration<String> loggers = LogManager.getLogManager().getLoggerNames();
 	while (loggers.hasMoreElements()) {
+
 	    String nextLoggerName = loggers.nextElement();
+	    System.out.println(nextLoggerName);
 	    if (nextLoggerName.startsWith("de.wieczorek.eot"))
 		LogManager.getLogManager().getLogger(nextLoggerName).setLevel(Level.ALL);
 	    else

@@ -12,6 +12,12 @@ import org.json.JSONException;
 import de.wieczorek.eot.business.trade.impl.OrderBo;
 import de.wieczorek.eot.dataaccess.kraken.IExchangeApi;
 
+/**
+ * DAO which performs the actual trade.
+ * 
+ * @author Daniel Wieczorek
+ *
+ */
 public class TradeDao {
     /**
      * The logger.
@@ -34,7 +40,21 @@ public class TradeDao {
 	this.exchange = exchangeInput;
     }
 
-    public void performOrder(OrderBo order)
+    /**
+     * Performs the given order.
+     * 
+     * @param order
+     *            the BO describing the order to be performed
+     * @throws IOException
+     *             when the communication with the exchange went wrong
+     * @throws JSONException
+     *             when the returned JSON string was not formatted as expected.
+     * @throws InvalidKeyException
+     *             autentication error
+     * @throws NoSuchAlgorithmException
+     *             autentication error
+     */
+    public final void performOrder(final OrderBo order)
 	    throws IOException, JSONException, InvalidKeyException, NoSuchAlgorithmException {
 	LOGGER.info("peforming order:" + " " + order.getType().name() + " " + order.getVolume() + " "
 		+ order.getPair().getFrom().name() + "/" + order.getPair().getTo().name() + " @ " + order.getPrice());
