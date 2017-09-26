@@ -2,10 +2,10 @@ package de.wieczorek.eot.dataaccess;
 
 import java.io.IOException;
 import java.util.Optional;
-import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
+import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 

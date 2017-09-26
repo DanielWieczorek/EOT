@@ -6,10 +6,12 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.inject.Inject;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import com.google.inject.Singleton;
 
@@ -19,6 +21,7 @@ import de.wieczorek.eot.domain.exchangable.ExchangablePair;
 import de.wieczorek.eot.domain.exchangable.ExchangableType;
 import de.wieczorek.eot.domain.exchange.IExchange;
 import de.wieczorek.eot.domain.exchange.impl.SimulatedExchangeImpl;
+import de.wieczorek.eot.domain.trader.Trader;
 
 @Singleton
 public class VirtualMachine extends AbstractMachine {
@@ -34,11 +37,14 @@ public class VirtualMachine extends AbstractMachine {
 
     private static final int populationSize = 100;
 
+    private static final int resultPopulationSize = 20;
+
     @Inject
     public VirtualMachine(final IExchange exchange, final Population traders) {
 	super(exchange, traders);
-	traderGroups = new ArrayList<>();
 
+	traderGroups = new ArrayList<>();
+	LogManager.getRootLogger().setLevel(Level.OFF);
     }
 
     @Override
@@ -48,9 +54,6 @@ public class VirtualMachine extends AbstractMachine {
 	    final Runnable task = () -> {
 		getTraders().clearPopulation();
 		final SimulatedExchangeImpl exchange = (SimulatedExchangeImpl) getExchange();
-		exchange.setHistory(null);
-		exchange.getExchangeRateHistory(new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC),
-			31 * 24 * 60);
 
 		final List<TraderGroupManager> managers = new ArrayList<>();
 
@@ -61,66 +64,90 @@ public class VirtualMachine extends AbstractMachine {
 		for (int n = 0; n < numberOfExecutors; n++) {
 		    traderGroups.add(new ArrayList<>());
 		}
+		int initialPopulationSize = 0;
+		List<IIndividual> lastGenerationOfPreviousRun = new ArrayList<>();
+		while (getState() != MachineState.STOPPED) {
+		    getTraders().clearPopulation();
+		    for (int j = 0; j < maxPopulations && getState() != MachineState.STOPPED; j++) {
+			if (j == 0) {
+			    getTraders().getNextPopulation(populationSize);
+			    getTraders().addAll(lastGenerationOfPreviousRun);
+			    initialPopulationSize = getTraders().getAll().size();
 
-		for (int j = 0; j < maxPopulations && getState() != MachineState.STOPPED; j++) {
-		    if (j == 0) {
-			getTraders().getNextPopulation(populationSize);
-		    } else {
-			getTraders().getNextPopulation(
-				getTraders().getAll().size() - getTraders().getAll().size() / maxPopulations);
-		    }
-		    exchange.reset();
-		    final int cycles = exchange.getHistory().getCompleteHistoryData().size() - 15 * 60;
-		    logger.severe("running over " + cycles + " data points for " + getTraders().getAll().size());
-		    final long start = System.currentTimeMillis();
+			} else {
+			    getTraders().getNextPopulation(Math.max(
+				    getTraders().getAll().size() - initialPopulationSize / (maxPopulations - 1),
+				    resultPopulationSize));
+			}
+			exchange.reset();
 
-		    int n = 0;
-		    final int realNumberOfExecutors = Math.min(numberOfExecutors, this.getTraders().getAll().size());
-		    for (final IIndividual trader : this.getTraders().getAll()) {
-			traderGroups.get(n).add(trader);
-			n++;
-			n %= realNumberOfExecutors;
-		    }
-		    for (int i = 60 * 24; i < cycles && getState() != MachineState.STOPPED; i++) {
+			exchange.setHistory(null);
+			exchange.getExchangeRateHistory(new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC),
+				31 * 24 * 60);
 
-			while (getState() == MachineState.PAUSED) {
-			    logger.info("simulation paused checking again in 10s");
+			final int cycles = exchange.getHistory().getCompleteHistoryData().size() - 15 * 60;
+			logger.fatal("running over " + cycles + " data points for " + getTraders().getAll().size());
+			final long start = System.currentTimeMillis();
+
+			int n = 0;
+			final int realNumberOfExecutors = Math.min(numberOfExecutors,
+				this.getTraders().getAll().size());
+
+			for (List<IIndividual> traderGroup : traderGroups) {
+			    traderGroup.clear();
+			}
+
+			for (final IIndividual trader : this.getTraders().getAll()) {
+			    traderGroups.get(n).add(trader);
+			    n++;
+			    n %= realNumberOfExecutors;
+			}
+			for (int i = 60 * 24; i < cycles && getState() != MachineState.STOPPED; i++) {
+
+			    while (getState() == MachineState.PAUSED) {
+				logger.info("simulation paused checking again in 10s");
+				try {
+				    Thread.sleep(10 * 1000);
+
+				} catch (final InterruptedException e) {
+				    // TODO Auto-generated catch block
+				    e.printStackTrace();
+				}
+			    }
+			    if (i % 150 == 0) {
+				logger.fatal("current cycle:" + i + " of " + cycles + " data points");
+			    }
+
+			    exchange.icrementTime();
+
+			    final CountDownLatch latch = new CountDownLatch(realNumberOfExecutors);
+
+			    for (int x = 0; x < realNumberOfExecutors; x++) {
+				managers.get(x).setLatch(latch);
+				managers.get(x).setIndividuals(traderGroups.get(x));
+			    }
+
+			    for (n = 0; n < realNumberOfExecutors; n++) {
+				taskExecutor.execute(managers.get(n));
+			    }
 			    try {
-				Thread.sleep(10 * 1000);
-
-			    } catch (final InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				latch.await(1, TimeUnit.MINUTES);
+			    } catch (final InterruptedException E) {
+				E.printStackTrace();
 			    }
 			}
-			if (i % 150 == 0) {
-			    logger.severe("current cycle:" + i + " of " + cycles + " data points");
-			}
-
-			exchange.icrementTime();
-
-			final CountDownLatch latch = new CountDownLatch(realNumberOfExecutors);
-
-			for (int x = 0; x < realNumberOfExecutors; x++) {
-			    managers.get(x).setLatch(latch);
-			    managers.get(x).setIndividuals(traderGroups.get(x));
-			}
-
-			for (n = 0; n < realNumberOfExecutors; n++) {
-			    taskExecutor.execute(managers.get(n));
-			}
-			try {
-			    latch.await(1, TimeUnit.MINUTES);
-			} catch (final InterruptedException E) {
-			    E.printStackTrace();
-			}
+			final long end = System.currentTimeMillis();
+			logger.fatal("Finished simulation of generation " + j + " with "
+				+ this.getTraders().getAll().size() + " individuals with " + getNumberOfMetrics()
+				+ " applied metrics. It took " + (double) ((end - start) / 1000) + " seconds.");
 		    }
-		    final long end = System.currentTimeMillis();
-		    logger.severe(
-			    "Finished simulation of generation " + j + " with " + this.getTraders().getAll().size()
-				    + " individuals. It took " + (double) ((end - start) / 1000) + " seconds.");
+
+		    this.getTraders().printPopulationInfo();
+		    lastGenerationOfPreviousRun.clear();
+		    lastGenerationOfPreviousRun.addAll(getTraders().getAll());
+
 		}
-		this.getTraders().printPopulationInfo();
+		this.state = MachineState.STOPPED;
 	    };
 
 	    final Thread thread = new Thread(task);
@@ -132,6 +159,19 @@ public class VirtualMachine extends AbstractMachine {
 	} else {
 	    logger.log(Level.INFO, "Simulation already started");
 	}
+    }
+
+    private long getNumberOfMetrics() {
+	long count = 0;
+	for (IIndividual individual : getTraders().getAll()) {
+	    Trader trader = ((Trader) individual);
+	    count += trader.getBuyRule().getPerceptron1().getInputs().size();
+	    count += trader.getBuyRule().getPerceptron2().getInputs().size();
+
+	    count += trader.getSellRule().getPerceptron1().getInputs().size();
+	    count += trader.getSellRule().getPerceptron2().getInputs().size();
+	}
+	return count;
     }
 
     @Override

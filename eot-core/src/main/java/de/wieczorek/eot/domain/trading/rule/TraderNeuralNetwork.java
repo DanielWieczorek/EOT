@@ -32,15 +32,15 @@ public class TraderNeuralNetwork implements INeuralNetworkNode {
 
     private INeuralNetworkNode buildLogicAndNetwork() {
 
-	INeuralNetworkNode intermediateNode1 = new DefaultNeuralNetworkNode(1.5, //
+	INeuralNetworkNode intermediateNode1 = new CachedNeuralNetworkNode(1.5, //
 		new NeuralNetworkNodeConnection(1, perceptron1), //
 		new NeuralNetworkNodeConnection(1, perceptron2)); //
 
-	INeuralNetworkNode intermediateNode2 = new DefaultNeuralNetworkNode(1.5, //
+	INeuralNetworkNode intermediateNode2 = new CachedNeuralNetworkNode(1.5, //
 		new NeuralNetworkNodeConnection(1, perceptron1), //
 		new NeuralNetworkNodeConnection(1, perceptron2)); // );
 
-	INeuralNetworkNode exitNode = new DefaultNeuralNetworkNode(1.5,
+	INeuralNetworkNode exitNode = new CachedNeuralNetworkNode(1.5,
 		new NeuralNetworkNodeConnection(1, intermediateNode1), //
 		new NeuralNetworkNodeConnection(1, intermediateNode2));
 
@@ -48,15 +48,15 @@ public class TraderNeuralNetwork implements INeuralNetworkNode {
     }
 
     private INeuralNetworkNode buildLogicOrNetwork() {
-	INeuralNetworkNode intermediateNode1 = new DefaultNeuralNetworkNode(0.5, //
+	INeuralNetworkNode intermediateNode1 = new CachedNeuralNetworkNode(0.5, //
 		new NeuralNetworkNodeConnection(1, perceptron1), //
 		new NeuralNetworkNodeConnection(1, perceptron2)); //
 
-	INeuralNetworkNode intermediateNode2 = new DefaultNeuralNetworkNode(0.5, //
+	INeuralNetworkNode intermediateNode2 = new CachedNeuralNetworkNode(0.5, //
 		new NeuralNetworkNodeConnection(1, perceptron1), //
 		new NeuralNetworkNodeConnection(1, perceptron2)); // );
 
-	INeuralNetworkNode exitNode = new DefaultNeuralNetworkNode(0.5,
+	INeuralNetworkNode exitNode = new CachedNeuralNetworkNode(0.5,
 		new NeuralNetworkNodeConnection(1, intermediateNode1), //
 		new NeuralNetworkNodeConnection(1, intermediateNode2));
 
@@ -64,15 +64,15 @@ public class TraderNeuralNetwork implements INeuralNetworkNode {
     }
 
     private INeuralNetworkNode buildLogicXorNetwork() {
-	INeuralNetworkNode intermediateNode1 = new DefaultNeuralNetworkNode(0.5, //
+	INeuralNetworkNode intermediateNode1 = new CachedNeuralNetworkNode(0.5, //
 		new NeuralNetworkNodeConnection(1, perceptron1), //
 		new NeuralNetworkNodeConnection(1, perceptron2)); //
 
-	INeuralNetworkNode intermediateNode2 = new DefaultNeuralNetworkNode(-1.5, //
+	INeuralNetworkNode intermediateNode2 = new CachedNeuralNetworkNode(-1.5, //
 		new NeuralNetworkNodeConnection(-1, perceptron1), //
 		new NeuralNetworkNodeConnection(-1, perceptron2)); // );
 
-	INeuralNetworkNode exitNode = new DefaultNeuralNetworkNode(1.5,
+	INeuralNetworkNode exitNode = new CachedNeuralNetworkNode(1.5,
 		new NeuralNetworkNodeConnection(1, intermediateNode1), //
 		new NeuralNetworkNodeConnection(1, intermediateNode2));
 

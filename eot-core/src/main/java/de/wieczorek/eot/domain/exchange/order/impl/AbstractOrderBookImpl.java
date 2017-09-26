@@ -41,7 +41,9 @@ public abstract class AbstractOrderBookImpl implements IOrderBook {
 	} else {
 	    orderInfos = new ArrayList<>(orderInfos);
 	    for (OrderInfo info : orderInfos) {
-		result.add(info.getOrder());
+		if (info != null) {
+		    result.add(info.getOrder());
+		}
 	    }
 	}
 	return result;

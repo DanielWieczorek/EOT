@@ -11,8 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -22,6 +20,7 @@ import javax.persistence.FlushModeType;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
 
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -91,22 +90,21 @@ public class ExchangeRateDao {
 
 	final ZoneOffset offset = ZoneId.systemDefault().getRules().getOffset(Instant.now());
 	final long startTime = LocalDateTime.now().minusMinutes(minutes).toEpochSecond(offset);
-	LOGGER.log(Level.INFO, LocalDateTime.now().minusMinutes(minutes).toString());
+	LOGGER.info(LocalDateTime.now().minusMinutes(minutes).toString());
 	String result;
 	try {
 	    result = exchange.ohclv(from, to, startTime);
 
-	    LOGGER.log(Level.INFO, result);
+	    LOGGER.info(result);
 
 	    final JSONObject obj = new JSONObject(result);
 	    final JSONArray arr = (JSONArray) ((JSONObject) obj.get("result")).get("XETHXXBT");
 	    for (int i = 0; i < arr.length(); i++) {
 		final JSONArray item = (JSONArray) arr.get(i);
-		LOGGER.log(Level.INFO,
-			"Timestamp:" + Date.from(Instant.ofEpochSecond(item.getLong(0))) + "\t open: "
-				+ item.getDouble(openingPrice) + "\t high: " + item.getDouble(maxPrice) + "\t low: "
-				+ item.getDouble(minPrice) + "\t close: " + item.getDouble(closePriceIndex)
-				+ "\t volume: " + item.getDouble(volumeIndex));
+		LOGGER.info("Timestamp:" + Date.from(Instant.ofEpochSecond(item.getLong(0))) + "\t open: "
+			+ item.getDouble(openingPrice) + "\t high: " + item.getDouble(maxPrice) + "\t low: "
+			+ item.getDouble(minPrice) + "\t close: " + item.getDouble(closePriceIndex) + "\t volume: "
+			+ item.getDouble(volumeIndex));
 
 		final ExchangeRateBo rate = new ExchangeRateBo();
 		rate.setExchangeRate(item.getDouble(closePriceIndex));

@@ -27,6 +27,8 @@ public class ExchangeRateHistory {
 	dataPointsAsList = new ArrayList<>();
     }
 
+    private TimedExchangeRate mostRecent;
+
     /**
      * Creates a new exchange rate history object from the given list of
      * exchange rates.
@@ -148,7 +150,10 @@ public class ExchangeRateHistory {
      * @return a {@link TimedExchangeRate} representing exchange rate.
      */
     public final TimedExchangeRate getMostRecentExchangeRate() {
-	return dataPointsAsList.get(dataPointsAsList.size() - 1);
+	if (mostRecent == null) {
+	    mostRecent = dataPointsAsList.get(dataPointsAsList.size() - 1);
+	}
+	return mostRecent;
     }
 
     public ExchangeRateHistory getEntriesForMinutes(int numberOfMinutes) {

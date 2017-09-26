@@ -3,10 +3,10 @@ package de.wieczorek.eot.dataaccess;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
+import org.apache.log4j.Logger;
 import org.json.JSONException;
 
 import de.wieczorek.eot.business.trade.impl.OrderBo;

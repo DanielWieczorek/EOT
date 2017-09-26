@@ -46,4 +46,8 @@ public interface IPopulation {
     int getPopulationNumber();
 
     void printPopulationInfo();
+
+    IIndividual getById(long id);
+
+    void addAll(List<IIndividual> lastGenerationOfPreviousRun);
 }

@@ -5,10 +5,13 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import org.apache.log4j.Logger;
+
 import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
+import de.wieczorek.eot.domain.trading.rule.comparator.ComparatorType;
+import de.wieczorek.eot.domain.trading.rule.comparator.ITradingRuleComparator;
 
 /**
  * Perceptron combining multiple trading rules.
@@ -75,7 +78,7 @@ public class TradingRulePerceptron implements INeuralNetworkNode {
 	    }
 	}
 
-	LOGGER.fine("ativation: " + sumOfInputs + " >= " + getThreshold() + "?" + (sumOfInputs >= getThreshold()));
+	LOGGER.info("ativation: " + sumOfInputs + " >= " + getThreshold() + "?" + (sumOfInputs >= getThreshold()));
 
 	return sumOfInputs >= getThreshold();
     }
@@ -156,8 +159,8 @@ public class TradingRulePerceptron implements INeuralNetworkNode {
 	fullList.addAll(this.inputs);
 	fullList.addAll(p2.getInputs());
 	List<Input> newInputs = fullList.stream() //
-		.collect(Collectors
-			.groupingBy(p -> p.getRule().getMetric().getType().name() + p.getRule().getComparator().name()))//
+		.collect(Collectors.groupingBy(p -> p.getRule().getMetric().getType().name()
+			+ p.getRule().getComparator().getClass().getName()))//
 		.values().stream() //
 		.map(this::combineInputs)//
 		.collect(Collectors.toList());
@@ -182,8 +185,9 @@ public class TradingRulePerceptron implements INeuralNetworkNode {
 	Input first = inputsToCombine.iterator().next();
 	t.setComparator(first.rule.getComparator());
 	t.setMetric(first.rule.getMetric());
-	t.setThreshold(
-		inputsToCombine.stream().mapToDouble(p -> p.getRule().getThreshold()).sum() / inputsToCombine.size());
+	List<ITradingRuleComparator> inputComparators = inputsToCombine.stream().map(x -> x.getRule().getComparator())
+		.collect(Collectors.toList());
+	t.setComparator(t.getComparator().combineWith(inputComparators));
 
 	return new Input(t, inputsToCombine.stream().mapToDouble(p -> p.weight).sum());
 
@@ -215,8 +219,8 @@ public class TradingRulePerceptron implements INeuralNetworkNode {
 	Input input = getInputs().get(randomIndex);
 
 	int numberOfComparators = ComparatorType.values().length;
-	int randomComparatorIndex = r.nextInt(numberOfComparators);
-	input.getRule().setComparator(ComparatorType.values()[randomComparatorIndex]);
+	// int randomComparatorIndex = r.nextInt(numberOfComparators);
+	// input.getRule().setComparator(ComparatorType.values()[randomComparatorIndex]);
 
     }
 

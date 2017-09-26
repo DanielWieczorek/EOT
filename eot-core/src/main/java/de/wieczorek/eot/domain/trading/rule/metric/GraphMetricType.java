@@ -18,5 +18,9 @@ public enum GraphMetricType {
 
     StochasticFast,
 
-    MACD
+    MACD,
+
+    BollingerPercent,
+
+    DiffToMax
 }

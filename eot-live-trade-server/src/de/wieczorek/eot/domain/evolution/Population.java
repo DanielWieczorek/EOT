@@ -2,6 +2,7 @@ package de.wieczorek.eot.domain.evolution;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 public class Population implements IPopulation {
 
@@ -38,6 +39,18 @@ public class Population implements IPopulation {
 
     @Override
     public void printPopulationInfo() {
+
+    }
+
+    @Override
+    public IIndividual getById(long id) {
+	Optional<IIndividual> individual = currentGeneration.stream().filter(i -> i.getId() == id).findFirst();
+	return individual.isPresent() ? null : individual.get();
+    }
+
+    @Override
+    public void addAll(List<IIndividual> lastGenerationOfPreviousRun) {
+	this.currentGeneration.addAll(lastGenerationOfPreviousRun);
 
     }
 

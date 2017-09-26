@@ -5,10 +5,12 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
 import de.wieczorek.eot.domain.trader.Trader;
+import de.wieczorek.eot.domain.trading.rule.comparator.ITradingRuleComparator;
 import de.wieczorek.eot.domain.trading.rule.metric.AbstractGraphMetric;
 import de.wieczorek.eot.domain.trading.rule.metric.GraphMetricType;
 
@@ -23,15 +25,11 @@ import de.wieczorek.eot.domain.trading.rule.metric.GraphMetricType;
  */
 public class TradingRule {
     private static final Logger LOGGER = Logger.getLogger(TradingRule.class.getName());
-    /**
-     * Threshold it is compared against.
-     */
-    private double threshold = 0.0;
 
     /**
      * Comparator which is compared against.
      */
-    private ComparatorType comparator;
+    private ITradingRuleComparator comparator;
 
     /**
      * The metric which computes the current value depending on the current
@@ -79,27 +77,7 @@ public class TradingRule {
 	    return false;
 	}
 
-	switch (getComparator()) {
-	case EQUAL:
-	    LOGGER.fine("rating (" + rating + ") == threshold (" + threshold + ")? " + (rating == threshold));
-	    return rating == threshold;
-	case GREATER:
-	    LOGGER.fine("rating (" + rating + ") > threshold (" + threshold + ")? " + (rating > threshold));
-	    return rating > threshold;
-	case LESS:
-	    LOGGER.fine("rating (" + rating + ") < threshold (" + threshold + ")? " + (rating < threshold));
-	    return rating < threshold;
-	default:
-	    return false;
-	}
-    }
-
-    public final double getThreshold() {
-	return threshold;
-    }
-
-    public final void setThreshold(final double thresholdInput) {
-	this.threshold = thresholdInput;
+	return comparator.apply(rating);
     }
 
     public final AbstractGraphMetric getMetric() {
@@ -110,11 +88,11 @@ public class TradingRule {
 	this.metric = metricInput;
     }
 
-    public final ComparatorType getComparator() {
+    public final ITradingRuleComparator getComparator() {
 	return comparator;
     }
 
-    public final void setComparator(final ComparatorType comparatorInput) {
+    public final void setComparator(final ITradingRuleComparator comparatorInput) {
 	this.comparator = comparatorInput;
     }
 

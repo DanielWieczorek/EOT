@@ -6,7 +6,7 @@
 	<artifactId>eot-simulator-server</artifactId>
 	<packaging>jar</packaging>
 	<version>1.0-SNAPSHOT</version>
-	<name>EOT</name>
+	<name>eot-simulator-client</name>
 
 	<properties>
 		<java.version>1.8</java.version>
@@ -95,5 +95,7 @@
 			<version>9.4.6.v20170531</version>
 			<type>pom</type>
 		</dependency>
+
+		
 	</dependencies>
 </project>

@@ -4,7 +4,6 @@ import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
 import de.wieczorek.eot.domain.exchangable.rate.TimedExchangeRate;
 
 public class CoppocGraphMetric extends AbstractGraphMetric {
-    private final int MULTIPLICATOR = 15;
 
     public CoppocGraphMetric() {
 	setType(GraphMetricType.Coppoch);

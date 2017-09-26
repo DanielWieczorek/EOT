@@ -48,4 +48,6 @@ public interface IIndividual {
     int getNumberOfTrades();
 
     double getNetProfit();
+
+    long getId();
 }

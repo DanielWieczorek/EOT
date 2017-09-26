@@ -3,6 +3,7 @@ package de.wieczorek.eot.domain.evolution;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -77,4 +78,15 @@ public class Population implements IPopulation {
 
     }
 
+    @Override
+    public IIndividual getById(long id) {
+	Optional<IIndividual> individual = currentGeneration.stream().filter(i -> i.getId() == id).findFirst();
+	return individual.isPresent() ? individual.get() : null;
+    }
+
+    @Override
+    public void addAll(List<IIndividual> lastGenerationOfPreviousRun) {
+	this.currentGeneration.addAll(lastGenerationOfPreviousRun);
+
+    }
 }

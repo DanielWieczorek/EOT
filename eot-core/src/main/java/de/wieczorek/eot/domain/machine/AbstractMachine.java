@@ -1,5 +1,6 @@
 package de.wieczorek.eot.domain.machine;
 
+import de.wieczorek.eot.domain.evolution.IIndividual;
 import de.wieczorek.eot.domain.evolution.IPopulation;
 import de.wieczorek.eot.domain.exchange.IExchange;
 import de.wieczorek.eot.domain.trader.Trader;
@@ -82,6 +83,11 @@ public abstract class AbstractMachine implements IMachine {
 
     public final MachineState getState() {
 	return state;
+    }
+
+    @Override
+    public IIndividual getTraderById(long id) {
+	return traders.getById(id);
     }
 
 }
