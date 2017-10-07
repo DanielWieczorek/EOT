@@ -51,4 +51,20 @@ public class BinaryComparator implements ITradingRuleComparator {
 	return type + "_" + threshold;
     }
 
+    public double getThreshold() {
+	return threshold;
+    }
+
+    public void setThreshold(double threshold) {
+	this.threshold = threshold;
+    }
+
+    public ComparatorType getType() {
+	return type;
+    }
+
+    public void setType(ComparatorType type) {
+	this.type = type;
+    }
+
 }

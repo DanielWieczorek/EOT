@@ -1,9 +1,9 @@
 package de.wieczorek.eot.domain.trader;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 
@@ -11,6 +11,7 @@ import de.wieczorek.eot.domain.evolution.IIndividual;
 import de.wieczorek.eot.domain.exchangable.ExchangablePair;
 import de.wieczorek.eot.domain.exchangable.ExchangableSet;
 import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
+import de.wieczorek.eot.domain.exchangable.rate.TimedExchangeRate;
 import de.wieczorek.eot.domain.exchange.IExchange;
 import de.wieczorek.eot.domain.exchange.Order;
 import de.wieczorek.eot.domain.exchange.OrderType;
@@ -75,6 +76,10 @@ public class Trader extends Observable implements IIndividual {
     private TraderMemory buyMemory;
     private TraderMemory sellMemory;
 
+    private int unsoldBuys = 0;
+
+    private boolean isStopLossActivated;
+
     /**
      * Constructor.
      * 
@@ -96,9 +101,8 @@ public class Trader extends Observable implements IIndividual {
      */
     public Trader(final IAccount accountInput, final IExchange exchangeInput, final TraderNeuralNetwork buyRuleInput,
 	    final TraderNeuralNetwork sellRuleInput, final ExchangablePair exchangablesToTradeInput,
-	    final TradingPerformance performanceInput) {
+	    final TradingPerformance performanceInput, boolean isStopLossActivated) {
 	this.id = TraderIdGenerator.getNextId();
-	LOGGER.error("created trader with id:" + id);
 	this.setAccount(accountInput);
 	this.setExchange(exchangeInput);
 	this.buyRule = buyRuleInput;
@@ -107,6 +111,7 @@ public class Trader extends Observable implements IIndividual {
 	this.setPerformance(performanceInput);
 	this.buyMemory = new TraderMemory();
 	this.sellMemory = new TraderMemory();
+	this.isStopLossActivated = isStopLossActivated;
     }
 
     @Override
@@ -128,13 +133,14 @@ public class Trader extends Observable implements IIndividual {
     private void trade() {
 	double currentExchangeRate = getExchange().getCurrentExchangeRate(getExchangablesToTrade()).getToPrice();
 
-	if (currentExchangeRate != lastSeenRate && !areOrdersPending()) {
+	if (!areOrdersPending()) { // currentExchangeRate != lastSeenRate &&
 	    ExchangableSet from = getAccount().countAllExchangablesOfType(getExchangablesToTrade().getFrom());
 	    LOGGER.info("from amount: " + from.getAmount() + " " + from.getExchangable().name());
 	    ExchangeRateHistory history = getExchange().getExchangeRateHistory(getExchangablesToTrade(),
-		    sellRule.getHighestObservationTime());
+		    getHighestObservationTime());
 
-	    if (from.getAmount() > 0 && sellRule.isActivated(history)) {
+	    if (from.getAmount() > 0
+		    && (sellRule != null && sellRule.isActivated(history) || isStopLossTriggered(history))) {
 		LOGGER.info("triggering sell order");
 		sell(currentExchangeRate);
 	    } else {
@@ -145,10 +151,37 @@ public class Trader extends Observable implements IIndividual {
 		    buy(currentExchangeRate);
 		}
 	    }
+	} else {
+	    LOGGER.info("orders are pending -> not trading");
 	}
 
 	lastSeenRate = currentExchangeRate;
 
+    }
+
+    private int getHighestObservationTime() {
+	int result = buyRule.getHighestObservationTime();
+	if (sellRule != null) {
+	    result = Math.max(result, sellRule.getHighestObservationTime());
+	}
+	return result;
+    }
+
+    private boolean isStopLossTriggered(ExchangeRateHistory history) {
+	return isStopLossActivated && unsoldBuys > 0 && isBelowThreshold(history);
+    }
+
+    private boolean isBelowThreshold(ExchangeRateHistory history) {
+	List<TimedExchangeRate> filtered = history.getCompleteHistoryData().stream()
+		.filter(f -> f.getTime().isAfter(sellMemory.getLastOrderDate())
+			|| f.getTime().isEqual(sellMemory.getLastOrderDate()))
+		.collect(Collectors.toList());
+
+	double max = filtered.stream().mapToDouble(f -> f.getToPrice()).max().getAsDouble();
+	double min = filtered.stream().mapToDouble(f -> f.getToPrice()).min().getAsDouble();
+	double absoluteThreshold = 0.0005;
+	return history.getMostRecentExchangeRate().getToPrice() < Math
+		.max(sellMemory.getLastOrder().getPrice() - absoluteThreshold, (max - absoluteThreshold));
     }
 
     /**
@@ -180,7 +213,8 @@ public class Trader extends Observable implements IIndividual {
 	printAccountInfo();
 	getPerformance().update(this, order);
 	sellMemory.setLastOrder(order);
-	sellMemory.setLastOrderDate(LocalDateTime.now());
+	sellMemory.setLastOrderDate(exchange.getTime());
+	unsoldBuys++;
     }
 
     private double computeAmountToTrade(double currentExchangeRate, OrderType type) {
@@ -213,7 +247,10 @@ public class Trader extends Observable implements IIndividual {
 	getPerformance().update(this, order);
 
 	buyMemory.setLastOrder(order);
-	buyMemory.setLastOrderDate(LocalDateTime.now());
+	buyMemory.setLastOrderDate(exchange.getTime());
+	unsoldBuys--;
+	unsoldBuys = Math.max(0, unsoldBuys);
+
     }
 
     /**
@@ -269,23 +306,22 @@ public class Trader extends Observable implements IIndividual {
 
     @Override
     public final List<IIndividual> combineWith(final IIndividual individual) {
-	List<TraderNeuralNetwork> sellRules = sellRule.combineWith(((Trader) individual).sellRule);
+
+	List<TraderNeuralNetwork> sellRules = new ArrayList<TraderNeuralNetwork>();
+	sellRules.add(null);
+	sellRules.add(((Trader) individual).sellRule);
+	if (sellRule != null && ((Trader) individual).sellRule != null)
+	    sellRules = sellRule.combineWith(((Trader) individual).sellRule);
 	List<TraderNeuralNetwork> buyRules = buyRule.combineWith(((Trader) individual).buyRule);
 	Account wallet = new Account();
 	Trader result1 = new Trader(wallet, exchange, buyRules.get(1), sellRules.get(0), exchangablesToTrade,
-		new TradingPerformance(null));
-	// result1.setNumberOfObservedMinutes(
-	// (this.numberOfObservedMinutes + ((Trader)
-	// individual).numberOfObservedMinutes) / 2);
+		new TradingPerformance(null), isStopLossActivated);
 
 	result1.setNumberOfChunks((this.numberOfChunks + ((Trader) individual).numberOfChunks) / 2);
 
 	wallet = new Account();
 	Trader result2 = new Trader(wallet, exchange, buyRules.get(0), sellRules.get(1), exchangablesToTrade,
-		new TradingPerformance(null));
-	// result2.setNumberOfObservedMinutes(
-	// (this.numberOfObservedMinutes + ((Trader)
-	// individual).numberOfObservedMinutes) / 2);
+		new TradingPerformance(null), isStopLossActivated);
 
 	result1.setNumberOfChunks((this.numberOfChunks + ((Trader) individual).numberOfChunks) / 2);
 
@@ -319,21 +355,24 @@ public class Trader extends Observable implements IIndividual {
 	}
 	result += "#t_" + buyRule.getPerceptron2().getThreshold();
 	result += "#o_" + buyRule.getPerceptron2().getObservationTime();
-	result += "|s";
-	for (Input i : sellRule.getPerceptron1().getInputs()) {
-	    result += "::" + i.getRule().getMetric().getType().name() + "-"
-		    + i.getRule().getComparator().printDescription() + "-" + i.getWeight();
-	}
-	result += "#t_" + sellRule.getPerceptron1().getThreshold();
-	result += "#o_" + sellRule.getPerceptron1().getObservationTime();
-	result += buyRule.getType().name();
+	if (sellRule != null) {
+	    result += "|s";
+	    for (Input i : sellRule.getPerceptron1().getInputs()) {
+		result += "::" + i.getRule().getMetric().getType().name() + "-"
+			+ i.getRule().getComparator().printDescription() + "-" + i.getWeight();
+	    }
+	    result += "#t_" + sellRule.getPerceptron1().getThreshold();
+	    result += "#o_" + sellRule.getPerceptron1().getObservationTime();
+	    result += buyRule.getType().name();
 
-	for (Input i : sellRule.getPerceptron2().getInputs()) {
-	    result += "::" + i.getRule().getMetric().getType().name() + "-"
-		    + i.getRule().getComparator().printDescription() + "-" + i.getWeight();
+	    for (Input i : sellRule.getPerceptron2().getInputs()) {
+		result += "::" + i.getRule().getMetric().getType().name() + "-"
+			+ i.getRule().getComparator().printDescription() + "-" + i.getWeight();
+	    }
+	    result += "#t_" + sellRule.getPerceptron2().getThreshold();
+	    result += "#o_" + sellRule.getPerceptron2().getObservationTime();
 	}
-	result += "#t_" + sellRule.getPerceptron2().getThreshold();
-	result += "#o_" + sellRule.getPerceptron2().getObservationTime();
+	result += isStopLossActivated ? "_sl" : "";
 
 	return result;
     }
@@ -341,13 +380,15 @@ public class Trader extends Observable implements IIndividual {
     @Override
     public final void mutate() {
 	buyRule.setRandomThreshold();
-	sellRule.setRandomThreshold();
 
 	buyRule.randomizeOneComparator();
-	sellRule.randomizeOneComparator();
 
 	buyRule.randomizeNetworkType();
-	sellRule.randomizeNetworkType();
+	if (sellRule != null) {
+	    sellRule.randomizeOneComparator();
+	    sellRule.setRandomThreshold();
+	    sellRule.randomizeNetworkType();
+	}
     }
 
     @Override
@@ -380,6 +421,14 @@ public class Trader extends Observable implements IIndividual {
 
     public TraderNeuralNetwork getSellRule() {
 	return sellRule;
+    }
+
+    public boolean isStopLossActivated() {
+	return isStopLossActivated;
+    }
+
+    public void setStopLossActivated(boolean isStopLossActivated) {
+	this.isStopLossActivated = isStopLossActivated;
     }
 
 }

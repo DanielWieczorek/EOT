@@ -1,5 +1,6 @@
 package de.wieczorek.eot.domain.exchange.impl;
 
+import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.List;
 
@@ -137,6 +138,12 @@ public class SimulatedExchangeImpl extends AbstractExchangeImpl {
     public void reset() {
 	resetHistoryIterator();
 	((SimulatedOrderBookImpl) orderBook).removeAllOrders();
+    }
+
+    @Override
+    public LocalDateTime getTime() {
+
+	return LocalDateTime.from(currentExchangeRate.getTime());
     }
 
 }

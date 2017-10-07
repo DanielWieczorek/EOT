@@ -4,6 +4,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
+import de.wieczorek.eot.ui.rest.ImportTraderService;
 import de.wieczorek.eot.ui.rest.MachineInfoService;
 import de.wieczorek.eot.ui.rest.StartMachineService;
 import de.wieczorek.eot.ui.rest.StopMachineService;
@@ -21,7 +22,8 @@ public class Application {
 	startServlet.setInitParameter("jersey.config.server.provider.classnames",
 		StartMachineService.class.getCanonicalName() + ", " //
 			+ StopMachineService.class.getCanonicalName() + ", "//
-			+ MachineInfoService.class.getCanonicalName());
+			+ MachineInfoService.class.getCanonicalName() + ","
+			+ ImportTraderService.class.getCanonicalName());
 
 	try {
 	    jettyServer.start();

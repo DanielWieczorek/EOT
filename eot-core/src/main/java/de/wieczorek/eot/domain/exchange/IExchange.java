@@ -1,5 +1,6 @@
 package de.wieczorek.eot.domain.exchange;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import de.wieczorek.eot.domain.exchangable.ExchangablePair;
@@ -55,4 +56,6 @@ public interface IExchange {
      * @return a list of orders. The list is empty if there was no order
      */
     List<Order> getCurrentOrders(Trader trader);
+
+    LocalDateTime getTime();
 }

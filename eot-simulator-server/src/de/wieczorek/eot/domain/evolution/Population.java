@@ -46,7 +46,7 @@ public class Population implements IPopulation {
 	}
     }
 
-    private List<IIndividual> getBestIndividuals(final int amount) {
+    public List<IIndividual> getBestIndividuals(final int amount) {
 	final Comparator<IIndividual> byRating = (e1, e2) -> Double.compare(e2.calculateFitness(),
 		e1.calculateFitness());
 

@@ -8,6 +8,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -22,6 +26,8 @@ import de.wieczorek.eot.domain.exchangable.ExchangableType;
 import de.wieczorek.eot.domain.exchange.IExchange;
 import de.wieczorek.eot.domain.exchange.impl.SimulatedExchangeImpl;
 import de.wieczorek.eot.domain.trader.Trader;
+import de.wieczorek.eot.ui.trader.TraderConfiguration;
+import de.wieczorek.eot.ui.trader.TraderConfigurationFactory;
 
 @Singleton
 public class VirtualMachine extends AbstractMachine {
@@ -29,7 +35,7 @@ public class VirtualMachine extends AbstractMachine {
     private static final Logger logger = Logger.getLogger(VirtualMachine.class.getName());
 
     private final ExecutorService taskExecutor = Executors.newFixedThreadPool(numberOfExecutors);
-    private final int maxPopulations = 20;
+    private final int maxPopulations = 10;
 
     private final List<List<IIndividual>> traderGroups;
 
@@ -37,7 +43,7 @@ public class VirtualMachine extends AbstractMachine {
 
     private static final int populationSize = 100;
 
-    private static final int resultPopulationSize = 20;
+    private static final int resultPopulationSize = 100;
 
     @Inject
     public VirtualMachine(final IExchange exchange, final Population traders) {
@@ -83,7 +89,7 @@ public class VirtualMachine extends AbstractMachine {
 
 			exchange.setHistory(null);
 			exchange.getExchangeRateHistory(new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC),
-				31 * 24 * 60);
+				7 * 24 * 60);
 
 			final int cycles = exchange.getHistory().getCompleteHistoryData().size() - 15 * 60;
 			logger.fatal("running over " + cycles + " data points for " + getTraders().getAll().size());
@@ -146,6 +152,24 @@ public class VirtualMachine extends AbstractMachine {
 		    lastGenerationOfPreviousRun.clear();
 		    lastGenerationOfPreviousRun.addAll(getTraders().getAll());
 
+		    try {
+
+			TraderConfiguration config = TraderConfigurationFactory
+				.createTraderConfiguration((Trader) this.getTraders().getBestIndividuals(1).get(0));
+
+			logger.fatal("exporting trader: "
+				+ ((Trader) this.getTraders().getBestIndividuals(1).get(0)).generateDescriptiveName());
+
+			final Client client = ClientBuilder.newClient();
+			final String postUrl = "http://localhost:8100/";
+			client.target(postUrl).path("/import/").request().accept(MediaType.APPLICATION_XML)
+				.post(Entity.xml(config));
+
+		    } catch (Exception e) {
+			logger.fatal("error exporting trader: " + e.getMessage());
+			;
+		    }
+
 		}
 		this.state = MachineState.STOPPED;
 	    };
@@ -168,8 +192,10 @@ public class VirtualMachine extends AbstractMachine {
 	    count += trader.getBuyRule().getPerceptron1().getInputs().size();
 	    count += trader.getBuyRule().getPerceptron2().getInputs().size();
 
-	    count += trader.getSellRule().getPerceptron1().getInputs().size();
-	    count += trader.getSellRule().getPerceptron2().getInputs().size();
+	    if (trader.getSellRule() != null) {
+		count += trader.getSellRule().getPerceptron1().getInputs().size();
+		count += trader.getSellRule().getPerceptron2().getInputs().size();
+	    }
 	}
 	return count;
     }

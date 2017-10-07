@@ -21,9 +21,9 @@ public class CachedNeuralNetworkNode implements INeuralNetworkNode {
     @Override
     public boolean isActivated(ExchangeRateHistory history) {
 	boolean result = cachedResult;
-	if (lastUsedHistory != null
-		&& history.getMostRecentExchangeRate() != lastUsedHistory.getMostRecentExchangeRate()
-		&& history.getCompleteHistoryData().size() != lastUsedHistory.getCompleteHistoryData().size()) {
+	if (lastUsedHistory == null || (!history.getMostRecentExchangeRate().getTime()
+		.isEqual(lastUsedHistory.getMostRecentExchangeRate().getTime())
+		|| history.getCompleteHistoryData().size() != lastUsedHistory.getCompleteHistoryData().size())) {
 	    double sumOfInputs = inputs.stream()
 		    .mapToDouble(input -> (input.getOrigin().isActivated(history) ? 1.0 : 0.0) * input.getStrength())
 		    .sum();

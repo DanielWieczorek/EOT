@@ -1,5 +1,6 @@
 package de.wieczorek.eot.domain.exchange.impl;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,5 +80,11 @@ public class RealExchangeImpl extends AbstractExchangeImpl {
     @Override
     public List<Order> getCurrentOrders(final Trader trader) {
 	return new ArrayList<Order>();// orderBook.getOrderByTrader(trader);
+    }
+
+    @Override
+    public LocalDateTime getTime() {
+
+	return LocalDateTime.now();
     }
 }

@@ -50,4 +50,6 @@ public interface IPopulation {
     IIndividual getById(long id);
 
     void addAll(List<IIndividual> lastGenerationOfPreviousRun);
+
+    List<IIndividual> getBestIndividuals(final int amount);
 }

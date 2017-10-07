@@ -33,6 +33,10 @@ public class ExchangablePair {
 	this.to = toInput;
     }
 
+    public ExchangablePair() {
+
+    }
+
     /**
      * Constructor.
      *

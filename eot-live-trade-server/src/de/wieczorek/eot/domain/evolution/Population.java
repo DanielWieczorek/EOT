@@ -54,4 +54,9 @@ public class Population implements IPopulation {
 
     }
 
+    @Override
+    public List<IIndividual> getBestIndividuals(int amount) {
+	return null; // TODO
+    }
+
 }

@@ -9,4 +9,28 @@ public class InputConfiguration {
 
     private GraphMetricType type;
 
+    public double getWeight() {
+	return weight;
+    }
+
+    public void setWeight(double weight) {
+	this.weight = weight;
+    }
+
+    public ComparatorConfiguration getComparator() {
+	return comparator;
+    }
+
+    public void setComparator(ComparatorConfiguration comparator) {
+	this.comparator = comparator;
+    }
+
+    public GraphMetricType getType() {
+	return type;
+    }
+
+    public void setType(GraphMetricType type) {
+	this.type = type;
+    }
+
 }
