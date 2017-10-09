@@ -8,6 +8,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -27,6 +28,19 @@ public class MachineInfoService {
 	Session.create("", "VMzovKgqf0B+WqJPwZBp/SU/Kym8IGOK4rcWf4pMZURAIlUjCjnF7YUO",
 		"n2TsjqvB9zKgTOxi9htyXtiHGdzkmNj8eg7FkkEHpFTX46aFolrVYenIqtEzw+cEnW1Rbj5mwRxeaba2wJeWyg==");
 	machine = InjectorSingleton.getInjector().getInstance(IMachine.class);
+    }
+
+    @GET
+    @Produces("application/json")
+    @Path("/test")
+    public Response test() {
+
+	return Response.status(200).header("Access-Control-Allow-Origin", "*")
+		.header("Access-Control-Allow-Credentials", "true")
+		.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+		.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+		.entity("{ \"name\": \"Trader1\",\"btc\" : 0.00001,\"eth\" : 23.0,\"netProfit\": 0.51,\"sellsAtLoss\": 12,\"netProfitPercent\": 50.1,\"numberOfTrades\": 23}")
+		.build();
     }
 
     @GET
