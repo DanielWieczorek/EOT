@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import org.apache.log4j.Logger;
 
 import de.wieczorek.eot.domain.exchangable.rate.ExchangeRateHistory;
-import de.wieczorek.eot.domain.trading.rule.comparator.ComparatorType;
+import de.wieczorek.eot.domain.trading.rule.comparator.BinaryComparatorType;
 import de.wieczorek.eot.domain.trading.rule.comparator.ITradingRuleComparator;
 
 /**
@@ -218,7 +218,7 @@ public class TradingRulePerceptron implements INeuralNetworkNode {
 	int randomIndex = r.nextInt(numberOfInputs);
 	Input input = getInputs().get(randomIndex);
 
-	int numberOfComparators = ComparatorType.values().length;
+	int numberOfComparators = BinaryComparatorType.values().length;
 	// int randomComparatorIndex = r.nextInt(numberOfComparators);
 	// input.getRule().setComparator(ComparatorType.values()[randomComparatorIndex]);
 

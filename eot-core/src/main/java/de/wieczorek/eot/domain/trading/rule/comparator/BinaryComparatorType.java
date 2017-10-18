@@ -11,7 +11,7 @@ import de.wieczorek.eot.domain.trading.rule.metric.AbstractGraphMetric;
  * @author Daniel Wieczorek
  *
  */
-public enum ComparatorType {
+public enum BinaryComparatorType {
     /**
      * The computed value has to be greater than a given value.
      */

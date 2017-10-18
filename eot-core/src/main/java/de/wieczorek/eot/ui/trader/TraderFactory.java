@@ -9,6 +9,7 @@ import de.wieczorek.eot.domain.trading.rule.TraderNeuralNetwork;
 import de.wieczorek.eot.domain.trading.rule.TradingRule;
 import de.wieczorek.eot.domain.trading.rule.TradingRulePerceptron;
 import de.wieczorek.eot.domain.trading.rule.comparator.BinaryComparator;
+import de.wieczorek.eot.domain.trading.rule.comparator.ChangeComparator;
 import de.wieczorek.eot.domain.trading.rule.comparator.ITradingRuleComparator;
 import de.wieczorek.eot.domain.trading.rule.comparator.RangeComparator;
 import de.wieczorek.eot.domain.trading.rule.metric.AbstractGraphMetric;
@@ -84,10 +85,14 @@ public class TraderFactory {
     }
 
     private static ITradingRuleComparator buildComparator(ComparatorConfiguration comparator) {
-	if (comparator.isBinary()) {
-	    return new BinaryComparator(comparator.getThreshold1(), comparator.getType());
-	} else {
+	if (comparator.getComparator().equals(ComparatorConfigurationType.Binary)) {
+	    return new BinaryComparator(comparator.getThreshold1(), comparator.getBinaryType());
+	} else if (comparator.getComparator().equals(ComparatorConfigurationType.Range)) {
 	    return new RangeComparator(comparator.getThreshold1(), comparator.getThreshold2());
+
+	} else {
+	    return new ChangeComparator(comparator.getThreshold1(), comparator.getThreshold2(),
+		    comparator.getChangeType());
 	}
     }
 }

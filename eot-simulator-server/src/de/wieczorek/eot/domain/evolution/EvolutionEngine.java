@@ -25,7 +25,9 @@ import de.wieczorek.eot.domain.trading.rule.TraderNeuralNetwork.NetworkType;
 import de.wieczorek.eot.domain.trading.rule.TradingRule;
 import de.wieczorek.eot.domain.trading.rule.TradingRulePerceptron;
 import de.wieczorek.eot.domain.trading.rule.comparator.BinaryComparator;
-import de.wieczorek.eot.domain.trading.rule.comparator.ComparatorType;
+import de.wieczorek.eot.domain.trading.rule.comparator.BinaryComparatorType;
+import de.wieczorek.eot.domain.trading.rule.comparator.ChangeComparator;
+import de.wieczorek.eot.domain.trading.rule.comparator.ChangeComparatorType;
 import de.wieczorek.eot.domain.trading.rule.metric.BollingerPercentGraphMetric;
 import de.wieczorek.eot.domain.trading.rule.metric.CoppocGraphMetric;
 import de.wieczorek.eot.domain.trading.rule.metric.DiffToMaxGraphMetric;
@@ -92,42 +94,90 @@ public class EvolutionEngine {
 		for (int sellRuleNull = 0; sellRuleNull < 2; sellRuleNull++) {
 		    for (int i = 0; i < types.length; i++) {
 			for (int chunkSize = 1; chunkSize <= 10; chunkSize += 2) {
-			    buildRsiTrader(currentGeneration, sizePerAlgorithm, observedMinutes, ComparatorType.LESS,
-				    ComparatorType.GREATER, types[i], chunkSize, stopLoss == 0, sellRuleNull == 0);
-			    buildRsiTrader(currentGeneration, sizePerAlgorithm, observedMinutes, ComparatorType.GREATER,
-				    ComparatorType.LESS, types[i], chunkSize, stopLoss == 0, sellRuleNull == 0);
+			    buildRsiTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
+				    BinaryComparatorType.LESS, BinaryComparatorType.GREATER, types[i], chunkSize,
+				    stopLoss == 0, sellRuleNull == 0);
+			    buildRsiTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
+				    BinaryComparatorType.GREATER, BinaryComparatorType.LESS, types[i], chunkSize,
+				    stopLoss == 0, sellRuleNull == 0);
 
 			    buildStochasticFastTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
-				    ComparatorType.LESS, ComparatorType.GREATER, types[i], chunkSize, stopLoss == 0,
-				    sellRuleNull == 0);
+				    BinaryComparatorType.LESS, BinaryComparatorType.GREATER, types[i], chunkSize,
+				    stopLoss == 0, sellRuleNull == 0);
 			    buildStochasticFastTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
-				    ComparatorType.GREATER, ComparatorType.LESS, types[i], chunkSize, stopLoss == 0,
-				    sellRuleNull == 0);
+				    BinaryComparatorType.GREATER, BinaryComparatorType.LESS, types[i], chunkSize,
+				    stopLoss == 0, sellRuleNull == 0);
 
-			    buildCoppocTrader(currentGeneration, sizePerAlgorithm, observedMinutes, ComparatorType.LESS,
-				    ComparatorType.GREATER, types[i], chunkSize, stopLoss == 0, sellRuleNull == 0);
 			    buildCoppocTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
-				    ComparatorType.GREATER, ComparatorType.LESS, types[i], chunkSize, stopLoss == 0,
-				    sellRuleNull == 0);
+				    BinaryComparatorType.LESS, BinaryComparatorType.GREATER, types[i], chunkSize,
+				    stopLoss == 0, sellRuleNull == 0);
+			    buildCoppocTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
+				    BinaryComparatorType.GREATER, BinaryComparatorType.LESS, types[i], chunkSize,
+				    stopLoss == 0, sellRuleNull == 0);
 
 			    buildMacdTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
-				    ComparatorType.GREATER, ComparatorType.LESS, types[i], chunkSize, stopLoss == 0,
-				    sellRuleNull == 0);
-			    buildMacdTrader(currentGeneration, sizePerAlgorithm, observedMinutes, ComparatorType.LESS,
-				    ComparatorType.GREATER, types[i], chunkSize, stopLoss == 0, sellRuleNull == 0);
+				    BinaryComparatorType.GREATER, BinaryComparatorType.LESS, types[i], chunkSize,
+				    stopLoss == 0, sellRuleNull == 0);
+			    buildMacdTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
+				    BinaryComparatorType.LESS, BinaryComparatorType.GREATER, types[i], chunkSize,
+				    stopLoss == 0, sellRuleNull == 0);
 
 			    buildBollingerPercentTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
-				    ComparatorType.LESS, ComparatorType.GREATER, types[i], chunkSize, stopLoss == 0,
-				    sellRuleNull == 0);
+				    BinaryComparatorType.LESS, BinaryComparatorType.GREATER, types[i], chunkSize,
+				    stopLoss == 0, sellRuleNull == 0);
 			    buildBollingerPercentTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
-				    ComparatorType.GREATER, ComparatorType.LESS, types[i], chunkSize, stopLoss == 0,
-				    sellRuleNull == 0);
+				    BinaryComparatorType.GREATER, BinaryComparatorType.LESS, types[i], chunkSize,
+				    stopLoss == 0, sellRuleNull == 0);
 
-			    diffToMaxTrader(currentGeneration, sizePerAlgorithm, observedMinutes, ComparatorType.LESS,
-				    ComparatorType.GREATER, types[i], chunkSize, stopLoss == 0, sellRuleNull == 0);
 			    diffToMaxTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
-				    ComparatorType.GREATER, ComparatorType.LESS, types[i], chunkSize, stopLoss == 0,
-				    sellRuleNull == 0);
+				    BinaryComparatorType.LESS, BinaryComparatorType.GREATER, types[i], chunkSize,
+				    stopLoss == 0, sellRuleNull == 0);
+			    diffToMaxTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
+				    BinaryComparatorType.GREATER, BinaryComparatorType.LESS, types[i], chunkSize,
+				    stopLoss == 0, sellRuleNull == 0);
+
+			    buildRsiTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
+				    ChangeComparatorType.FallBelowThreshold, ChangeComparatorType.RiseAboveThreshold,
+				    types[i], chunkSize, stopLoss == 0, sellRuleNull == 0);
+			    buildRsiTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
+				    ChangeComparatorType.RiseAboveThreshold, ChangeComparatorType.FallBelowThreshold,
+				    types[i], chunkSize, stopLoss == 0, sellRuleNull == 0);
+
+			    buildStochasticFastTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
+				    ChangeComparatorType.FallBelowThreshold, ChangeComparatorType.RiseAboveThreshold,
+				    types[i], chunkSize, stopLoss == 0, sellRuleNull == 0);
+			    buildStochasticFastTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
+				    ChangeComparatorType.RiseAboveThreshold, ChangeComparatorType.FallBelowThreshold,
+				    types[i], chunkSize, stopLoss == 0, sellRuleNull == 0);
+
+			    buildCoppocTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
+				    ChangeComparatorType.FallBelowThreshold, ChangeComparatorType.RiseAboveThreshold,
+				    types[i], chunkSize, stopLoss == 0, sellRuleNull == 0);
+			    buildCoppocTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
+				    ChangeComparatorType.RiseAboveThreshold, ChangeComparatorType.FallBelowThreshold,
+				    types[i], chunkSize, stopLoss == 0, sellRuleNull == 0);
+			    //
+			    buildMacdTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
+				    ChangeComparatorType.RiseAboveThreshold, ChangeComparatorType.FallBelowThreshold,
+				    types[i], chunkSize, stopLoss == 0, sellRuleNull == 0);
+			    buildMacdTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
+				    ChangeComparatorType.FallBelowThreshold, ChangeComparatorType.RiseAboveThreshold,
+				    types[i], chunkSize, stopLoss == 0, sellRuleNull == 0);
+
+			    buildBollingerPercentTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
+				    ChangeComparatorType.FallBelowThreshold, ChangeComparatorType.RiseAboveThreshold,
+				    types[i], chunkSize, stopLoss == 0, sellRuleNull == 0);
+			    buildBollingerPercentTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
+				    ChangeComparatorType.RiseAboveThreshold, ChangeComparatorType.FallBelowThreshold,
+				    types[i], chunkSize, stopLoss == 0, sellRuleNull == 0);
+
+			    diffToMaxTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
+				    ChangeComparatorType.FallBelowThreshold, ChangeComparatorType.RiseAboveThreshold,
+				    types[i], chunkSize, stopLoss == 0, sellRuleNull == 0);
+			    diffToMaxTrader(currentGeneration, sizePerAlgorithm, observedMinutes,
+				    ChangeComparatorType.RiseAboveThreshold, ChangeComparatorType.FallBelowThreshold,
+				    types[i], chunkSize, stopLoss == 0, sellRuleNull == 0);
+
 			}
 		    }
 		}
@@ -137,7 +187,7 @@ public class EvolutionEngine {
     }
 
     private void buildMacdTrader(final List<IIndividual> currentGeneration, final int sizePerAlgorithm, int n,
-	    ComparatorType buyComparator, ComparatorType sellComparator, NetworkType type, int chunkSize,
+	    BinaryComparatorType buyComparator, BinaryComparatorType sellComparator, NetworkType type, int chunkSize,
 	    boolean isStopLossActivated, boolean isSellRuleNull) {
 	for (int i = 0; i < sizePerAlgorithm; i++) {
 	    final Account wallet = new Account();
@@ -155,32 +205,39 @@ public class EvolutionEngine {
 	    final TradingRulePerceptron buyRule = new TradingRulePerceptron(rule1, 1, 1, n);
 	    final TradingRulePerceptron sellRule = new TradingRulePerceptron(rule21, 1, 1, n);
 
-	    final TradingRulePerceptron neverFiring = new TradingRulePerceptron(rule21, 1, 2, n);
-	    TraderNeuralNetwork buyNetwork = null;
-	    TraderNeuralNetwork sellNetwork = null;
-	    if (type.equals(NetworkType.AND) || type.equals(NetworkType.OR)) {
-		buyNetwork = new TraderNeuralNetwork(buyRule, buyRule, type);
-		sellNetwork = new TraderNeuralNetwork(sellRule, sellRule, type);
-	    } else {
-		buyNetwork = new TraderNeuralNetwork(buyRule, neverFiring, type);
-		sellNetwork = new TraderNeuralNetwork(sellRule, neverFiring, type);
-	    }
-	    if (isSellRuleNull) {
-		sellNetwork = null;
-	    }
+	    buildAndAddTrader(currentGeneration, n, type, chunkSize, isStopLossActivated, isSellRuleNull, wallet,
+		    performance, rule21, buyRule, sellRule);
 
-	    final Trader newTrader = new Trader(wallet, exchange, buyNetwork, sellNetwork,
-		    new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance, isStopLossActivated);
-	    newTrader.setExchange(exchange);
+	}
+    }
 
-	    currentGeneration.add(newTrader);
-	    newTrader.setNumberOfChunks(chunkSize);
+    private void buildMacdTrader(final List<IIndividual> currentGeneration, final int sizePerAlgorithm, int n,
+	    ChangeComparatorType buyComparator, ChangeComparatorType sellComparator, NetworkType type, int chunkSize,
+	    boolean isStopLossActivated, boolean isSellRuleNull) {
+	for (int i = 0; i < sizePerAlgorithm; i++) {
+	    final Account wallet = new Account();
+	    wallet.deposit(new ExchangableSet(ExchangableType.BTC, 1));
+	    final TradingPerformance performance = new TradingPerformance(new ExchangableSet(ExchangableType.BTC, 1));
+
+	    final TradingRule rule1 = new TradingRule();
+	    rule1.setComparator(new ChangeComparator(-10.0 + (i / 10.0), 0.05, buyComparator));
+	    rule1.setMetric(new MacdGraphMetric());
+
+	    final TradingRule rule21 = new TradingRule();
+	    rule21.setComparator(new ChangeComparator(10.0 - i / 10.0, 0.05, sellComparator));
+	    rule21.setMetric(new MacdGraphMetric());
+
+	    final TradingRulePerceptron buyRule = new TradingRulePerceptron(rule1, 1, 1, n);
+	    final TradingRulePerceptron sellRule = new TradingRulePerceptron(rule21, 1, 1, n);
+
+	    buildAndAddTrader(currentGeneration, n, type, chunkSize, isStopLossActivated, isSellRuleNull, wallet,
+		    performance, rule21, buyRule, sellRule);
 
 	}
     }
 
     private void buildCoppocTrader(final List<IIndividual> currentGeneration, final int sizePerAlgorithm, int n,
-	    ComparatorType buyComparator, ComparatorType sellComparator, NetworkType type, int chunkSize,
+	    BinaryComparatorType buyComparator, BinaryComparatorType sellComparator, NetworkType type, int chunkSize,
 	    boolean isStopLossActivated, boolean isSellRuleNull) {
 	for (int i = 0; i < sizePerAlgorithm; i++) {
 	    final Account wallet = new Account();
@@ -200,31 +257,39 @@ public class EvolutionEngine {
 	    buyRule.setObservationTime(n);
 	    sellRule.setObservationTime(n);
 
-	    final TradingRulePerceptron neverFiring = new TradingRulePerceptron(rule21, 1, 2, n);
-	    TraderNeuralNetwork buyNetwork = null;
-	    TraderNeuralNetwork sellNetwork = null;
-	    if (type.equals(NetworkType.AND) || type.equals(NetworkType.OR)) {
-		buyNetwork = new TraderNeuralNetwork(buyRule, buyRule, type);
-		sellNetwork = new TraderNeuralNetwork(sellRule, sellRule, type);
-	    } else {
-		buyNetwork = new TraderNeuralNetwork(buyRule, neverFiring, type);
-		sellNetwork = new TraderNeuralNetwork(sellRule, neverFiring, type);
-	    }
-	    if (isSellRuleNull) {
-		sellNetwork = null;
-	    }
+	    buildAndAddTrader(currentGeneration, n, type, chunkSize, isStopLossActivated, isSellRuleNull, wallet,
+		    performance, rule21, buyRule, sellRule);
+	}
+    }
 
-	    final Trader newTrader = new Trader(wallet, exchange, buyNetwork, sellNetwork,
-		    new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance, isStopLossActivated);
-	    newTrader.setExchange(exchange);
+    private void buildCoppocTrader(final List<IIndividual> currentGeneration, final int sizePerAlgorithm, int n,
+	    ChangeComparatorType buyComparator, ChangeComparatorType sellComparator, NetworkType type, int chunkSize,
+	    boolean isStopLossActivated, boolean isSellRuleNull) {
+	for (int i = 0; i < sizePerAlgorithm; i++) {
+	    final Account wallet = new Account();
+	    wallet.deposit(new ExchangableSet(ExchangableType.BTC, 1));
+	    final TradingPerformance performance = new TradingPerformance(new ExchangableSet(ExchangableType.BTC, 1));
 
-	    currentGeneration.add(newTrader);
-	    newTrader.setNumberOfChunks(chunkSize);
+	    final TradingRule rule1 = new TradingRule();
+	    rule1.setComparator(new ChangeComparator(-10.0 + (i / 10.0), 0.05, buyComparator));
+	    rule1.setMetric(new CoppocGraphMetric());
+
+	    final TradingRule rule21 = new TradingRule();
+	    rule21.setComparator(new ChangeComparator(10.0 - (i / 10.0), 0.05, sellComparator));
+	    rule21.setMetric(new CoppocGraphMetric());
+
+	    final TradingRulePerceptron buyRule = new TradingRulePerceptron(rule1, 1, 1, n);
+	    final TradingRulePerceptron sellRule = new TradingRulePerceptron(rule21, 1, 1, n);
+	    buyRule.setObservationTime(n);
+	    sellRule.setObservationTime(n);
+
+	    buildAndAddTrader(currentGeneration, n, type, chunkSize, isStopLossActivated, isSellRuleNull, wallet,
+		    performance, rule21, buyRule, sellRule);
 	}
     }
 
     private void buildStochasticFastTrader(final List<IIndividual> currentGeneration, final int sizePerAlgorithm, int n,
-	    ComparatorType buyComparator, ComparatorType sellComparator, NetworkType type, int chunkSize,
+	    BinaryComparatorType buyComparator, BinaryComparatorType sellComparator, NetworkType type, int chunkSize,
 	    boolean isStopLossActivated, boolean isSellRuleNull) {
 	for (int i = 0; i < sizePerAlgorithm; i++) {
 	    final Account wallet = new Account();
@@ -245,32 +310,43 @@ public class EvolutionEngine {
 	    buyRule.setObservationTime(n);
 	    sellRule.setObservationTime(n);
 
-	    final TradingRulePerceptron neverFiring = new TradingRulePerceptron(rule21, 1, 2, n);
-	    TraderNeuralNetwork buyNetwork = null;
-	    TraderNeuralNetwork sellNetwork = null;
-	    if (type.equals(NetworkType.AND) || type.equals(NetworkType.OR)) {
-		buyNetwork = new TraderNeuralNetwork(buyRule, buyRule, type);
-		sellNetwork = new TraderNeuralNetwork(sellRule, sellRule, type);
-	    } else {
-		buyNetwork = new TraderNeuralNetwork(buyRule, neverFiring, type);
-		sellNetwork = new TraderNeuralNetwork(sellRule, neverFiring, type);
-	    }
-	    if (isSellRuleNull) {
-		sellNetwork = null;
-	    }
+	    buildAndAddTrader(currentGeneration, n, type, chunkSize, isStopLossActivated, isSellRuleNull, wallet,
+		    performance, rule21, buyRule, sellRule);
 
-	    final Trader newTrader = new Trader(wallet, exchange, buyNetwork, sellNetwork,
-		    new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance, isStopLossActivated);
-	    newTrader.setExchange(exchange);
+	}
+    }
 
-	    currentGeneration.add(newTrader);
-	    newTrader.setNumberOfChunks(chunkSize);
+    private void buildStochasticFastTrader(final List<IIndividual> currentGeneration, final int sizePerAlgorithm, int n,
+	    ChangeComparatorType buyComparator, ChangeComparatorType sellComparator, NetworkType type, int chunkSize,
+	    boolean isStopLossActivated, boolean isSellRuleNull) {
+	for (int i = 0; i < sizePerAlgorithm; i++) {
+	    final Account wallet = new Account();
+	    wallet.deposit(new ExchangableSet(ExchangableType.BTC, 1));
+	    final TradingPerformance performance = new TradingPerformance(new ExchangableSet(ExchangableType.BTC, 1));
+
+	    final TradingRule rule1 = new TradingRule();
+	    rule1.setComparator(
+		    new ChangeComparator(0.0 + (i / (Math.max(1, 100 / sizePerAlgorithm))), 0.5, buyComparator));
+	    rule1.setMetric(new StochasticFastGraphMetric());
+
+	    final TradingRule rule21 = new TradingRule();
+	    rule21.setComparator(
+		    new ChangeComparator(100.0 - i / (Math.max(1, 100 / sizePerAlgorithm)), 0.5, sellComparator));
+	    rule21.setMetric(new StochasticFastGraphMetric());
+
+	    final TradingRulePerceptron buyRule = new TradingRulePerceptron(rule1, 1, 1, n);
+	    final TradingRulePerceptron sellRule = new TradingRulePerceptron(rule21, 1, 1, n);
+	    buyRule.setObservationTime(n);
+	    sellRule.setObservationTime(n);
+
+	    buildAndAddTrader(currentGeneration, n, type, chunkSize, isStopLossActivated, isSellRuleNull, wallet,
+		    performance, rule21, buyRule, sellRule);
 
 	}
     }
 
     private void buildRsiTrader(final List<IIndividual> currentGeneration, final int sizePerAlgorithm, int n,
-	    ComparatorType buyComparator, ComparatorType sellComparator, NetworkType type, int chunkSize,
+	    BinaryComparatorType buyComparator, BinaryComparatorType sellComparator, NetworkType type, int chunkSize,
 	    boolean isStopLossActivated, boolean isSellRuleNull) {
 	for (int i = 0; i < sizePerAlgorithm; i++) {
 	    final Account wallet = new Account();
@@ -290,33 +366,42 @@ public class EvolutionEngine {
 	    buyRule.setObservationTime(n);
 	    sellRule.setObservationTime(n);
 
-	    final TradingRulePerceptron neverFiring = new TradingRulePerceptron(rule21, 1, 2, n);
-	    TraderNeuralNetwork buyNetwork = null;
-	    TraderNeuralNetwork sellNetwork = null;
-	    if (type.equals(NetworkType.AND) || type.equals(NetworkType.OR)) {
-		buyNetwork = new TraderNeuralNetwork(buyRule, buyRule, type);
-		sellNetwork = new TraderNeuralNetwork(sellRule, sellRule, type);
-	    } else {
-		buyNetwork = new TraderNeuralNetwork(buyRule, neverFiring, type);
-		sellNetwork = new TraderNeuralNetwork(sellRule, neverFiring, type);
-	    }
-	    if (isSellRuleNull) {
-		sellNetwork = null;
-	    }
+	    buildAndAddTrader(currentGeneration, n, type, chunkSize, isStopLossActivated, isSellRuleNull, wallet,
+		    performance, rule21, buyRule, sellRule);
 
-	    final Trader newTrader = new Trader(wallet, exchange, buyNetwork, sellNetwork,
-		    new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance, isStopLossActivated);
-	    newTrader.setExchange(exchange);
+	}
+    }
 
-	    newTrader.setNumberOfChunks(chunkSize);
-	    currentGeneration.add(newTrader);
+    private void buildRsiTrader(final List<IIndividual> currentGeneration, final int sizePerAlgorithm, int n,
+	    ChangeComparatorType buyComparator, ChangeComparatorType sellComparator, NetworkType type, int chunkSize,
+	    boolean isStopLossActivated, boolean isSellRuleNull) {
+	for (int i = 0; i < sizePerAlgorithm; i++) {
+	    final Account wallet = new Account();
+	    wallet.deposit(new ExchangableSet(ExchangableType.BTC, 1));
+	    final TradingPerformance performance = new TradingPerformance(new ExchangableSet(ExchangableType.BTC, 1));
+
+	    final TradingRule rule1 = new TradingRule();
+	    rule1.setComparator(new ChangeComparator(i, 0.5, buyComparator));
+	    rule1.setMetric(new RsiGraphMetric());
+
+	    final TradingRule rule21 = new TradingRule();
+	    rule21.setComparator(new ChangeComparator(100 - i, 0.5, sellComparator));
+	    rule21.setMetric(new RsiGraphMetric());
+
+	    final TradingRulePerceptron buyRule = new TradingRulePerceptron(rule1, 1, 1, n);
+	    final TradingRulePerceptron sellRule = new TradingRulePerceptron(rule21, 1, 1, n);
+	    buyRule.setObservationTime(n);
+	    sellRule.setObservationTime(n);
+
+	    buildAndAddTrader(currentGeneration, n, type, chunkSize, isStopLossActivated, isSellRuleNull, wallet,
+		    performance, rule21, buyRule, sellRule);
 
 	}
     }
 
     private void buildBollingerPercentTrader(final List<IIndividual> currentGeneration, final int sizePerAlgorithm,
-	    int n, ComparatorType buyComparator, ComparatorType sellComparator, NetworkType type, int chunkSize,
-	    boolean isStopLossActivated, boolean isSellRuleNull) {
+	    int n, BinaryComparatorType buyComparator, BinaryComparatorType sellComparator, NetworkType type,
+	    int chunkSize, boolean isStopLossActivated, boolean isSellRuleNull) {
 	for (int i = 0; i < sizePerAlgorithm; i++) {
 	    final Account wallet = new Account();
 	    wallet.deposit(new ExchangableSet(ExchangableType.BTC, 1));
@@ -335,32 +420,41 @@ public class EvolutionEngine {
 	    buyRule.setObservationTime(n);
 	    sellRule.setObservationTime(n);
 
-	    final TradingRulePerceptron neverFiring = new TradingRulePerceptron(rule21, 1, 2, n);
-	    TraderNeuralNetwork buyNetwork = null;
-	    TraderNeuralNetwork sellNetwork = null;
-	    if (type.equals(NetworkType.AND) || type.equals(NetworkType.OR)) {
-		buyNetwork = new TraderNeuralNetwork(buyRule, buyRule, type);
-		sellNetwork = new TraderNeuralNetwork(sellRule, sellRule, type);
-	    } else {
-		buyNetwork = new TraderNeuralNetwork(buyRule, neverFiring, type);
-		sellNetwork = new TraderNeuralNetwork(sellRule, neverFiring, type);
-	    }
-	    if (isSellRuleNull) {
-		sellNetwork = null;
-	    }
+	    buildAndAddTrader(currentGeneration, n, type, chunkSize, isStopLossActivated, isSellRuleNull, wallet,
+		    performance, rule21, buyRule, sellRule);
 
-	    final Trader newTrader = new Trader(wallet, exchange, buyNetwork, sellNetwork,
-		    new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance, isStopLossActivated);
-	    newTrader.setExchange(exchange);
+	}
+    }
 
-	    newTrader.setNumberOfChunks(chunkSize);
-	    currentGeneration.add(newTrader);
+    private void buildBollingerPercentTrader(final List<IIndividual> currentGeneration, final int sizePerAlgorithm,
+	    int n, ChangeComparatorType buyComparator, ChangeComparatorType sellComparator, NetworkType type,
+	    int chunkSize, boolean isStopLossActivated, boolean isSellRuleNull) {
+	for (int i = 0; i < sizePerAlgorithm; i++) {
+	    final Account wallet = new Account();
+	    wallet.deposit(new ExchangableSet(ExchangableType.BTC, 1));
+	    final TradingPerformance performance = new TradingPerformance(new ExchangableSet(ExchangableType.BTC, 1));
+
+	    final TradingRule rule1 = new TradingRule();
+	    rule1.setComparator(new ChangeComparator(i, 0.5, buyComparator));
+	    rule1.setMetric(new BollingerPercentGraphMetric());
+
+	    final TradingRule rule21 = new TradingRule();
+	    rule21.setComparator(new ChangeComparator(100 - i, 0.5, sellComparator));
+	    rule21.setMetric(new BollingerPercentGraphMetric());
+
+	    final TradingRulePerceptron buyRule = new TradingRulePerceptron(rule1, 1, 1, n);
+	    final TradingRulePerceptron sellRule = new TradingRulePerceptron(rule21, 1, 1, n);
+	    buyRule.setObservationTime(n);
+	    sellRule.setObservationTime(n);
+
+	    buildAndAddTrader(currentGeneration, n, type, chunkSize, isStopLossActivated, isSellRuleNull, wallet,
+		    performance, rule21, buyRule, sellRule);
 
 	}
     }
 
     private void diffToMaxTrader(final List<IIndividual> currentGeneration, final int sizePerAlgorithm, int n,
-	    ComparatorType buyComparator, ComparatorType sellComparator, NetworkType type, int chunkSize,
+	    BinaryComparatorType buyComparator, BinaryComparatorType sellComparator, NetworkType type, int chunkSize,
 	    boolean isStopLossActivated, boolean isSellRuleNull) {
 	for (int i = 0; i < sizePerAlgorithm; i++) {
 	    final Account wallet = new Account();
@@ -380,28 +474,61 @@ public class EvolutionEngine {
 	    buyRule.setObservationTime(n);
 	    sellRule.setObservationTime(n);
 
-	    final TradingRulePerceptron neverFiring = new TradingRulePerceptron(rule21, 1, 2, n);
-	    TraderNeuralNetwork buyNetwork = null;
-	    TraderNeuralNetwork sellNetwork = null;
-	    if (type.equals(NetworkType.AND) || type.equals(NetworkType.OR)) {
-		buyNetwork = new TraderNeuralNetwork(buyRule, buyRule, type);
-		sellNetwork = new TraderNeuralNetwork(sellRule, sellRule, type);
-	    } else {
-		buyNetwork = new TraderNeuralNetwork(buyRule, neverFiring, type);
-		sellNetwork = new TraderNeuralNetwork(sellRule, neverFiring, type);
-	    }
-	    if (isSellRuleNull) {
-		sellNetwork = null;
-	    }
-
-	    final Trader newTrader = new Trader(wallet, exchange, buyNetwork, sellNetwork,
-		    new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance, isStopLossActivated);
-	    newTrader.setExchange(exchange);
-
-	    newTrader.setNumberOfChunks(chunkSize);
-	    currentGeneration.add(newTrader);
-
+	    buildAndAddTrader(currentGeneration, n, type, chunkSize, isStopLossActivated, isSellRuleNull, wallet,
+		    performance, rule21, buyRule, sellRule);
 	}
+    }
+
+    private void diffToMaxTrader(final List<IIndividual> currentGeneration, final int sizePerAlgorithm, int n,
+	    ChangeComparatorType buyComparator, ChangeComparatorType sellComparator, NetworkType type, int chunkSize,
+	    boolean isStopLossActivated, boolean isSellRuleNull) {
+	for (int i = 0; i < sizePerAlgorithm; i++) {
+	    final Account wallet = new Account();
+	    wallet.deposit(new ExchangableSet(ExchangableType.BTC, 1));
+	    final TradingPerformance performance = new TradingPerformance(new ExchangableSet(ExchangableType.BTC, 1));
+
+	    final TradingRule rule1 = new TradingRule();
+	    rule1.setComparator(new ChangeComparator(i - 50, 0.25, buyComparator));
+	    rule1.setMetric(new DiffToMaxGraphMetric());
+
+	    final TradingRule rule21 = new TradingRule();
+	    rule21.setComparator(new ChangeComparator(50 - i, 0.25, sellComparator));
+	    rule21.setMetric(new DiffToMaxGraphMetric());
+
+	    final TradingRulePerceptron buyRule = new TradingRulePerceptron(rule1, 1, 1, n);
+	    final TradingRulePerceptron sellRule = new TradingRulePerceptron(rule21, 1, 1, n);
+	    buyRule.setObservationTime(n);
+	    sellRule.setObservationTime(n);
+
+	    buildAndAddTrader(currentGeneration, n, type, chunkSize, isStopLossActivated, isSellRuleNull, wallet,
+		    performance, rule21, buyRule, sellRule);
+	}
+    }
+
+    private void buildAndAddTrader(final List<IIndividual> currentGeneration, int n, NetworkType type, int chunkSize,
+	    boolean isStopLossActivated, boolean isSellRuleNull, final Account wallet,
+	    final TradingPerformance performance, final TradingRule rule21, final TradingRulePerceptron buyRule,
+	    final TradingRulePerceptron sellRule) {
+	final TradingRulePerceptron neverFiring = new TradingRulePerceptron(rule21, 1, 2, n);
+	TraderNeuralNetwork buyNetwork = null;
+	TraderNeuralNetwork sellNetwork = null;
+	if (type.equals(NetworkType.AND) || type.equals(NetworkType.OR)) {
+	    buyNetwork = new TraderNeuralNetwork(buyRule, buyRule, type);
+	    sellNetwork = new TraderNeuralNetwork(sellRule, sellRule, type);
+	} else {
+	    buyNetwork = new TraderNeuralNetwork(buyRule, neverFiring, type);
+	    sellNetwork = new TraderNeuralNetwork(sellRule, neverFiring, type);
+	}
+	if (isSellRuleNull) {
+	    sellNetwork = null;
+	}
+
+	final Trader newTrader = new Trader(wallet, exchange, buyNetwork, sellNetwork,
+		new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC), performance, isStopLossActivated);
+	newTrader.setExchange(exchange);
+
+	currentGeneration.add(newTrader);
+	newTrader.setNumberOfChunks(chunkSize);
     }
 
 }

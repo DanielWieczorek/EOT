@@ -8,6 +8,7 @@ import de.wieczorek.eot.domain.trading.rule.TraderNeuralNetwork;
 import de.wieczorek.eot.domain.trading.rule.TradingRulePerceptron;
 import de.wieczorek.eot.domain.trading.rule.TradingRulePerceptron.Input;
 import de.wieczorek.eot.domain.trading.rule.comparator.BinaryComparator;
+import de.wieczorek.eot.domain.trading.rule.comparator.ChangeComparator;
 import de.wieczorek.eot.domain.trading.rule.comparator.ITradingRuleComparator;
 import de.wieczorek.eot.domain.trading.rule.comparator.RangeComparator;
 
@@ -63,13 +64,18 @@ public class TraderConfigurationFactory {
     private static ComparatorConfiguration buildComparatorConfiguration(ITradingRuleComparator comparator) {
 	ComparatorConfiguration result = new ComparatorConfiguration();
 	if (comparator instanceof BinaryComparator) {
-	    result.setBinary(true);
+	    result.setComparator(ComparatorConfigurationType.Binary);
 	    result.setThreshold1(((BinaryComparator) comparator).getThreshold());
-	    result.setType(((BinaryComparator) comparator).getType());
+	    result.setBinaryType(((BinaryComparator) comparator).getType());
 	} else if (comparator instanceof RangeComparator) {
-	    result.setBinary(false);
+	    result.setComparator(ComparatorConfigurationType.Range);
 	    result.setThreshold1(((RangeComparator) comparator).getBegin());
 	    result.setThreshold1(((RangeComparator) comparator).getEnd());
+	} else if (comparator instanceof ChangeComparator) {
+	    result.setComparator(ComparatorConfigurationType.Change);
+	    result.setThreshold1(((ChangeComparator) comparator).getThreshold());
+	    result.setThreshold2(((ChangeComparator) comparator).getRange());
+	    result.setChangeType(((ChangeComparator) comparator).getType());
 	}
 	return result;
     }

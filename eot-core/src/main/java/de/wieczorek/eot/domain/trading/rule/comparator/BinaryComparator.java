@@ -11,9 +11,9 @@ public class BinaryComparator implements ITradingRuleComparator {
     private static final Logger LOGGER = Logger.getLogger(TradingRulePerceptron.class.getName());
 
     private double threshold;
-    private ComparatorType type;
+    private BinaryComparatorType type;
 
-    public BinaryComparator(double threshold, ComparatorType type) {
+    public BinaryComparator(double threshold, BinaryComparatorType type) {
 	this.threshold = threshold;
 	this.type = type;
     }
@@ -59,11 +59,11 @@ public class BinaryComparator implements ITradingRuleComparator {
 	this.threshold = threshold;
     }
 
-    public ComparatorType getType() {
+    public BinaryComparatorType getType() {
 	return type;
     }
 
-    public void setType(ComparatorType type) {
+    public void setType(BinaryComparatorType type) {
 	this.type = type;
     }
 

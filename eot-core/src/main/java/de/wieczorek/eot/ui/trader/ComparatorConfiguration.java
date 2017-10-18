@@ -1,22 +1,17 @@
 package de.wieczorek.eot.ui.trader;
 
-import de.wieczorek.eot.domain.trading.rule.comparator.ComparatorType;
+import de.wieczorek.eot.domain.trading.rule.comparator.BinaryComparatorType;
+import de.wieczorek.eot.domain.trading.rule.comparator.ChangeComparatorType;
 
 public class ComparatorConfiguration {
-    boolean isBinary;
+    private ComparatorConfigurationType comparator;
 
     private double threshold1;
     private double threshold2;
 
-    private ComparatorType type;
+    private BinaryComparatorType binaryType;
 
-    public boolean isBinary() {
-	return isBinary;
-    }
-
-    public void setBinary(boolean isBinary) {
-	this.isBinary = isBinary;
-    }
+    private ChangeComparatorType changeType;
 
     public double getThreshold1() {
 	return threshold1;
@@ -34,12 +29,28 @@ public class ComparatorConfiguration {
 	this.threshold2 = threshold2;
     }
 
-    public ComparatorType getType() {
-	return type;
+    public BinaryComparatorType getBinaryType() {
+	return binaryType;
     }
 
-    public void setType(ComparatorType type) {
-	this.type = type;
+    public void setBinaryType(BinaryComparatorType type) {
+	this.binaryType = type;
+    }
+
+    public ChangeComparatorType getChangeType() {
+	return changeType;
+    }
+
+    public void setChangeType(ChangeComparatorType changeType) {
+	this.changeType = changeType;
+    }
+
+    public ComparatorConfigurationType getComparator() {
+	return comparator;
+    }
+
+    public void setComparator(ComparatorConfigurationType comparator) {
+	this.comparator = comparator;
     }
 
 }
