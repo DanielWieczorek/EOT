@@ -20,7 +20,7 @@ import de.wieczorek.eot.domain.machine.IMachine;
 import de.wieczorek.eot.domain.machine.RealMachine;
 import de.wieczorek.eot.domain.trader.Trader;
 
-@Path("/info")
+@Path("info")
 public class MachineInfoService {
     private IMachine machine;
 
@@ -32,7 +32,7 @@ public class MachineInfoService {
 
     @GET
     @Produces("application/json")
-    @Path("/test")
+    @Path("test")
     public Response test() {
 
 	return Response.status(200).header("Access-Control-Allow-Origin", "*")

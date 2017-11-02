@@ -5,3 +5,7 @@
   z-index: 2;
   width: 100%  !important;
 }
+
+ul{
+list-style-type:none;
+}

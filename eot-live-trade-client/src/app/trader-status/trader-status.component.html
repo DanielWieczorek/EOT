@@ -1,20 +1,22 @@
-<p>
-  <label>btc: </label>{{trader.btc}}
-  <label>eth: </label>{{trader.eth}}
-   <label>netProfit: </label>{{trader.netProfit}}
-    <label>sellsAtLoss: </label>{{trader.sellsAtLoss}}
-     <label>netProfitPercent: </label>{{trader.netProfitPercent}}
-      <label>numberOfTrades: </label>{{trader.numberOfTrades}}
-      
 
-</p>
 <mat-card>
- <img src="card-image.png" class="md-card-image" alt="image caption">
  <mat-card-content>
-   <h2>Card headline</h2>
-   <p>Card content</p>
+   <h2>Trader 1</h2>
+
+   <table id="table1" style="width: 100%; ">
+   <tr>
+     <td>Amount of BTC:</td><td><b>{{trader.btc}}</b></td>
+     <td>Net Profit in BTC: </td><td><b>{{trader.netProfit}}</b></td>
+     <td>Number of trades:</td><td><b>{{trader.numberOfTrades}}</b></td>
+   </tr>
+   <tr>
+     <td>Amount of ETH: </td><td><b>{{trader.btc}}</b>
+      <td>Net profit in Percent: </td><td><b>{{trader.netProfitPercent}}</b></td>
+     <td>Number of sells at loss:</td><td><b>{{trader.sellsAtLoss}}</b></td>
+   </tr>
+</table>
+
  </mat-card-content>
  <mat-card-footer>
-   Card footer
  </mat-card-footer>
 </mat-card>

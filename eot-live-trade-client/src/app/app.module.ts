@@ -7,7 +7,8 @@ import { TraderStatusComponent } from './trader-status/trader-status.component';
 import { MachineStatusComponent } from './machine-status/machine-status.component';
 import { MachineStatusService } from './machine-status.service';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {MatButtonModule, MatCardModule, MatMenuModule, MatToolbarModule, MatIconModule} from '@angular/material';
+import {MatButtonModule, MatCardModule, MatMenuModule, MatToolbarModule, MatIconModule, MatListModule,
+  MatGridListModule} from '@angular/material';
 import {HttpModule} from '@angular/http';
 
 @NgModule({
@@ -18,7 +19,7 @@ import {HttpModule} from '@angular/http';
   ],
   imports: [
     BrowserAnimationsModule,
-    MatButtonModule, MatCardModule, MatMenuModule, MatToolbarModule, MatIconModule,
+    MatButtonModule, MatCardModule, MatMenuModule, MatToolbarModule, MatIconModule, MatListModule, MatGridListModule,
     HttpModule
   ],
   providers: [TraderStatusService, MachineStatusService],
