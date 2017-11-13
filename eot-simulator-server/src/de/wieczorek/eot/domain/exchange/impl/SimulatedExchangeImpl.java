@@ -49,6 +49,7 @@ public class SimulatedExchangeImpl extends AbstractExchangeImpl {
     private double orderFees = 0.2;
 
     private int orderExecutionTimeInMinutes = 15;
+    private int startIndex = 5 * 60;
 
     /**
      * Constructor.
@@ -127,7 +128,7 @@ public class SimulatedExchangeImpl extends AbstractExchangeImpl {
     }
 
     public void resetHistoryIterator() {
-	final int startPoint = 15 * 60;
+	final int startPoint = startIndex;
 	if (history != null) {
 	    iter = history.getCompleteHistoryData().listIterator(startPoint);
 	    currentExchangeRate = iter.next();
@@ -144,6 +145,11 @@ public class SimulatedExchangeImpl extends AbstractExchangeImpl {
     public LocalDateTime getTime() {
 
 	return LocalDateTime.from(currentExchangeRate.getTime());
+    }
+
+    public void setStartIndex(int startIndex) {
+	this.startIndex = startIndex;
+	resetHistoryIterator();
     }
 
 }

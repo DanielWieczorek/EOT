@@ -35,13 +35,13 @@ public class VirtualMachine extends AbstractMachine {
     private static final Logger logger = Logger.getLogger(VirtualMachine.class.getName());
 
     private final ExecutorService taskExecutor = Executors.newFixedThreadPool(numberOfExecutors);
-    private final int maxPopulations = 10;
+    private final int maxPopulations = 30;
 
     private final List<List<IIndividual>> traderGroups;
 
     private static final int numberOfExecutors = 8;
 
-    private static final int populationSize = 100;
+    private static final int populationSize = 30;
 
     private static final int resultPopulationSize = 100;
 
@@ -87,12 +87,18 @@ public class VirtualMachine extends AbstractMachine {
 			}
 			exchange.reset();
 
+			int historySize = (int) (7.0 * 24 * 60);
+			final int cycles = 8 * 60;
 			exchange.setHistory(null);
-			exchange.getExchangeRateHistory(new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC),
-				7 * 24 * 60);
 
-			final int cycles = exchange.getHistory().getCompleteHistoryData().size() - 15 * 60;
-			logger.fatal("running over " + cycles + " data points for " + getTraders().getAll().size());
+			historySize = exchange
+				.getExchangeRateHistory(new ExchangablePair(ExchangableType.ETH, ExchangableType.BTC),
+					historySize)
+				.getCompleteHistoryData().size();
+			exchange.setStartIndex(historySize - cycles);
+
+			logger.fatal("running over " + cycles + " data points for " + getTraders().getAll().size()
+				+ ". History size: " + historySize);
 			final long start = System.currentTimeMillis();
 
 			int n = 0;
@@ -108,7 +114,8 @@ public class VirtualMachine extends AbstractMachine {
 			    n++;
 			    n %= realNumberOfExecutors;
 			}
-			for (int i = 60 * 24; i < cycles && getState() != MachineState.STOPPED; i++) {
+			for (int i = historySize - cycles; i < historySize - 1
+				&& getState() != MachineState.STOPPED; i++) {
 
 			    while (getState() == MachineState.PAUSED) {
 				logger.info("simulation paused checking again in 10s");
@@ -121,7 +128,7 @@ public class VirtualMachine extends AbstractMachine {
 				}
 			    }
 			    if (i % 150 == 0) {
-				logger.fatal("current cycle:" + i + " of " + cycles + " data points");
+				logger.fatal("current cycle:" + i + " of " + historySize + " data points");
 			    }
 
 			    exchange.icrementTime();
@@ -146,29 +153,30 @@ public class VirtualMachine extends AbstractMachine {
 			logger.fatal("Finished simulation of generation " + j + " with "
 				+ this.getTraders().getAll().size() + " individuals with " + getNumberOfMetrics()
 				+ " applied metrics. It took " + (double) ((end - start) / 1000) + " seconds.");
+
+			try {
+
+			    TraderConfiguration config = TraderConfigurationFactory
+				    .createTraderConfiguration((Trader) this.getTraders().getBestIndividuals(1).get(0));
+
+			    logger.fatal(
+				    "exporting trader: " + ((Trader) this.getTraders().getBestIndividuals(1).get(0))
+					    .generateDescriptiveName());
+
+			    final Client client = ClientBuilder.newClient();
+			    final String postUrl = "http://localhost:8100/";
+			    client.target(postUrl).path("/import/").request().accept(MediaType.APPLICATION_XML)
+				    .post(Entity.xml(config));
+
+			} catch (Exception e) {
+			    logger.fatal("error exporting trader: " + e.getMessage());
+			}
+
 		    }
 
 		    this.getTraders().printPopulationInfo();
 		    lastGenerationOfPreviousRun.clear();
 		    lastGenerationOfPreviousRun.addAll(getTraders().getAll());
-
-		    try {
-
-			TraderConfiguration config = TraderConfigurationFactory
-				.createTraderConfiguration((Trader) this.getTraders().getBestIndividuals(1).get(0));
-
-			logger.fatal("exporting trader: "
-				+ ((Trader) this.getTraders().getBestIndividuals(1).get(0)).generateDescriptiveName());
-
-			final Client client = ClientBuilder.newClient();
-			final String postUrl = "http://localhost:8100/";
-			client.target(postUrl).path("/import/").request().accept(MediaType.APPLICATION_XML)
-				.post(Entity.xml(config));
-
-		    } catch (Exception e) {
-			logger.fatal("error exporting trader: " + e.getMessage());
-			;
-		    }
 
 		}
 		this.state = MachineState.STOPPED;

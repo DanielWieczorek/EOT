@@ -44,10 +44,13 @@ public class TraderFactory {
     }
 
     private static TraderNeuralNetwork buildNeuralNetwork(NeuralNetworkConfiguration config) {
-	TradingRulePerceptron perceptron1 = buildPerceptron(config.getPerceptron1());
-	TradingRulePerceptron perceptron2 = buildPerceptron(config.getPerceptron2());
+	if (config != null) {
+	    TradingRulePerceptron perceptron1 = buildPerceptron(config.getPerceptron1());
+	    TradingRulePerceptron perceptron2 = buildPerceptron(config.getPerceptron2());
 
-	return new TraderNeuralNetwork(perceptron1, perceptron2, config.getType());
+	    return new TraderNeuralNetwork(perceptron1, perceptron2, config.getType());
+	}
+	return null;
     }
 
     private static TradingRulePerceptron buildPerceptron(TradingRulePerceptronConfiguration perceptron) {

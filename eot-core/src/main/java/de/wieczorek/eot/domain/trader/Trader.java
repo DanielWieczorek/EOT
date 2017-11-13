@@ -180,8 +180,7 @@ public class Trader extends Observable implements IIndividual {
 	if (!filtered.isEmpty()) {
 	    double max = filtered.stream().mapToDouble(f -> f.getToPrice()).max().getAsDouble();
 	    double absoluteThreshold = 0.0005;
-	    return history.getMostRecentExchangeRate().getToPrice() < Math
-		    .max(sellMemory.getLastOrder().getPrice() - absoluteThreshold, (max - absoluteThreshold));
+	    return history.getMostRecentExchangeRate().getToPrice() < max - absoluteThreshold;
 	} else {
 	    return false;
 	}

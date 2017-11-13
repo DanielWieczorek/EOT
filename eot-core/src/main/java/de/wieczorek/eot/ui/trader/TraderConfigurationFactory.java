@@ -30,10 +30,13 @@ public class TraderConfigurationFactory {
     }
 
     private static NeuralNetworkConfiguration buildNetworkConfiguration(TraderNeuralNetwork traderNeuralNetwork) {
-	NeuralNetworkConfiguration result = new NeuralNetworkConfiguration();
-	result.setPerceptron1(buildPerceptronConfiguration(traderNeuralNetwork.getPerceptron1()));
-	result.setPerceptron2(buildPerceptronConfiguration(traderNeuralNetwork.getPerceptron2()));
-	result.setType(traderNeuralNetwork.getType());
+	NeuralNetworkConfiguration result = null;
+	if (traderNeuralNetwork != null) {
+	    result = new NeuralNetworkConfiguration();
+	    result.setPerceptron1(buildPerceptronConfiguration(traderNeuralNetwork.getPerceptron1()));
+	    result.setPerceptron2(buildPerceptronConfiguration(traderNeuralNetwork.getPerceptron2()));
+	    result.setType(traderNeuralNetwork.getType());
+	}
 	return result;
     }
 
